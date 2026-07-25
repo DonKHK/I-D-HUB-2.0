@@ -1,0 +1,16 @@
+{
+  "name": "pmis-desktop",
+  "version": "1.0.0",
+  "description": "PMIS Desktop - Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^43.1.0"
+  }
+}
