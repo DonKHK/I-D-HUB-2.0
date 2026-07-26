@@ -81,8 +81,50 @@ const snapshotToData = (snapshot) => ({
   ...snapshot.data(),
 });
 
-// Generate a short-ish unique ID
-const genId = () => Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+// Generate a unique project ID in format: IDND + YYMM + 3-digit sequential number
+// e.g. IDND2608009 (year 26, month 08, seq 009)
+const generateProjectId = () => {
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const prefix = `IDND${yy}${mm}`;
+  const counterKey = `pmis_project_counter_${yy}${mm}`;
+
+  // Read existing counter from localStorage
+  let lastSeq = 0;
+
+  // First: scan all existing projects in localStorage to find max seq for this month
+  try {
+    const cachedProjects = JSON.parse(localStorage.getItem('pmis_projects') || '[]');
+    for (const p of cachedProjects) {
+      if (p.id && p.id.startsWith(prefix)) {
+        const numPart = parseInt(p.id.slice(-3), 10);
+        if (!isNaN(numPart) && numPart > lastSeq) {
+          lastSeq = numPart;
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // Also check the stored counter (in case it's higher than what's in projects)
+  try {
+    const storedCounter = parseInt(localStorage.getItem(counterKey) || '0', 10);
+    if (storedCounter > lastSeq) {
+      lastSeq = storedCounter;
+    }
+  } catch (e) { /* ignore */ }
+
+  // Increment
+  const newSeq = lastSeq + 1;
+  const seqStr = String(newSeq).padStart(3, '0');
+
+  // Save counter back
+  try {
+    localStorage.setItem(counterKey, String(newSeq));
+  } catch (e) { /* ignore */ }
+
+  return `${prefix}${seqStr}`;
+};
 
 // Check if an error indicates Firestore is unavailable (permission denied or offline)
 const isFirestoreUnavailable = (err) => {
@@ -524,7 +566,7 @@ export function DataProvider({ children }) {
     const idea = ideas.find((i) => i.id === id);
     if (!idea) return null;
 
-    const projectId = genId();
+    const projectId = generateProjectId();
     const project = {
       id: projectId,
       name: idea.title || idea.projectTitle || 'Untitled',

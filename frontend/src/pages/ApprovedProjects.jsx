@@ -1,12 +1,24 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency } from '../utils/helpers';
+import Modal from '../components/Modal';
 
 export default function ApprovedProjects() {
   const navigate = useNavigate();
-  const { ideas, projects } = useData();
+  const { ideas, projects, deleteProject } = useData();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState('');
+  const [deleteModal, setDeleteModal] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteProject = async (id) => {
+    setDeleting(true);
+    await deleteProject(id);
+    setDeleting(false);
+    setDeleteModal(null);
+  };
 
   const approved = useMemo(() => {
     let list = ideas.filter((i) => i.status === 'approved');
@@ -50,6 +62,19 @@ export default function ApprovedProjects() {
             <div key={idea.id} className="project-card">
               <div className="project-card__header">
                 <span className="status-badge status-badge--approved">Approved</span>
+                {isSuperAdmin && project && (
+                  <button
+                    className="btn btn--danger btn--sm"
+                    style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteModal(project);
+                    }}
+                    title="Delete project"
+                  >
+                    🗑️ Delete
+                  </button>
+                )}
               </div>
               <div className="project-card__body">
                 <h3 className="project-card__title">{idea.title}</h3>
@@ -115,6 +140,29 @@ export default function ApprovedProjects() {
           );
         })}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <Modal
+          title="Delete Project"
+          onClose={() => setDeleteModal(null)}
+        >
+          <p style={{ marginBottom: '1rem' }}>
+            Are you sure you want to permanently delete project <strong>{deleteModal.id}</strong> — <em>{deleteModal.name}</em>?
+          </p>
+          <p style={{ marginBottom: '1.5rem', color: '#e74c3c', fontSize: '0.9rem' }}>
+            This action cannot be undone.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button className="btn btn--secondary" onClick={() => setDeleteModal(null)} disabled={deleting}>
+              Cancel
+            </button>
+            <button className="btn btn--danger" onClick={() => handleDeleteProject(deleteModal.id)} disabled={deleting}>
+              {deleting ? 'Deleting...' : '🗑️ Delete Permanently'}
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
