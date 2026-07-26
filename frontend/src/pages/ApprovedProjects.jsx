@@ -6,14 +6,19 @@ import Modal from '../components/Modal';
 
 export default function ApprovedProjects() {
   const navigate = useNavigate();
-  const { ideas, projects, deleteProject } = useData();
+  const { ideas, projects, deleteProject, permanentlyDeleteIdea } = useData();
   const [search, setSearch] = useState('');
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const handleDeleteProject = async (id) => {
+  const handleDeleteProject = async (projectId, ideaId) => {
     setDeleting(true);
-    await deleteProject(id);
+    // Delete the linked project (if projectId !== ideaId, meaning a real project doc exists)
+    if (projectId !== ideaId) {
+      await deleteProject(projectId);
+    }
+    // Permanently remove the approved idea so it disappears from the list
+    await permanentlyDeleteIdea(ideaId);
     setDeleting(false);
     setDeleteModal(null);
   };
@@ -65,8 +70,11 @@ export default function ApprovedProjects() {
                   style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // If there's a project linked to this idea, delete that; otherwise fall back to the idea itself
-                    setDeleteModal(project || { id: idea.id, name: idea.title });
+                    setDeleteModal({
+                      id: project ? project.id : idea.id,
+                      name: idea.title,
+                      ideaId: idea.id,
+                    });
                   }}
                   title="Delete project"
                 >
@@ -154,7 +162,7 @@ export default function ApprovedProjects() {
             <button className="btn btn--secondary" onClick={() => setDeleteModal(null)} disabled={deleting}>
               Cancel
             </button>
-            <button className="btn btn--danger" onClick={() => handleDeleteProject(deleteModal.id)} disabled={deleting}>
+            <button className="btn btn--danger" onClick={() => handleDeleteProject(deleteModal.id, deleteModal.ideaId)} disabled={deleting}>
               {deleting ? 'Deleting...' : '🗑️ Delete Permanently'}
             </button>
           </div>
