@@ -59,7 +59,9 @@ export default function ApprovedProjects() {
       <div className="projects-grid">
         {approved.map((idea) => {
           // Find the project that was generated from this idea
-          const project = projects.find((p) => p.originalIdeaId === idea.id);
+          // Prefer the project that hasn't been migrated (i.e. already in IDNDYYMMSSS format)
+          // Skip old projects marked with _migratedTo to avoid showing the old non-IDND ID
+          const project = projects.find((p) => p.originalIdeaId === idea.id && !p._migratedTo);
 
           return (
             <div key={idea.id} className="project-card">
