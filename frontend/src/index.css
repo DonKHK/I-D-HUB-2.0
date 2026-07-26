@@ -2945,6 +2945,13 @@ body {
   gap: 0.5rem;
 }
 
+.proj-card-ids {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .proj-card-id {
   font-size: 0.75rem;
   font-family: monospace;
@@ -4100,8 +4107,6 @@ body {
   border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 600;
-  margin-top: 0.3rem;
-  width: fit-content;
 }
 
 /* ===== PendingApproval project link tag ===== */
