@@ -66,7 +66,7 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
       <div className="sidebar__header">
         <div className="sidebar__logo" onClick={handleLogoClick}>
           <span className="sidebar__logo-icon">🏗️</span>
-          {!collapsed && <span className="sidebar__logo-text">PMIS</span>}
+          {!collapsed && <span className="sidebar__logo-text">I&D Hub</span>}
         </div>
         <button
           className="sidebar__toggle"
