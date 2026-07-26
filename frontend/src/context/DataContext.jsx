@@ -213,7 +213,7 @@ export function DataProvider({ children }) {
     const unsubProjects = onSnapshot(
       query(collection(db, COLLECTIONS.PROJECTS), orderBy('createdAt', 'desc')),
       (snapshot) => {
-        const list = snapshot.docs.map(snapshotToData).filter((p) => p.uid === uid);
+        const list = snapshot.docs.map(snapshotToData);
         setProjects(list);
         try { localStorage.setItem('pmis_projects', JSON.stringify(list)); } catch (e) { /* ignore */ }
       },
@@ -227,7 +227,7 @@ export function DataProvider({ children }) {
     const unsubIdeas = onSnapshot(
       query(collection(db, COLLECTIONS.IDEAS), orderBy('createdAt', 'desc')),
       (snapshot) => {
-        const list = snapshot.docs.map(snapshotToData).filter((i) => i.uid === uid);
+        const list = snapshot.docs.map(snapshotToData);
         if (list.length === 0 && !seededIdeasRef.current) {
           // No ideas yet for this user — seed sample ideas
           seedIdeasToState();
