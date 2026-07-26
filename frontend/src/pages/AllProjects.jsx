@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import Modal from '../components/Modal';
 
 export default function AllProjects({ onNavigate }) {
   const { projects } = useData();
   const { isAuthenticated, logout } = useAuth();
+
+  const [demoModal, setDemoModal] = useState(null);
 
   const handleBackToLogin = () => {
     if (window.confirm('Are you sure you want to go back to login?')) {
@@ -86,9 +89,27 @@ export default function AllProjects({ onNavigate }) {
               <span className="proj-card-owner-label">Owner: </span>
               {p.owner || p.holder || '—'}
             </div>
+            <button className="btn btn--small btn--demo" onClick={() => setDemoModal(p)}>
+              🔗 DEMO
+            </button>
           </div>
         ))}
       </div>
+
+      {/* DEMO Modal */}
+      <Modal isOpen={!!demoModal} onClose={() => setDemoModal(null)} title={`DEMO - ${demoModal?.name || ''}`}>
+        <div style={{ padding: '1.5rem 0', textAlign: 'center' }}>
+          <p style={{ fontSize: '1.1rem', color: '#475569', marginBottom: '1rem' }}>
+            🚧 暫未有資料
+          </p>
+          <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
+            Demo 資料將會喺稍後更新
+          </p>
+        </div>
+        <div className="modal-actions">
+          <button className="btn btn--primary" onClick={() => setDemoModal(null)}>關閉</button>
+        </div>
+      </Modal>
     </div>
   );
 }
