@@ -197,6 +197,8 @@ export function DataProvider({ children }) {
   const seededIdeasRef = useRef(false);
   const seededSchemesRef = useRef(false);
   const offlineModeRef = useRef(false);
+  const migrationRunningRef = useRef(false);
+  const projectMigrationDoneRef = useRef(false);
 
   // Seed ideas directly into state (Firestore fallback mode)
   // Preserves any existing cached data so approved/rejected statuses don't get lost on reload
@@ -233,6 +235,61 @@ export function DataProvider({ children }) {
     console.log(`%c[PMIS] Seeded ${localIdeas.length} sample ideas (OFFLINE MODE)`, 'color: green; font-weight: bold');
   }, [uid]);
 
+  // Migrate old-format project IDs (e.g. auto-generated Firestore IDs like "MS13KDWRP3TG")
+  // to the new IDNDYYMMSSS format.
+  // Uses localStorage to track already-migrated projects so it won't re-attempt on re-render.
+  const migrateOldProjects = useCallback(async (oldProjects) => {
+    if (migrationRunningRef.current) return;
+    migrationRunningRef.current = true;
+
+    // Load previously migrated IDs from localStorage
+    let migratedIds = [];
+    try {
+      migratedIds = JSON.parse(localStorage.getItem('pmis_migrated_project_ids') || '[]');
+    } catch (e) { /* ignore */ }
+
+    for (const oldProject of oldProjects) {
+      const oldId = oldProject.id;
+      if (!oldId || oldId.startsWith('IDND') || migratedIds.includes(oldId)) continue;
+
+      const newId = generateProjectId();
+      const { id: _, ...projectData } = oldProject;
+
+      try {
+        console.log(`Migrating project ${oldId} -> ${newId}`);
+        // Step 1: Create new doc with IDND format
+        await setDoc(doc(db, COLLECTIONS.PROJECTS, newId), {
+          ...projectData,
+          id: newId,
+          updatedAt: serverTimestamp(),
+        });
+        // Step 2: Mark old doc as migrated (in case delete fails, we can still identify it)
+        await setDoc(doc(db, COLLECTIONS.PROJECTS, oldId), {
+          _migratedTo: newId,
+          _migratedAt: new Date().toISOString(),
+        }, { merge: true });
+        // Step 3: Try to delete old doc (may fail due to security rules — that's okay)
+        try {
+          await deleteDoc(doc(db, COLLECTIONS.PROJECTS, oldId));
+        } catch (deleteErr) {
+          console.warn(`Could not delete old doc ${oldId} (marked as migrated instead):`, deleteErr.message);
+        }
+        // Track as migrated
+        migratedIds.push(oldId);
+        console.log(`Migration successful: ${oldId} -> ${newId}`);
+      } catch (e) {
+        console.error(`Migration failed for project ${oldId}:`, e);
+      }
+    }
+
+    // Persist migrated IDs to localStorage
+    try {
+      localStorage.setItem('pmis_migrated_project_ids', JSON.stringify(migratedIds));
+    } catch (e) { /* ignore */ }
+
+    migrationRunningRef.current = false;
+  }, []);
+
   // Fetch data when user is authenticated
   useEffect(() => {
     if (!uid) {
@@ -258,6 +315,14 @@ export function DataProvider({ children }) {
         const list = snapshot.docs.map(snapshotToData);
         setProjects(list);
         try { localStorage.setItem('pmis_projects', JSON.stringify(list)); } catch (e) { /* ignore */ }
+
+        // Run migration: convert old Firestore auto-generated project IDs
+        // (e.g. "MS13KDWRP3TG") to the new IDNDYYMMSSS format.
+        // Runs every time onSnapshot fires to catch any remaining old projects.
+        const oldProjects = list.filter((p) => p.id && !p.id.startsWith('IDND') && !p._migratedTo);
+        if (oldProjects.length > 0) {
+          migrateOldProjects(oldProjects);
+        }
       },
       (err) => {
         console.error('Projects snapshot error:', err);
@@ -358,7 +423,7 @@ export function DataProvider({ children }) {
       unsubSchemes();
       unsubSettings();
     };
-  }, [uid, seedIdeasToState]);
+  }, [uid, seedIdeasToState, migrateOldProjects]);
 
   // Seed default funding schemes if Firestore is empty
   const seedDefaultSchemes = useCallback(async () => {
