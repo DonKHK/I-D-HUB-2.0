@@ -4415,3 +4415,142 @@ body {
   background: #dcfce7;
   color: #16a34a;
 }
+
+/* ===== Report Export Page ===== */
+.report-export-page {
+  padding: 1.5rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.report-export-page .page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0 0 0.3rem 0;
+}
+
+.report-export-page .page-subtitle {
+  color: #64748b;
+  margin: 0 0 2rem 0;
+  font-size: 0.95rem;
+}
+
+.export-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.export-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.export-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+.export-card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.export-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.export-card p {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.export-card-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.export-btn:active {
+  transform: scale(0.98);
+}
+
+.export-btn--projects {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.export-btn--projects:hover {
+  background: #c7d2fe;
+}
+
+.export-btn--ideas {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.export-btn--ideas:hover {
+  background: #fde68a;
+}
+
+.export-btn--funding {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.export-btn--funding:hover {
+  background: #a7f3d0;
+}
+
+.export-btn--all {
+  background: #1a237e;
+  color: #fff;
+  padding: 0.9rem 2rem;
+  width: auto;
+  min-width: 320px;
+  font-size: 1rem;
+  margin: 0 auto;
+}
+
+.export-btn--all:hover {
+  background: #283593;
+}
+
+.export-all-section {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}

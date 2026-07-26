@@ -16,6 +16,7 @@ import FundingSchemes from './pages/FundingSchemes';
 import Alerts from './pages/Alerts';
 import AllProjects from './pages/AllProjects';
 import Settings from './pages/Settings';
+import ReportExport from './pages/ReportExport';
 
 const ROUTE_MAP = {
   'dashboard': '/dashboard',
@@ -27,6 +28,7 @@ const ROUTE_MAP = {
   'funding-schemes': '/funding-schemes',
   'alerts': '/alerts',
   'settings': '/settings',
+  'report-export': '/report-export',
 };
 
 // ProjectFormWrapper to handle edit state
@@ -104,6 +106,7 @@ function AppContent() {
           <Route path="/all-projects" element={<AllProjects onNavigate={handleSidebarNavigate} />} />
           <Route path="/alerts" element={<Alerts onNavigate={handleSidebarNavigate} />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/report-export" element={<ReportExport />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

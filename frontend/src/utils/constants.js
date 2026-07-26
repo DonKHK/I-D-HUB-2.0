@@ -48,6 +48,7 @@ export const SIDEBAR_ITEMS = [
   { key: 'funding-schemes', label: 'Funding Schemes', icon: '💰', roles: ['guest', 'admin', 'superadmin'] },
   { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['admin', 'superadmin'] },
   { key: 'alerts', label: 'Alerts', icon: '⚠️', roles: ['admin', 'superadmin'] },
+  { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['admin', 'superadmin'] },
 ];
 
 export const DEFAULT_SETTINGS = {
