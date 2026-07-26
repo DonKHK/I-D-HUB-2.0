@@ -4299,3 +4299,119 @@ body {
   color: #475569;
   line-height: 1.5;
 }
+
+/* ===== PROJECT DETAIL ===== */
+.project-detail {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+}
+
+.detail-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.detail-header-top h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a237e;
+  margin: 0;
+}
+
+.detail-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-header-title-row .status-badge--small {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.detail-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.detail-meta-health {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-divider {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.detail-meta-text {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.detail-id {
+  font-size: 0.82rem;
+  color: #888;
+  font-family: monospace;
+}
+
+.detail-idea-id {
+  font-size: 0.82rem;
+  color: #6366f1;
+  font-family: monospace;
+}
+
+.health-dot--large {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.detail-meta-row .status-badge--small {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.status-badge--planning {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.status-badge--progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge--completed {
+  background: #dcfce7;
+  color: #16a34a;
+}

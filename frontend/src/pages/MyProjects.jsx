@@ -555,32 +555,45 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
     updateProject(project.id, { stages: updatedStages });
   };
 
+  function statusBadgeClass(status) {
+    if (status === 'Completed') return 'status-badge--completed';
+    if (status === 'In Progress') return 'status-badge--progress';
+    return 'status-badge--planning';
+  }
+
   return (
     <div className="project-detail">
       <div className="detail-header">
-        <div>
-          <div className="detail-header-top">
-            <span className="health-dot health-dot--large" style={{ backgroundColor: health.color }} />
+        <div className="detail-header-top">
+          <div className="detail-header-title-row">
             <h1>{project.name}</h1>
-            <span className={`status-badge status-badge--status`}>{project.status}</span>
+            <span className={`status-badge status-badge--small ${statusBadgeClass(project.status)}`}>
+              {project.status || 'Planning'}
+            </span>
           </div>
-          <p className="detail-id">ID: {project.id}</p>
+          <div className="detail-header-actions">
+            <button className="btn btn--outline" onClick={() => onNavigate && onNavigate('project-form', project)}>Edit</button>
+            {isSuperAdmin && (
+              <button className="btn btn--danger" onClick={() => setDeleteConfirm(true)}>Delete</button>
+            )}
+          </div>
         </div>
-        <div className="detail-header-actions">
-          <button className="btn btn--outline" onClick={() => onNavigate && onNavigate('project-form', project)}>Edit</button>
-          {isSuperAdmin && (
-            <button className="btn btn--danger" onClick={() => setDeleteConfirm(true)}>Delete</button>
+        <div className="detail-meta-row">
+          <span className="detail-meta-health">
+            <span className="health-dot health-dot--large" style={{ backgroundColor: health.color }} />
+            <span className="detail-meta-text" style={{ color: health.color }}>
+              {health.label}{health.reasons && health.reasons.length > 0 ? ` - ${health.reasons.join(', ')}` : ''}
+            </span>
+          </span>
+          <span className="detail-divider">|</span>
+          <span className="detail-id">ID: {project.id}</span>
+          {project.originalIdeaId && (
+            <>
+              <span className="detail-divider">|</span>
+              <span className="detail-idea-id">Idea: {project.originalIdeaId}</span>
+            </>
           )}
         </div>
-      </div>
-
-      <div className="detail-health-bar">
-        <span className="health-badge" style={{ backgroundColor: health.color }}>
-          {health.label}
-        </span>
-        {health.reasons && health.reasons.map((r, i) => (
-          <span key={i} className="health-reason">{r}</span>
-        ))}
       </div>
 
       {/* ===== FULL PROJECT DATA ===== */}
