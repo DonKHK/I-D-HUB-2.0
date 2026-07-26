@@ -149,27 +149,30 @@ export default function ApprovedProjects() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteModal && (
-        <Modal
-          title="Delete Project"
-          onClose={() => setDeleteModal(null)}
-        >
-          <p style={{ marginBottom: '1rem' }}>
-            Are you sure you want to permanently delete project <strong>{deleteModal.id}</strong> — <em>{deleteModal.name}</em>?
-          </p>
-          <p style={{ marginBottom: '1.5rem', color: '#e74c3c', fontSize: '0.9rem' }}>
-            This action cannot be undone.
-          </p>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button className="btn btn--secondary" onClick={() => setDeleteModal(null)} disabled={deleting}>
-              Cancel
-            </button>
-            <button className="btn btn--danger" onClick={() => handleDeleteProject(deleteModal.id, deleteModal.ideaId)} disabled={deleting}>
-              {deleting ? 'Deleting...' : '🗑️ Delete Permanently'}
-            </button>
-          </div>
-        </Modal>
-      )}
+      <Modal
+        isOpen={!!deleteModal}
+        title="Delete Project"
+        onClose={() => setDeleteModal(null)}
+      >
+        {deleteModal && (
+          <>
+            <p style={{ marginBottom: '1rem' }}>
+              Are you sure you want to permanently delete project <strong>{deleteModal.id}</strong> — <em>{deleteModal.name}</em>?
+            </p>
+            <p style={{ marginBottom: '1.5rem', color: '#e74c3c', fontSize: '0.9rem' }}>
+              This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn--secondary" onClick={() => setDeleteModal(null)} disabled={deleting}>
+                Cancel
+              </button>
+              <button className="btn btn--danger" onClick={() => handleDeleteProject(deleteModal.id, deleteModal.ideaId)} disabled={deleting}>
+                {deleting ? 'Deleting...' : '🗑️ Delete Permanently'}
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }
