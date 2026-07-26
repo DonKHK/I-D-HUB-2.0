@@ -62,13 +62,14 @@ export default function ApprovedProjects() {
             <div key={idea.id} className="project-card">
               <div className="project-card__header">
                 <span className="status-badge status-badge--approved">Approved</span>
-                {isSuperAdmin && project && (
+                {isSuperAdmin && (
                   <button
                     className="btn btn--danger btn--sm"
                     style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDeleteModal(project);
+                      // If there's a project linked to this idea, delete that; otherwise fall back to the idea itself
+                      setDeleteModal(project || { id: idea.id, name: idea.title });
                     }}
                     title="Delete project"
                   >

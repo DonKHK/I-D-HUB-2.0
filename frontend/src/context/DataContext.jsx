@@ -381,6 +381,7 @@ export function DataProvider({ children }) {
   }, []);
 
   // Seed sample ideas to Firestore (called silently, errors are handled)
+  // ONLY seeds documents that don't already exist — NEVER overwrites existing docs
   const seedSampleIdeasToFirestore = useCallback(async () => {
     if (!uid) return;
     try {
@@ -389,6 +390,9 @@ export function DataProvider({ children }) {
         // Use idea.id (e.g. IDEA-000001) as the Firestore doc ID
         // so that approveIdea/updateIdea can find & update the correct doc
         const ref = doc(db, COLLECTIONS.IDEAS, idea.id);
+        // Check if document already exists before overwriting
+        const docSnap = await getDoc(ref);
+        if (docSnap.exists()) continue; // Skip — don't overwrite approved/rejected ideas
         // Strip the id field from data to avoid conflict with doc ID
         const { id, ...cleanIdea } = idea;
         batch.set(ref, { ...cleanIdea, id: idea.id, uid, createdAt: idea.createdAt || new Date().toISOString(), status: idea.status || 'pending', aiAnalysis: idea.aiAnalysis || null });
