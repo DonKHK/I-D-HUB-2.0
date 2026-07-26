@@ -188,14 +188,12 @@ export default function MyProjects({ onNavigate }) {
               <option value="amount-asc">Amount (Low → High)</option>
             </select>
 
-            {isSuperAdmin && (
-              <button
-                className="myprojects-add-btn"
-                onClick={() => onNavigate && onNavigate('project-form', null)}
-              >
-                + Add Project
-              </button>
-            )}
+            <button
+              className="myprojects-add-btn"
+              onClick={() => onNavigate && onNavigate('project-form', null)}
+            >
+              + Add Project
+            </button>
           </div>
         </div>
       </header>
@@ -208,7 +206,7 @@ export default function MyProjects({ onNavigate }) {
           return (
             <div key={project.id} className={`myprojects-card ${project._isApprovedIdea ? 'myprojects-card--idea' : ''}`}>
               {project._isApprovedIdea && <div className="myprojects-idea-badge">✅ Approved Idea</div>}
-              {/* Top row: health dot + label + ID + status */}
+              {/* Top row: health dot + label + ID + status + delete */}
               <div className="myprojects-card-top">
                 <div className="myprojects-card-health">
                   <span
@@ -226,6 +224,13 @@ export default function MyProjects({ onNavigate }) {
                     {project.status || 'Planning'}
                   </span>
                 </div>
+                <button
+                  className="myprojects-delete-icon"
+                  title="Delete project"
+                  onClick={() => setDeleteConfirm(project.id)}
+                >
+                  🗑️
+                </button>
               </div>
 
               {/* Title */}
@@ -293,14 +298,6 @@ export default function MyProjects({ onNavigate }) {
                 >
                   Edit
                 </button>
-                {isSuperAdmin && (
-                  <button
-                    className="myprojects-btn-danger"
-                    onClick={() => setDeleteConfirm(project.id)}
-                  >
-                    Delete
-                  </button>
-                )}
               </div>
             </div>
           );
@@ -573,9 +570,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
           </div>
           <div className="detail-header-actions">
             <button className="btn btn--outline" onClick={() => onNavigate && onNavigate('project-form', project)}>Edit</button>
-            {isSuperAdmin && (
-              <button className="btn btn--danger" onClick={() => setDeleteConfirm(true)}>Delete</button>
-            )}
+            <button className="btn btn--danger" onClick={() => setDeleteConfirm(true)}>Delete</button>
           </div>
         </div>
         <div className="detail-meta-row">
@@ -648,11 +643,9 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       <div className="detail-section">
         <div className="card-header-row">
           <h3>Project Stages 項目階段 ({project.stages?.length || 0})</h3>
-          {isSuperAdmin && (
             <button className="btn btn--small" onClick={() => { resetStageForm(); setShowStageForm(true); setEditingStage(null); }}>
               + Add Stage
             </button>
-          )}
         </div>
         {(project.stages || []).length === 0 && <p className="empty-text">No stages defined</p>}
         <div className="stages-list">
@@ -676,9 +669,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
               </div>
               <div className="stage-actions">
                 <button className="btn btn--small btn--outline" onClick={() => handleEditStage(stage)}>Edit</button>
-                {isSuperAdmin && (
-                  <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
-                )}
+                <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
               </div>
             </div>
           ))}
