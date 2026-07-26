@@ -9,6 +9,7 @@ export default function PendingApproval({ onNavigate }) {
   const navigate = useNavigate();
   const {
     ideas,
+    projects,
     updateIdea,
     deleteIdea,
     permanentlyDeleteIdea,
@@ -76,6 +77,14 @@ export default function PendingApproval({ onNavigate }) {
           >
             📋 {idea.id}
           </span>
+          {type === 'approved' && (() => {
+            const linkedProject = projects.find((p) => p.originalIdeaId === idea.id);
+            return linkedProject ? (
+              <span className="approval-card-project-link" title="Linked project">
+                🏗️ {linkedProject.id}
+              </span>
+            ) : null;
+          })()}
           <span>👤 {idea.applicantName || idea.applicant || idea.ownerName || '-'}</span>
           <span>📅 {formatDate(idea.createdAt)}</span>
           {type === 'approved' && <span>⭐ Approved: {formatDateTime(idea.approvedAt)}</span>}

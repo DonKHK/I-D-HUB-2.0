@@ -4032,3 +4032,53 @@ body {
 .myprojects-card--idea {
   border-left: 3px solid #22c55e;
 }
+
+/* ===== MyProjects idea ID tag ===== */
+.myprojects-idea-id-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  color: #5b21b6;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.myprojects-card-id-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===== AllProjects idea ID tag ===== */
+.proj-card-idea-id {
+  display: inline-flex;
+  align-items: center;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  color: #5b21b6;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 0.3rem;
+  width: fit-content;
+}
+
+/* ===== PendingApproval project link tag ===== */
+.approval-card-project-link {
+  display: inline-flex;
+  align-items: center;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  color: #1e40af;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: default;
+}

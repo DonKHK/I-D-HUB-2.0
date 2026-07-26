@@ -218,7 +218,10 @@ export default function MyProjects({ onNavigate }) {
                   <span className="myprojects-health-label">{health.label}</span>
                 </div>
                 <div className="myprojects-card-id-status">
-                  <span className="myprojects-id-tag">{project.id}</span>
+                  <span className="myprojects-id-tag">ID: {project.id}</span>
+                  {project.originalIdeaId && (
+                    <span className="myprojects-idea-id-tag">Idea: {project.originalIdeaId}</span>
+                  )}
                   <span className={`myprojects-status-badge ${statusClass(project.status)}`}>
                     {project.status || 'Planning'}
                   </span>
@@ -227,9 +230,6 @@ export default function MyProjects({ onNavigate }) {
 
               {/* Title */}
               <h3 className="myprojects-card-title">{project.name}</h3>
-
-              {/* ID line */}
-              <p className="myprojects-card-subid">{project.id}</p>
 
               {/* Info grid — 2x3 layout */}
               <div className="myprojects-card-info">

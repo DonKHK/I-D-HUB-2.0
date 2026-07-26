@@ -387,10 +387,15 @@ export function DataProvider({ children }) {
   // Project CRUD
   const addProject = useCallback(async (project) => {
     const newProject = { ...project, createdAt: new Date().toISOString(), uid };
-    const id = await saveToFirestore(COLLECTIONS.PROJECTS, null, newProject);
+    // Use the project's own id so Firestore doc ID matches our custom ID
+    const projectId = project.id || null;
+    const id = await saveToFirestore(COLLECTIONS.PROJECTS, projectId, newProject);
     const saved = { ...newProject, id };
-    setProjects((prev) => [saved, ...prev]);
-    cacheToLocal('pmis_projects', [saved, ...projects]);
+    setProjects((prev) => {
+      const updated = [saved, ...prev];
+      cacheToLocal('pmis_projects', updated);
+      return updated;
+    });
     return saved;
   }, [uid, saveToFirestore, cacheToLocal, projects]);
 

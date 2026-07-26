@@ -74,8 +74,11 @@ export default function AllProjects({ onNavigate }) {
                   {getStatusLabel(p.status)}
                 </span>
               </div>
-              <span className="proj-card-id">{p.id}</span>
+              <span className="proj-card-id">ID: {p.id}</span>
             </div>
+            {p.originalIdeaId && (
+              <span className="proj-card-idea-id">Idea: {p.originalIdeaId}</span>
+            )}
             <h3 className="proj-card-name">{p.name || '未命名项目'}</h3>
             <p className="proj-card-desc">{p.description || '无描述'}</p>
             <p className="proj-card-detail">{p.detail || p.detailContent || '无详细内容'}</p>

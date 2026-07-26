@@ -31,3 +31,5 @@ coverage/
 
 # Electron
 out/
+.vercel
+.env*
