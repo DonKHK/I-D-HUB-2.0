@@ -628,7 +628,7 @@ export function DataProvider({ children }) {
 
   // Approve idea → auto-generate project (no duplicate)
   const approveIdea = useCallback(async (id) => {
-    const existingProject = projects.find((p) => p.originalIdeaId === id);
+    const existingProject = projects.find((p) => p.originalIdeaId === id && !p._migratedTo);
     if (existingProject) {
       await updateIdea(id, { status: 'approved', approvedAt: new Date().toISOString() });
       return existingProject;

@@ -22,6 +22,7 @@ export default function PendingApproval({ onNavigate }) {
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [permDeleteModal, setPermDeleteModal] = useState(null);
+  const [softDeleteModal, setSoftDeleteModal] = useState(null);
 
   const pendingIdeas = useMemo(() => ideas.filter((i) => i.status === 'pending'), [ideas]);
   const approvedIdeas = useMemo(() => ideas.filter((i) => i.status === 'approved'), [ideas]);
@@ -78,7 +79,7 @@ export default function PendingApproval({ onNavigate }) {
             📋 {idea.id}
           </span>
           {type === 'approved' && (() => {
-            const linkedProject = projects.find((p) => p.originalIdeaId === idea.id);
+            const linkedProject = projects.find((p) => p.originalIdeaId === idea.id && !p._migratedTo);
             return linkedProject ? (
               <span className="approval-card-project-link" title="Linked project">
                 🏗️ {linkedProject.id}
@@ -104,14 +105,14 @@ export default function PendingApproval({ onNavigate }) {
               <button className="btn btn--small btn--danger" onClick={() => setRejectModal(idea.id)}>
                 Reject
               </button>
-              <button className="btn btn--small btn--outline-danger" onClick={() => deleteIdea(idea.id)} title="Soft delete">
+              <button className="btn btn--small btn--outline-danger" onClick={() => setSoftDeleteModal(idea.id)} title="Soft delete">
                 🗑️
               </button>
             </>
           )}
 
           {(type === 'approved' || type === 'rejected') && isSuperAdmin && (
-            <button className="btn btn--small btn--outline-danger" onClick={() => deleteIdea(idea.id)} title="Soft delete">
+            <button className="btn btn--small btn--outline-danger" onClick={() => setSoftDeleteModal(idea.id)} title="Soft delete">
               🗑️
             </button>
           )}
@@ -172,6 +173,16 @@ export default function PendingApproval({ onNavigate }) {
           <button className="btn btn--danger" onClick={() => handleReject(rejectModal)} disabled={!rejectReason.trim()}>
             Reject
           </button>
+        </div>
+      </Modal>
+
+      {/* Soft Delete (Trash) Modal */}
+      <Modal isOpen={!!softDeleteModal} onClose={() => setSoftDeleteModal(null)} title="Move to Trash">
+        <p>Are you sure you want to move this idea to trash?</p>
+        <p className="text-muted" style={{ marginTop: '0.25rem' }}>It can be restored later from the Deleted section.</p>
+        <div className="modal-actions">
+          <button className="btn btn--outline" onClick={() => setSoftDeleteModal(null)}>Cancel</button>
+          <button className="btn btn--primary" onClick={() => { deleteIdea(softDeleteModal); setSoftDeleteModal(null); }}>Move to Trash</button>
         </div>
       </Modal>
 

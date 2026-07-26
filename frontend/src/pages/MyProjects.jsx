@@ -515,6 +515,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
   const [editingStage, setEditingStage] = useState(null);
   const [stageForm, setStageForm] = useState({ type: 'Feasibility', startDate: '', endDate: '', budget: '', budgetUsed: '', status: 'Not Started', description: '' });
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteStageConfirm, setDeleteStageConfirm] = useState(null);
 
   const handleAddStage = () => {
     const newStage = {
@@ -663,7 +664,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
               <div className="stage-actions">
                 <button className="btn btn--small btn--outline" onClick={() => handleEditStage(stage)}>Edit</button>
                 {isSuperAdmin && (
-                  <button className="btn btn--small btn--danger" onClick={() => handleDeleteStage(stage.id)}>Delete</button>
+                  <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
                 )}
               </div>
             </div>
@@ -732,6 +733,16 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
         <div className="modal-actions">
           <button className="btn btn--outline" onClick={() => setDeleteConfirm(false)}>Cancel</button>
           <button className="btn btn--danger" onClick={() => { deleteProject(project.id); onBack(); }}>Delete</button>
+        </div>
+      </Modal>
+
+      {/* Stage Delete Confirm */}
+      <Modal isOpen={!!deleteStageConfirm} onClose={() => setDeleteStageConfirm(null)} title="Confirm Delete Stage">
+        <p>Are you sure you want to delete this stage?</p>
+        <p className="text-muted">This action cannot be undone.</p>
+        <div className="modal-actions">
+          <button className="btn btn--outline" onClick={() => setDeleteStageConfirm(null)}>Cancel</button>
+          <button className="btn btn--danger" onClick={() => { handleDeleteStage(deleteStageConfirm); setDeleteStageConfirm(null); }}>Delete</button>
         </div>
       </Modal>
     </div>
