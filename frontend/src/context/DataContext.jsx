@@ -263,6 +263,14 @@ export function DataProvider({ children }) {
           id: newId,
           updatedAt: serverTimestamp(),
         });
+
+        // Track as migrated IMMEDIATELY in localStorage (persist after each success)
+        // This prevents duplicate IDND docs if subsequent steps fail
+        migratedIds.push(oldId);
+        try {
+          localStorage.setItem('pmis_migrated_project_ids', JSON.stringify(migratedIds));
+        } catch (e) { /* ignore */ }
+
         // Step 2: Mark old doc as migrated (in case delete fails, we can still identify it)
         await setDoc(doc(db, COLLECTIONS.PROJECTS, oldId), {
           _migratedTo: newId,
@@ -274,18 +282,12 @@ export function DataProvider({ children }) {
         } catch (deleteErr) {
           console.warn(`Could not delete old doc ${oldId} (marked as migrated instead):`, deleteErr.message);
         }
-        // Track as migrated
-        migratedIds.push(oldId);
+
         console.log(`Migration successful: ${oldId} -> ${newId}`);
       } catch (e) {
         console.error(`Migration failed for project ${oldId}:`, e);
       }
     }
-
-    // Persist migrated IDs to localStorage
-    try {
-      localStorage.setItem('pmis_migrated_project_ids', JSON.stringify(migratedIds));
-    } catch (e) { /* ignore */ }
 
     migrationRunningRef.current = false;
   }, []);
