@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency } from '../utils/helpers';
 import Modal from '../components/Modal';
 
 export default function ApprovedProjects() {
   const navigate = useNavigate();
   const { ideas, projects, deleteProject } = useData();
-  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState('');
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -62,20 +60,18 @@ export default function ApprovedProjects() {
             <div key={idea.id} className="project-card">
               <div className="project-card__header">
                 <span className="status-badge status-badge--approved">Approved</span>
-                {isSuperAdmin && (
-                  <button
-                    className="btn btn--danger btn--sm"
-                    style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // If there's a project linked to this idea, delete that; otherwise fall back to the idea itself
-                      setDeleteModal(project || { id: idea.id, name: idea.title });
-                    }}
-                    title="Delete project"
-                  >
-                    🗑️ Delete
-                  </button>
-                )}
+                <button
+                  className="btn btn--danger btn--sm"
+                  style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // If there's a project linked to this idea, delete that; otherwise fall back to the idea itself
+                    setDeleteModal(project || { id: idea.id, name: idea.title });
+                  }}
+                  title="Delete project"
+                >
+                  🗑️ Delete
+                </button>
               </div>
               <div className="project-card__body">
                 <h3 className="project-card__title">{idea.title}</h3>
