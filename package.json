@@ -1,8 +1,8 @@
 {
-  "name": "pmis",
+  "name": "id-hub",
   "version": "1.0.0",
   "private": true,
-  "description": "PMIS - Project Management Information System",
+  "description": "I&D Hub - Innovation & Development Hub",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install && cd ../desktop && npm install",
     "dev:backend": "cd backend && npm run dev",
@@ -16,8 +16,8 @@
     "vite": "^8.1.5"
   },
   "keywords": [
-    "pmis",
-    "project-management"
+    "id-hub",
+    "innovation-development"
   ],
   "license": "ISC"
 }

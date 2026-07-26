@@ -44,7 +44,7 @@ export default function Dashboard({ onNavigate }) {
             id: p.id,
             name: p.name,
             days,
-            status: days < 0 ? '已超期' : days <= 14 ? '即將到期' : '正常',
+            status: days < 0 ? 'Overdue' : days <= 14 ? 'Due Soon' : 'On Track',
             color: days < 0 ? '#ef4444' : days <= 14 ? '#FF7D00' : '#00B42A',
           });
         }
@@ -69,7 +69,7 @@ export default function Dashboard({ onNavigate }) {
       chartInstance.current = new Chart(healthChartRef.current, {
         type: 'doughnut',
         data: {
-          labels: ['正常', '即將到期', '需注意'],
+          labels: ['Healthy', 'Warning', 'Critical'],
           datasets: [{
             data: [healthDistribution.healthy, healthDistribution.warning, healthDistribution.critical],
             backgroundColor: ['#00B42A', '#FF7D00', '#F53F3F'],
@@ -93,12 +93,12 @@ export default function Dashboard({ onNavigate }) {
   }, [healthDistribution]);
 
   const kpiData = [
-    { label: '總項目', value: stats.total, icon: 'fa-folder-open', color: '#165DFF' },
-    { label: '進行中', value: stats.inProgress, icon: 'fa-spinner', color: '#3b82f6' },
-    { label: '規劃中', value: stats.planning, icon: 'fa-calendar', color: '#d97706' },
-    { label: '已完成', value: stats.completed, icon: 'fa-check-circle', color: '#059669' },
-    { label: '即將到期', value: stats.yellow, icon: 'fa-exclamation-triangle', color: '#d97706' },
-    { label: '需注意', value: stats.red, icon: 'fa-fire', color: '#dc2626' },
+    { label: 'Total Projects', value: stats.total, icon: 'fa-folder-open', color: '#165DFF' },
+    { label: 'In Progress', value: stats.inProgress, icon: 'fa-spinner', color: '#3b82f6' },
+    { label: 'Planning', value: stats.planning, icon: 'fa-calendar', color: '#d97706' },
+    { label: 'Completed', value: stats.completed, icon: 'fa-check-circle', color: '#059669' },
+    { label: 'Due Soon', value: stats.yellow, icon: 'fa-exclamation-triangle', color: '#d97706' },
+    { label: 'At Risk', value: stats.red, icon: 'fa-fire', color: '#dc2626' },
   ];
 
   return (
@@ -106,7 +106,7 @@ export default function Dashboard({ onNavigate }) {
       {/* Header */}
       <header className="dashboard-header">
         <div className="dashboard-header-left">
-          <h1 className="dashboard-title">I&D 項目管理系統</h1>
+          <h1 className="dashboard-title">I&D Project Management Hub</h1>
           <p className="dashboard-subtitle">Innovation & Development · v1.0</p>
         </div>
       </header>
@@ -131,7 +131,7 @@ export default function Dashboard({ onNavigate }) {
         {/* Health Doughnut Chart */}
         <div className="dashboard-card-ref">
           <h3 className="dashboard-card-ref-title">
-            <i className="fa fa-pie-chart" style={{ color: '#165DFF' }} /> 項目健康度分布
+            <i className="fa fa-pie-chart" style={{ color: '#165DFF' }} /> Project Health Distribution
           </h3>
           <div className="chart-container">
             <canvas ref={healthChartRef} />
@@ -140,10 +140,10 @@ export default function Dashboard({ onNavigate }) {
 
         {/* Upcoming Items */}
         <div className="dashboard-card-ref">
-          <h3 className="dashboard-card-ref-title">即將到期 / 已超期項目</h3>
+          <h3 className="dashboard-card-ref-title">Upcoming / Overdue Projects</h3>
           <div className="upcoming-list-ref">
             {upcomingItems.length === 0 ? (
-              <p className="empty-text">目前沒有即將到期的項目</p>
+              <p className="empty-text">No upcoming items</p>
             ) : (
               upcomingItems.map((item) => (
                 <div key={item.id} className="upcoming-item-ref">
@@ -153,7 +153,7 @@ export default function Dashboard({ onNavigate }) {
                     <div className="upcoming-item-ref-meta">{item.id} · {item.status}</div>
                   </div>
                   <div className="upcoming-item-ref-days" style={{ color: item.color }}>
-                    {item.days < 0 ? '已超期' : `${item.days}天`}
+                    {item.days < 0 ? 'Overdue' : `${item.days}d`}
                   </div>
                 </div>
               ))
@@ -166,26 +166,26 @@ export default function Dashboard({ onNavigate }) {
       <div className="dashboard-card-ref">
         <div className="card-header-row">
           <h3 className="dashboard-card-ref-title">
-            <i className="fa fa-lightbulb-o" style={{ color: '#165DFF' }} /> 最近提交的 Idea
+            <i className="fa fa-lightbulb-o" style={{ color: '#165DFF' }} /> Recent Ideas
           </h3>
           {ideas.length > 4 && (
             <button className="btn-link-ref" onClick={() => setShowAllIdeas(!showAllIdeas)}>
-              {showAllIdeas ? '收起' : '查看全部'} <i className="fa fa-arrow-right" />
+              {showAllIdeas ? 'Collapse' : 'View All'} <i className="fa fa-arrow-right" />
             </button>
           )}
         </div>
         <div className="ideas-grid-ref">
-          {recentIdeas.length === 0 && <p className="empty-text">暫無 Idea 申請</p>}
+          {recentIdeas.length === 0 && <p className="empty-text">No ideas submitted yet</p>}
           {recentIdeas.map((idea) => {
             const health = calculateIdeaHealth(idea);
             return (
               <div key={idea.id} className="idea-card-ref">
                 <div className="idea-card-ref-header">
                   <span className="idea-card-ref-id">{idea.id}</span>
-                  <span className="idea-card-ref-date">{new Date(idea.createdAt).toLocaleDateString('zh-HK')}</span>
+                <span className="idea-card-ref-date">{new Date(idea.createdAt).toLocaleDateString('en-US')}</span>
                 </div>
-                <h4 className="idea-card-ref-title">{idea.title || '未命名 Idea'}</h4>
-                <p className="idea-card-ref-desc">{idea.oneLineDesc || idea.background || '無描述'}</p>
+                <h4 className="idea-card-ref-title">{idea.title || 'Untitled Idea'}</h4>
+                <p className="idea-card-ref-desc">{idea.oneLineDesc || idea.background || 'No description'}</p>
                 <div className="idea-card-ref-footer">
                   <span className="health-dot-ref" style={{ backgroundColor: health.color }} />
                   <span className="idea-card-ref-status">{health.label}</span>
@@ -200,10 +200,10 @@ export default function Dashboard({ onNavigate }) {
       {isAuthenticated && (
         <div className="dashboard-actions-ref">
           <button className="btn-ref btn-ref--primary" onClick={() => onNavigate && onNavigate('idea-submission')}>
-            <i className="fa fa-plus" /> 提交新 Idea
+            <i className="fa fa-plus" /> Submit New Idea
           </button>
           <button className="btn-ref btn-ref--outline" onClick={() => onNavigate && onNavigate('my-projects')}>
-            <i className="fa fa-folder-open" /> 管理項目
+            <i className="fa fa-folder-open" /> Manage Projects
           </button>
         </div>
       )}

@@ -1,9 +1,9 @@
 {
-  "name": "pmis-frontend",
+  "name": "id-hub-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "PMIS Frontend - React application",
+  "description": "I&D Hub Frontend - React application",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

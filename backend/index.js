@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'PMIS Backend is running' });
+  res.json({ status: 'OK', message: 'I&D Hub Backend is running' });
 });
 
 // Ideas API — shared JSON-backed REST endpoints for A/B computer sync
@@ -22,5 +22,5 @@ app.use('/api/ideas', require('./routes/ideas'));
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`PMIS Backend server running on port ${PORT}`);
+  console.log(`I&D Hub Backend server running on port ${PORT}`);
 });

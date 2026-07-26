@@ -40,7 +40,7 @@ export default function Login() {
         <div className="login-bg" />
         <div className="login-card">
           <div className="login-logo">
-            <h1 className="login-title">PMIS</h1>
+            <h1 className="login-title">I&D Hub</h1>
             <p className="login-subtitle">載入中...</p>
           </div>
         </div>
@@ -53,9 +53,9 @@ export default function Login() {
       <div className="login-bg" />
       <div className="login-card">
         <div className="login-logo">
-          <span className="login-logo-icon">🏗️</span>
-          <h1 className="login-title">PMIS</h1>
-          <p className="login-subtitle">Project Management Information System</p>
+          <img className="login-logo-icon" src="/AAI_logo.jpg" alt="AAI Logo" />
+          <h1 className="login-title">I&D Hub</h1>
+          <p className="login-subtitle">Innovation & Development Hub</p>
           <p className="login-department">Innovation & Development Department</p>
         </div>
 

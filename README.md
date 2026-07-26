@@ -1,11 +1,11 @@
-# PMIS - Project Management Information System
+# I&D Hub
 
-A full-stack project management application with web and desktop interfaces.
+Innovation & Development Hub - A full-stack project management application with web and desktop interfaces.
 
 ## Architecture
 
 ```
-pmis/
+id-hub/
 ├── backend/         # Node.js + Express API server
 ├── frontend/        # React + Vite web application
 └── desktop/         # Electron desktop wrapper

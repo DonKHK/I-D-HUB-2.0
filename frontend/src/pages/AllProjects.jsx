@@ -7,7 +7,7 @@ export default function AllProjects({ onNavigate }) {
   const { isAuthenticated, logout } = useAuth();
 
   const handleBackToLogin = () => {
-    if (window.confirm('确定要返回登录页面吗？')) {
+    if (window.confirm('Are you sure you want to go back to login?')) {
       logout();
     }
   };
@@ -19,9 +19,9 @@ export default function AllProjects({ onNavigate }) {
   };
 
   const getStatusLabel = (status) => {
-    if (status === 'Completed') return '已完成';
-    if (status === 'In Progress') return '进行中';
-    return '规划中';
+    if (status === 'Completed') return 'Completed';
+    if (status === 'In Progress') return 'In Progress';
+    return 'Planning';
   };
 
   const getHealthDotClass = (p) => {
@@ -34,18 +34,18 @@ export default function AllProjects({ onNavigate }) {
     <div className="page page--wide">
       {/* Header */}
       <div className="all-projects-header">
-        <h2 className="section-title">项目总汇</h2>
+        <h2 className="section-title">All Projects</h2>
         {!isAuthenticated && (
           <button onClick={handleBackToLogin} className="all-projects-back-btn">
-            ← 返回登录页
+            ← Back to Login
           </button>
         )}
       </div>
 
       {/* Info Box */}
       <div className="all-projects-info-box">
-        <p>以下为截至今日，本公司所有待开发 / 开发中 / 已完成之项目。</p>
-        <p>如您对当中任何 project 有兴趣或想了解更多详情，欢迎联络我们部门：</p>
+        <p>Below is a full list of all projects — pending, in progress, and completed.</p>
+        <p>If you're interested in any project or would like more details, feel free to contact our department:</p>
         <div className="all-projects-contacts">
           <div>
             <strong>Christy Wong</strong><br />
@@ -62,7 +62,7 @@ export default function AllProjects({ onNavigate }) {
       <div className="all-projects-grid">
         {projects.length === 0 && (
           <p className="empty-text" style={{ gridColumn: '1 / -1', padding: '5rem 0' }}>
-            暂无任何项目资料
+            No project data available
           </p>
         )}
         {projects.map((p) => (
@@ -79,11 +79,11 @@ export default function AllProjects({ onNavigate }) {
             {p.originalIdeaId && (
               <span className="proj-card-idea-id">Idea: {p.originalIdeaId}</span>
             )}
-            <h3 className="proj-card-name">{p.name || '未命名项目'}</h3>
-            <p className="proj-card-desc">{p.description || '无描述'}</p>
-            <p className="proj-card-detail">{p.detail || p.detailContent || '无详细内容'}</p>
+            <h3 className="proj-card-name">{p.name || 'Untitled Project'}</h3>
+            <p className="proj-card-desc">{p.description || 'No description'}</p>
+            <p className="proj-card-detail">{p.detail || p.detailContent || 'No details'}</p>
             <div className="proj-card-owner">
-              <span className="proj-card-owner-label">持有人：</span>
+              <span className="proj-card-owner-label">Owner: </span>
               {p.owner || p.holder || '—'}
             </div>
           </div>

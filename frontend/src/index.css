@@ -75,6 +75,10 @@ body {
 
 .sidebar__logo-icon {
   font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 4px;
 }
 
 .sidebar__logo-text {
@@ -1473,6 +1477,37 @@ body {
 .login-card__header {
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-logo-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.75rem;
+}
+
+.login-title {
+  font-size: 1.5rem;
+  color: #1a237e;
+  margin-bottom: 0.25rem;
+}
+
+.login-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.login-department {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 0.25rem;
 }
 
 .login-card__icon {
@@ -4081,4 +4116,181 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   cursor: default;
+}
+
+/* ===== AI Analysis ===== */
+
+/* Button variants */
+.btn--ai {
+  background: #7c3aed;
+  color: white;
+  border: 1px solid #7c3aed;
+}
+.btn--ai:hover {
+  background: #6d28d9;
+}
+.btn--ai-outline {
+  background: transparent;
+  color: #7c3aed;
+  border: 1px solid #7c3aed;
+}
+.btn--ai-outline:hover {
+  background: #f5f3ff;
+}
+
+/* Provider tabs */
+.ai-provider-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 0.25rem;
+}
+.ai-provider-tab {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+.ai-provider-tab.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.ai-provider-tab:hover:not(.active) {
+  color: #334155;
+}
+
+/* Form hint */
+.form-hint {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+.form-error {
+  font-size: 0.85rem;
+  color: #ef4444;
+  margin-top: 0.5rem;
+}
+
+/* ===== AI Report Display ===== */
+
+.ai-report {
+  margin-top: 0.5rem;
+}
+.ai-report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.ai-report-date,
+.ai-report-provider {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+/* Score grid */
+.ai-score-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.ai-score-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+.ai-score-item label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+/* Score bar */
+.ai-score-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+.ai-score-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.ai-score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.ai-score-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  min-width: 2.2rem;
+  text-align: right;
+}
+.ai-score-comment {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+}
+
+/* Overall score */
+.ai-overall-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.ai-overall-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+.ai-overall-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+}
+
+/* Summary */
+.ai-summary {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+.ai-summary h5 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.35rem;
+}
+.ai-summary p {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
 }

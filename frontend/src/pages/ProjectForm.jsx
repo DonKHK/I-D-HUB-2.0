@@ -37,6 +37,8 @@ export default function ProjectForm({ editProject, onBack }) {
 
   const [stages, setStages] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [stageToDelete, setStageToDelete] = useState(null);
 
   // Stage modal state
   const [showStageModal, setShowStageModal] = useState(false);
@@ -80,8 +82,22 @@ export default function ProjectForm({ editProject, onBack }) {
     setShowStageModal(true);
   };
 
-  const handleDeleteStage = (stageId) => {
-    setStages((prev) => prev.filter((s) => s.id !== stageId));
+  const openDeleteConfirm = (stage) => {
+    setStageToDelete(stage);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteStage = () => {
+    if (stageToDelete) {
+      setStages((prev) => prev.filter((s) => s.id !== stageToDelete.id));
+    }
+    setShowDeleteConfirm(false);
+    setStageToDelete(null);
+  };
+
+  const cancelDeleteStage = () => {
+    setShowDeleteConfirm(false);
+    setStageToDelete(null);
   };
 
   const handleSaveStage = () => {
@@ -262,7 +278,7 @@ export default function ProjectForm({ editProject, onBack }) {
                     <button type="button" className="btn btn--small btn--outline" onClick={() => openEditStage(stage)}>
                       Edit
                     </button>
-                    <button type="button" className="btn btn--small btn--danger" onClick={() => handleDeleteStage(stage.id)}>
+                    <button type="button" className="btn btn--small btn--danger" onClick={() => openDeleteConfirm(stage)}>
                       Delete
                     </button>
                   </div>
@@ -334,6 +350,28 @@ export default function ProjectForm({ editProject, onBack }) {
             </button>
             <button type="button" className="btn btn--primary" onClick={handleSaveStage}>
               {editingStageId ? 'Update Stage' : 'Add Stage'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ===== Delete Confirmation Modal ===== */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={cancelDeleteStage}
+        title="Confirm Delete"
+      >
+        <div className="form">
+          <p style={{ marginBottom: '1.25rem', lineHeight: 1.6 }}>
+            Are you sure you want to delete the stage <strong>"{stageToDelete?.type}"</strong>?<br />
+            This action cannot be undone.
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="btn btn--outline" onClick={cancelDeleteStage}>
+              Cancel
+            </button>
+            <button type="button" className="btn btn--danger" onClick={confirmDeleteStage}>
+              Confirm Delete
             </button>
           </div>
         </div>

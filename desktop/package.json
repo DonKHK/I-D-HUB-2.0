@@ -1,7 +1,7 @@
 {
-  "name": "pmis-desktop",
+  "name": "id-hub-desktop",
   "version": "1.0.0",
-  "description": "PMIS Desktop - Electron application",
+  "description": "I&D Hub Desktop - Electron application",
   "main": "main.js",
   "scripts": {
     "start": "electron .",

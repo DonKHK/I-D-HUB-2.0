@@ -175,7 +175,76 @@ export default function IdeaDetail() {
             {idea.deletedAt && <p><strong>Deleted:</strong> {formatDate(idea.deletedAt)}</p>}
           </div>
         </div>
+
+        {/* AI Analysis Report */}
+        {idea.aiAnalysis && (
+          <div className="detail-section">
+            <h4 className="detail-section-title">AI Analysis Report</h4>
+            {renderAiReport(idea.aiAnalysis)}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+const renderAiReport = (analysis) => {
+  if (!analysis) return null;
+  const { creativity, marketDemand, existingSolutions, feasibility, overallScore, summary, analyzedAt, provider, model } = analysis;
+
+  const scoreBar = (score) => {
+    const pct = Math.min(100, Math.max(0, score * 10));
+    return (
+      <div className="ai-score-bar-wrapper">
+        <div className="ai-score-bar-bg">
+          <div className="ai-score-bar-fill" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="ai-score-value">{score}/10</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="ai-report">
+      <div className="ai-report-meta">
+        {analyzedAt && <span className="ai-report-date">Analyzed: {formatDate(analyzedAt)}</span>}
+        {provider && <span className="ai-report-provider">Provider: {provider}{model ? ` / ${model}` : ''}</span>}
+      </div>
+
+      <div className="ai-score-grid">
+        <div className="ai-score-item">
+          <label>Creativity</label>
+          {scoreBar(creativity?.score || 0)}
+          {creativity?.comment && <p className="ai-score-comment">{creativity.comment}</p>}
+        </div>
+        <div className="ai-score-item">
+          <label>Market Demand</label>
+          {scoreBar(marketDemand?.score || 0)}
+          {marketDemand?.comment && <p className="ai-score-comment">{marketDemand.comment}</p>}
+        </div>
+        <div className="ai-score-item">
+          <label>Existing Solutions</label>
+          {scoreBar(existingSolutions?.score || 0)}
+          {existingSolutions?.comment && <p className="ai-score-comment">{existingSolutions.comment}</p>}
+        </div>
+        <div className="ai-score-item">
+          <label>Feasibility</label>
+          {scoreBar(feasibility?.score || 0)}
+          {feasibility?.comment && <p className="ai-score-comment">{feasibility.comment}</p>}
+        </div>
+      </div>
+
+      <div className="ai-overall-score">
+        <span className="ai-overall-label">Overall Score</span>
+        <span className="ai-overall-value">{overallScore}/10</span>
+      </div>
+
+      {summary && (
+        <div className="ai-summary">
+          <h5>Summary</h5>
+          <p>{summary}</p>
+        </div>
+      )}
+    </div>
+  );
+};

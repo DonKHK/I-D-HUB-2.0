@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "PMIS Backend - Project Management Information System",
+  "description": "I&D Hub Backend",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

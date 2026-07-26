@@ -7,13 +7,13 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
   const { user, hasPermission, clickSuperAdmin, isSuperAdmin, logout, superAdminClicks } = useAuth();
   const { syncFromRemote, backupAll } = useData();
   const [collapsed, setCollapsed] = useState(() => {
-    return localStorage.getItem('pmis_sidebar_collapsed') === 'true';
+    return localStorage.getItem('idhub_sidebar_collapsed') === 'true';
   });
   const [syncing, setSyncing] = useState(false);
   const [showDevInfo, setShowDevInfo] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('pmis_sidebar_collapsed', String(collapsed));
+    localStorage.setItem('idhub_sidebar_collapsed', String(collapsed));
   }, [collapsed]);
 
   const visibleItems = SIDEBAR_ITEMS.filter((item) => hasPermission(item.roles));
@@ -48,7 +48,7 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pmis-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `idhub-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     if (onBackup) onBackup();
@@ -65,7 +65,7 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
       <div className="sidebar__header">
         <div className="sidebar__logo" onClick={handleLogoClick}>
-          <span className="sidebar__logo-icon">🏗️</span>
+          <img className="sidebar__logo-icon" src="/AAI_logo.jpg" alt="AAI Logo" />
           {!collapsed && <span className="sidebar__logo-text">I&D Hub</span>}
         </div>
         <button
@@ -141,7 +141,7 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
                   : `🔒 Click ${5 - superAdminClicks} more times for SuperAdmin`}
               </span>
             ) : (
-              <span className="sidebar__dev-text">v1.0.0 | Innovation & Development</span>
+              <span className="sidebar__dev-text">v1.0.0 | I&D Hub</span>
             )}
           </div>
         )}
