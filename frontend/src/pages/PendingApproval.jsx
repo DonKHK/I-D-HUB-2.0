@@ -23,6 +23,7 @@ export default function PendingApproval({ onNavigate }) {
   const [rejectReason, setRejectReason] = useState('');
   const [permDeleteModal, setPermDeleteModal] = useState(null);
   const [softDeleteModal, setSoftDeleteModal] = useState(null);
+  const [restoreModal, setRestoreModal] = useState(null);
 
   const pendingIdeas = useMemo(() => ideas.filter((i) => i.status === 'pending'), [ideas]);
   const approvedIdeas = useMemo(() => ideas.filter((i) => i.status === 'approved'), [ideas]);
@@ -117,9 +118,9 @@ export default function PendingApproval({ onNavigate }) {
             </button>
           )}
 
-          {type === 'deleted' && isSuperAdmin && (
+          {type === 'deleted' && (
             <>
-              <button className="btn btn--small btn--primary" onClick={() => restoreIdea(idea.id)}>
+              <button className="btn btn--small btn--primary" onClick={() => setRestoreModal(idea.id)}>
                 Restore
               </button>
               <button className="btn btn--small btn--danger" onClick={() => setPermDeleteModal(idea.id)}>
@@ -183,6 +184,15 @@ export default function PendingApproval({ onNavigate }) {
         <div className="modal-actions">
           <button className="btn btn--outline" onClick={() => setSoftDeleteModal(null)}>Cancel</button>
           <button className="btn btn--primary" onClick={() => { deleteIdea(softDeleteModal); setSoftDeleteModal(null); }}>Move to Trash</button>
+        </div>
+      </Modal>
+
+      {/* Restore Confirmation Modal */}
+      <Modal isOpen={!!restoreModal} onClose={() => setRestoreModal(null)} title="Restore Idea">
+        <p>Are you sure you want to restore this idea? It will be moved back to Pending Review.</p>
+        <div className="modal-actions">
+          <button className="btn btn--outline" onClick={() => setRestoreModal(null)}>Cancel</button>
+          <button className="btn btn--primary" onClick={() => { restoreIdea(restoreModal); setRestoreModal(null); }}>Restore</button>
         </div>
       </Modal>
 
