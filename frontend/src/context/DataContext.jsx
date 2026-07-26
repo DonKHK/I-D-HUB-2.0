@@ -344,8 +344,12 @@ export function DataProvider({ children }) {
     try {
       const batch = writeBatch(db);
       for (const idea of sampleIdeas) {
-        const ref = doc(collection(db, COLLECTIONS.IDEAS));
-        batch.set(ref, { ...idea, uid, createdAt: idea.createdAt || new Date().toISOString(), status: idea.status || 'pending', aiAnalysis: idea.aiAnalysis || null });
+        // Use idea.id (e.g. IDEA-000001) as the Firestore doc ID
+        // so that approveIdea/updateIdea can find & update the correct doc
+        const ref = doc(db, COLLECTIONS.IDEAS, idea.id);
+        // Strip the id field from data to avoid conflict with doc ID
+        const { id, ...cleanIdea } = idea;
+        batch.set(ref, { ...cleanIdea, id: idea.id, uid, createdAt: idea.createdAt || new Date().toISOString(), status: idea.status || 'pending', aiAnalysis: idea.aiAnalysis || null });
       }
       await batch.commit();
       console.log(`%c[PMIS] Seeded ${sampleIdeas.length} sample ideas to Firestore for user ${uid}`, 'color: blue; font-weight: bold');
@@ -354,7 +358,6 @@ export function DataProvider({ children }) {
       // Ideas are already set in state by seedIdeasToState(), so this is fine
     }
   }, [uid]);
-
   // Auto-save to Firestore (create/update helper)
   const saveToFirestore = useCallback(async (collectionName, id, data) => {
     try {
