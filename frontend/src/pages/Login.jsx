@@ -20,7 +20,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      setError('請輸入電郵和密碼');
+      setError('Please enter your email and password');
       return;
     }
     setError('');
@@ -37,11 +37,10 @@ export default function Login() {
   if (authLoading) {
     return (
       <div className="login-page">
-        <div className="login-bg" />
         <div className="login-card">
           <div className="login-logo">
             <h1 className="login-title">I&D Hub</h1>
-            <p className="login-subtitle">載入中...</p>
+            <p className="login-subtitle">Loading...</p>
           </div>
         </div>
       </div>
@@ -50,7 +49,6 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-bg" />
       <div className="login-card">
         <div className="login-logo">
           <img className="login-logo-icon" src="/AAI_logo.jpg" alt="AAI Logo" />
@@ -61,7 +59,7 @@ export default function Login() {
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-input-group">
-            <label className="login-label">電郵地址</label>
+            <label className="login-label">Login Email :</label>
             <input
               type="email"
               className="login-input"
@@ -73,12 +71,12 @@ export default function Login() {
           </div>
 
           <div className="login-input-group">
-            <label className="login-label">密碼</label>
+            <label className="login-label">Password :</label>
             <div className="login-password-wrapper">
               <input
                 type={showPassword ? 'text' : 'password'}
                 className="login-input"
-                placeholder="請輸入密碼"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -90,17 +88,23 @@ export default function Login() {
                 {showPassword ? '🙈' : '👁️'}
               </button>
             </div>
-            {error && <p className="login-error">{error}</p>}
           </div>
 
-          <button type="submit" className="login-btn login-btn--admin" disabled={loading}>
-            {loading ? '處理中...' : '登入'}
-          </button>
-        </form>
+          {error && <p className="login-error">{error}</p>}
 
-        <p className="login-hint">
-          登入後即可提交 Idea、管理項目及瀏覽資助計劃
-        </p>
+          <button type="submit" className="login-btn login-btn--admin" disabled={loading}>
+            {loading ? 'Processing...' : 'Login'}
+          </button>
+
+          <div className="login-secondary-btns">
+            <button type="button" className="login-btn login-btn--guest">
+              Guest
+            </button>
+            <button type="button" className="login-btn login-btn--project">
+              Project Login
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
