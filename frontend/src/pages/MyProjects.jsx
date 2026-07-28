@@ -492,9 +492,16 @@ function IdeaDetailSection({ idea }) {
 
 /* ───── Detail Page ───── */
 function ProjectDetailPage({ project, onBack, onNavigate }) {
-  const { ideas, updateProject, deleteProject } = useData();
+  const { projects, ideas, updateProject, deleteProject } = useData();
   const { user, isSuperAdmin } = useAuth();
-  const health = calculateHealth(project);
+  const [refreshKey, setRefreshKey] = useState(0);
+  // Derive the latest project data from context so Activity Log stays up-to-date
+  const latestProject = useMemo(() => {
+    const found = projects.find((p) => p.id === project.id);
+    return found || project;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id, projects, refreshKey]);
+  const health = calculateHealth(latestProject);
 
   // Find linked idea via originalIdeaId
   const linkedIdea = useMemo(() => {
@@ -761,22 +768,30 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       </Modal>
 
       {/* ===== ACTIVITY LOG ===== */}
-      <CollapsibleSection title={`Activity Log 活動記錄 (${(project.logs || []).length})`} defaultOpen={false}>
+      <CollapsibleSection title={`Activity Log 活動記錄 (${(latestProject.logs || []).length})`} defaultOpen={false}>
         <div className="activity-log-toolbar">
-          <span className="activity-log-count">{project.logs?.length || 0} entries</span>
-          <button
-            className="btn btn--small"
-            onClick={() => exportLogsToTxt(project)}
-            disabled={!project.logs || project.logs.length === 0}
-          >
-            ⬇ Export TXT
-          </button>
+          <span className="activity-log-count">{latestProject.logs?.length || 0} entries</span>
+          <div className="activity-log-actions">
+            <button
+              className="btn btn--small"
+              onClick={() => setRefreshKey((k) => k + 1)}
+            >
+              🔄 Refresh
+            </button>
+            <button
+              className="btn btn--small"
+              onClick={() => exportLogsToTxt(latestProject)}
+              disabled={!latestProject.logs || latestProject.logs.length === 0}
+            >
+              ⬇ Export TXT
+            </button>
+          </div>
         </div>
-        {(!project.logs || project.logs.length === 0) ? (
+        {(!latestProject.logs || latestProject.logs.length === 0) ? (
           <p className="empty-text">No activity recorded yet</p>
         ) : (
           <div className="activity-log-list">
-            {[...(project.logs || [])].reverse().map((log) => (
+            {[...(latestProject.logs || [])].reverse().map((log) => (
               <div key={log.id} className="activity-log-entry">
                 <div className="activity-log-timestamp">{formatDateTime(log.timestamp)}</div>
                 <div className="activity-log-user">{log.user}</div>
