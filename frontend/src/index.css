@@ -5094,3 +5094,86 @@ body {
   padding: 3rem 0;
   font-size: 0.95rem;
 }
+
+/* ========== Activity Log ========== */
+.activity-log-section {
+  margin-top: 1.5rem;
+}
+
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.activity-log-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.activity-log-export-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.activity-log-export-btn:hover {
+  background: #e2e8f0;
+}
+
+.activity-log-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.activity-log-item {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.activity-log-item:last-child {
+  border-bottom: none;
+}
+
+.activity-log-item .log-timestamp {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-bottom: 0.15rem;
+}
+
+.activity-log-item .log-user {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.activity-log-item .log-action {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.activity-log-item .log-details {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.activity-log-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}

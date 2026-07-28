@@ -136,3 +136,57 @@ export function daysUntil(dateStr) {
   const end = new Date(dateStr);
   return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * Add a log entry to a project's activity log.
+ * Logs are stored in project.logs array in Firestore.
+ */
+export function addProjectLog(project, action, details, user, updateProject) {
+  const newLog = {
+    id: 'log-' + Date.now(),
+    timestamp: new Date().toISOString(),
+    action,
+    details,
+    user: user?.displayName || user?.email || 'Unknown',
+  };
+  const updatedLogs = [...(project.logs || []), newLog];
+  updateProject(project.id, { logs: updatedLogs });
+  return updatedLogs;
+}
+
+/**
+ * Format a log entry for TXT export
+ */
+export function formatLogForExport(log) {
+  const ts = formatDateTime(log.timestamp);
+  return `[${ts}] ${log.user} - ${log.action}\n  ${log.details}\n`;
+}
+
+/**
+ * Generate a TXT blob from an array of log entries and trigger a download
+ */
+export function exportLogsToTxt(project) {
+  if (!project || !project.logs || project.logs.length === 0) return;
+  
+  const lines = [
+    `=== Activity Log: ${project.name} (ID: ${project.id}) ===`,
+    `Export Date: ${formatDateTime(new Date().toISOString())}`,
+    `Total Entries: ${project.logs.length}`,
+    '',
+    project.logs
+      .slice()
+      .reverse()
+      .map((log) => formatLogForExport(log))
+      .join(''),
+    '=== End of Log ===',
+  ];
+  
+  const content = lines.join('\n');
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `log-${project.id}-${new Date().toISOString().slice(0, 10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}

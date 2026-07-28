@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
-import { generateProjectId, formatDate, formatCurrency } from '../utils/helpers';
+import { useAuth } from '../context/AuthContext';
+import { generateProjectId, formatDate, formatCurrency, addProjectLog } from '../utils/helpers';
 import Modal from '../components/Modal';
 
 const STAGE_TYPES = ['Idea / R&D', 'Feasibility', 'POC', 'Demo', 'Pilot', 'Commercialization', 'Production'];
@@ -88,6 +89,7 @@ const emptyForm = {
 
 export default function ProjectForm({ editProject, onBack }) {
   const { addProject, updateProject, projects } = useData();
+  const { user } = useAuth();
   const isEditing = !!editProject;
 
   const [form, setForm] = useState({ ...emptyForm });
@@ -232,7 +234,18 @@ export default function ProjectForm({ editProject, onBack }) {
       };
 
       if (isEditing) {
+        const oldProject = editProject;
+        const changes = [];
+        if (oldProject.name !== form.name) changes.push(`name: "${oldProject.name}" → "${form.name}"`);
+        if (oldProject.status !== form.status) changes.push(`status: ${oldProject.status} → ${form.status}`);
+        if (Number(oldProject.budget) !== Number(form.budget)) changes.push(`budget: ${formatCurrency(oldProject.budget)} → ${formatCurrency(form.budget)}`);
+        if (oldProject.startDate !== form.startDate) changes.push(`startDate: ${oldProject.startDate} → ${form.startDate}`);
+        if (oldProject.endDate !== form.endDate) changes.push(`endDate: ${oldProject.endDate} → ${form.endDate}`);
+        if (oldProject.holder !== form.holder) changes.push(`holder: "${oldProject.holder}" → "${form.holder}"`);
+        if (oldProject.manager !== form.manager) changes.push(`manager: "${oldProject.manager}" → "${form.manager}"`);
+
         updateProject(editProject.id, projectData);
+        addProjectLog(editProject, 'Project Updated', `Updated project fields: ${changes.join('; ') || 'no major field changes'}`, user, updateProject);
       } else {
         const existingIds = projects.map((p) => p.id);
         const newProject = {
@@ -241,6 +254,18 @@ export default function ProjectForm({ editProject, onBack }) {
           createdAt: new Date().toISOString(),
         };
         addProject(newProject);
+        // After adding, we can't log via addProjectLog because the project isn't in state yet.
+        // Instead we log the creation directly by calling updateProject on the new id after a brief delay.
+        setTimeout(() => {
+          const logEntry = {
+            id: 'log-' + Date.now(),
+            timestamp: new Date().toISOString(),
+            action: 'Project Created',
+            details: `Created project "${newProject.name}" with budget ${formatCurrency(newProject.budget)}, start: ${newProject.startDate || 'TBD'}, end: ${newProject.endDate || 'TBD'}`,
+            user: user?.displayName || user?.email || 'Unknown',
+          };
+          updateProject(newProject.id, { logs: [logEntry] });
+        }, 100);
       }
       setSaving(false);
       if (onBack) onBack();

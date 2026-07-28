@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { calculateHealth, formatDate, formatDateTime, formatCurrency, daysUntil } from '../utils/helpers';
+import { calculateHealth, formatDate, formatDateTime, formatCurrency, daysUntil, addProjectLog, exportLogsToTxt } from '../utils/helpers';
 import Modal from '../components/Modal';
 
 /* ───── health logic matching idprojecthub ───── */
@@ -493,7 +493,7 @@ function IdeaDetailSection({ idea }) {
 /* ───── Detail Page ───── */
 function ProjectDetailPage({ project, onBack, onNavigate }) {
   const { ideas, updateProject, deleteProject } = useData();
-  const { isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const health = calculateHealth(project);
 
   // Find linked idea via originalIdeaId
@@ -517,6 +517,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
     };
     const updatedStages = [...(project.stages || []), newStage];
     updateProject(project.id, { stages: updatedStages });
+    addProjectLog(project, 'Stage Added', `Added stage "${newStage.type}" (${formatDate(newStage.startDate)} ~ ${formatDate(newStage.endDate)}), Budget: ${formatCurrency(newStage.budget)}`, user, updateProject);
     setShowStageForm(false);
     resetStageForm();
   };
@@ -528,10 +529,20 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
   };
 
   const handleUpdateStage = () => {
+    const oldStage = (project.stages || []).find((s) => s.id === editingStage);
     const updatedStages = (project.stages || []).map((s) =>
       s.id === editingStage ? { ...stageForm, id: s.id, budget: parseFloat(stageForm.budget) || 0, budgetUsed: parseFloat(stageForm.budgetUsed) || 0 } : s
     );
     updateProject(project.id, { stages: updatedStages });
+    const changedFields = [];
+    if (oldStage) {
+      if (oldStage.type !== stageForm.type) changedFields.push(`type: ${oldStage.type} → ${stageForm.type}`);
+      if (oldStage.status !== stageForm.status) changedFields.push(`status: ${oldStage.status} → ${stageForm.status}`);
+      if (oldStage.budget !== parseFloat(stageForm.budget)) changedFields.push(`budget: ${formatCurrency(oldStage.budget)} → ${formatCurrency(stageForm.budget)}`);
+      if (oldStage.startDate !== stageForm.startDate) changedFields.push(`startDate: ${oldStage.startDate} → ${stageForm.startDate}`);
+      if (oldStage.endDate !== stageForm.endDate) changedFields.push(`endDate: ${oldStage.endDate} → ${stageForm.endDate}`);
+    }
+    addProjectLog(project, 'Stage Edited', `Stage "${stageForm.type}": ${changedFields.join(', ') || 'details updated'}`, user, updateProject);
     setShowStageForm(false);
     setEditingStage(null);
     resetStageForm();
@@ -542,8 +553,13 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
   };
 
   const handleDeleteStage = (stageId) => {
+    const deletedStage = (project.stages || []).find((s) => s.id === stageId);
     const updatedStages = (project.stages || []).filter((s) => s.id !== stageId);
     updateProject(project.id, { stages: updatedStages });
+    if (deletedStage) {
+      addProjectLog(project, 'Stage Deleted', `Deleted stage "${deletedStage.type}" (${deletedStage.status})`, user, updateProject);
+    }
+    setDeleteStageConfirm(null);
   };
 
   function statusBadgeClass(status) {
@@ -743,6 +759,36 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
           <button className="btn btn--danger" onClick={() => { handleDeleteStage(deleteStageConfirm); setDeleteStageConfirm(null); }}>Delete</button>
         </div>
       </Modal>
+
+      {/* ===== ACTIVITY LOG ===== */}
+      <CollapsibleSection title={`Activity Log 活動記錄 (${(project.logs || []).length})`} defaultOpen={false}>
+        <div className="activity-log-toolbar">
+          <span className="activity-log-count">{project.logs?.length || 0} entries</span>
+          <button
+            className="btn btn--small"
+            onClick={() => exportLogsToTxt(project)}
+            disabled={!project.logs || project.logs.length === 0}
+          >
+            ⬇ Export TXT
+          </button>
+        </div>
+        {(!project.logs || project.logs.length === 0) ? (
+          <p className="empty-text">No activity recorded yet</p>
+        ) : (
+          <div className="activity-log-list">
+            {[...(project.logs || [])].reverse().map((log) => (
+              <div key={log.id} className="activity-log-entry">
+                <div className="activity-log-timestamp">{formatDateTime(log.timestamp)}</div>
+                <div className="activity-log-user">{log.user}</div>
+                <div className="activity-log-action">
+                  <span className="activity-log-action-tag">{log.action}</span>
+                </div>
+                <div className="activity-log-details">{log.details}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CollapsibleSection>
     </div>
   );
 }
