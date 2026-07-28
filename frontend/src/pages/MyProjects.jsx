@@ -188,12 +188,6 @@ export default function MyProjects({ onNavigate }) {
               <option value="amount-asc">Amount (Low → High)</option>
             </select>
 
-            <button
-              className="myprojects-add-btn"
-              onClick={() => onNavigate && onNavigate('project-form', null)}
-            >
-              + Add Project
-            </button>
           </div>
         </div>
       </header>

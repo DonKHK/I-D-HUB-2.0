@@ -4,13 +4,12 @@ import { useData } from '../context/DataContext';
 import { SIDEBAR_ITEMS, SIDEBAR_BOTTOM } from '../utils/constants';
 
 export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRestore }) {
-  const { user, hasPermission, clickSuperAdmin, isSuperAdmin, logout, superAdminClicks } = useAuth();
+  const { user, hasPermission, logout } = useAuth();
   const { syncFromRemote, backupAll } = useData();
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('idhub_sidebar_collapsed') === 'true';
   });
   const [syncing, setSyncing] = useState(false);
-  const [showDevInfo, setShowDevInfo] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('idhub_sidebar_collapsed', String(collapsed));
@@ -54,17 +53,10 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
     if (onBackup) onBackup();
   };
 
-  const handleLogoClick = () => {
-    const becameSuper = clickSuperAdmin();
-    if (becameSuper) {
-      alert('SuperAdmin mode activated! All features are now available.');
-    }
-  };
-
   return (
     <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
       <div className="sidebar__header">
-        <div className="sidebar__logo" onClick={handleLogoClick}>
+        <div className="sidebar__logo">
           <img className="sidebar__logo-icon" src="/AAI_logo.jpg" alt="AAI Logo" />
           {!collapsed && <span className="sidebar__logo-text">I&D Hub</span>}
         </div>
@@ -128,21 +120,9 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
           </button>
         )}
         {!collapsed && (
-          <div
-            className="sidebar__dev"
-            onMouseEnter={() => setShowDevInfo(true)}
-            onMouseLeave={() => setShowDevInfo(false)}
-            onClick={handleLogoClick}
-          >
-            {showDevInfo ? (
-              <span className="sidebar__dev-text">
-                {isSuperAdmin
-                  ? '🔓 SuperAdmin Active'
-                  : `🔒 Click ${5 - superAdminClicks} more times for SuperAdmin`}
-              </span>
-            ) : (
-              <span className="sidebar__dev-text">v1.0.0 | I&D Hub</span>
-            )}
+          <div className="sidebar__footer-info">
+            <div className="sidebar__dev-text">© {new Date().getFullYear()} I.D.E.A.S. HUB 2.0</div>
+            <div className="sidebar__dev-text">Powered by I.T. Department</div>
           </div>
         )}
       </div>
