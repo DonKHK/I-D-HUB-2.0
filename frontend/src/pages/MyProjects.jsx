@@ -522,9 +522,9 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       budget: parseFloat(stageForm.budget) || 0,
       budgetUsed: parseFloat(stageForm.budgetUsed) || 0,
     };
-    const updatedStages = [...(project.stages || []), newStage];
+    const updatedStages = [...(latestProject.stages || []), newStage];
     updateProject(project.id, { stages: updatedStages });
-    addProjectLog(project, 'Stage Added', `Added stage "${newStage.type}" (${formatDate(newStage.startDate)} ~ ${formatDate(newStage.endDate)}), Budget: ${formatCurrency(newStage.budget)}`, user, updateProject);
+    addProjectLog(latestProject, 'Stage Added', `Added stage "${newStage.type}" (${formatDate(newStage.startDate)} ~ ${formatDate(newStage.endDate)}), Budget: ${formatCurrency(newStage.budget)}`, user, updateProject);
     setShowStageForm(false);
     resetStageForm();
   };
@@ -536,8 +536,8 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
   };
 
   const handleUpdateStage = () => {
-    const oldStage = (project.stages || []).find((s) => s.id === editingStage);
-    const updatedStages = (project.stages || []).map((s) =>
+    const oldStage = (latestProject.stages || []).find((s) => s.id === editingStage);
+    const updatedStages = (latestProject.stages || []).map((s) =>
       s.id === editingStage ? { ...stageForm, id: s.id, budget: parseFloat(stageForm.budget) || 0, budgetUsed: parseFloat(stageForm.budgetUsed) || 0 } : s
     );
     updateProject(project.id, { stages: updatedStages });
@@ -549,7 +549,7 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       if (oldStage.startDate !== stageForm.startDate) changedFields.push(`startDate: ${oldStage.startDate} → ${stageForm.startDate}`);
       if (oldStage.endDate !== stageForm.endDate) changedFields.push(`endDate: ${oldStage.endDate} → ${stageForm.endDate}`);
     }
-    addProjectLog(project, 'Stage Edited', `Stage "${stageForm.type}": ${changedFields.join(', ') || 'details updated'}`, user, updateProject);
+    addProjectLog(latestProject, 'Stage Edited', `Stage "${stageForm.type}": ${changedFields.join(', ') || 'details updated'}`, user, updateProject);
     setShowStageForm(false);
     setEditingStage(null);
     resetStageForm();
@@ -560,11 +560,11 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
   };
 
   const handleDeleteStage = (stageId) => {
-    const deletedStage = (project.stages || []).find((s) => s.id === stageId);
-    const updatedStages = (project.stages || []).filter((s) => s.id !== stageId);
+    const deletedStage = (latestProject.stages || []).find((s) => s.id === stageId);
+    const updatedStages = (latestProject.stages || []).filter((s) => s.id !== stageId);
     updateProject(project.id, { stages: updatedStages });
     if (deletedStage) {
-      addProjectLog(project, 'Stage Deleted', `Deleted stage "${deletedStage.type}" (${deletedStage.status})`, user, updateProject);
+      addProjectLog(latestProject, 'Stage Deleted', `Deleted stage "${deletedStage.type}" (${deletedStage.status})`, user, updateProject);
     }
     setDeleteStageConfirm(null);
   };
@@ -659,14 +659,14 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       {/* ===== STAGES ===== */}
       <div className="detail-section">
         <div className="card-header-row">
-          <h3>Project Stages 項目階段 ({project.stages?.length || 0})</h3>
+          <h3>Project Stages 項目階段 ({latestProject.stages?.length || 0})</h3>
             <button className="btn btn--small" onClick={() => { resetStageForm(); setShowStageForm(true); setEditingStage(null); }}>
               + Add Stage
             </button>
         </div>
-        {(project.stages || []).length === 0 && <p className="empty-text">No stages defined</p>}
+        {(latestProject.stages || []).length === 0 && <p className="empty-text">No stages defined</p>}
         <div className="stages-list">
-          {(project.stages || []).map((stage) => (
+          {(latestProject.stages || []).map((stage) => (
             <div key={stage.id} className="stage-card">
               <div className="stage-header">
                 <span className="stage-type">{stage.type}</span>
