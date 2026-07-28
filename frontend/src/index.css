@@ -5177,3 +5177,80 @@ body {
   color: #94a3b8;
   font-size: 0.9rem;
 }
+
+/* ===== Activity Log horizontal entry layout (MyProjects) ===== */
+.activity-log-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.activity-log-count {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.activity-log-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.activity-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.activity-log-entry:last-child {
+  border-bottom: none;
+}
+.activity-log-entry:hover {
+  background: #f1f5f9;
+}
+
+.activity-log-entry .activity-log-timestamp {
+  color: #94a3b8;
+  white-space: nowrap;
+  min-width: 11em;
+}
+.activity-log-entry .activity-log-user {
+  color: #3b82f6;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.activity-log-entry .activity-log-action-tag {
+  display: inline-block;
+  background: #e0e7ff;
+  color: #1e3a8a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.activity-log-entry .activity-log-details {
+  color: #475569;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-log-delete-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+.activity-log-delete-btn:hover {
+  opacity: 1;
+  background: #fee2e2;
+}

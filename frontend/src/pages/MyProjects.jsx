@@ -569,6 +569,11 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
     setDeleteStageConfirm(null);
   };
 
+  const handleDeleteLog = (logId) => {
+    const updatedLogs = (latestProject.logs || []).filter((log) => log.id !== logId);
+    updateProject(project.id, { logs: updatedLogs });
+  };
+
   function statusBadgeClass(status) {
     if (status === 'Completed') return 'status-badge--completed';
     if (status === 'In Progress') return 'status-badge--progress';
@@ -793,12 +798,17 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
           <div className="activity-log-list">
             {[...(latestProject.logs || [])].reverse().map((log) => (
               <div key={log.id} className="activity-log-entry">
-                <div className="activity-log-timestamp">{formatDateTime(log.timestamp)}</div>
-                <div className="activity-log-user">{log.user}</div>
-                <div className="activity-log-action">
-                  <span className="activity-log-action-tag">{log.action}</span>
-                </div>
-                <div className="activity-log-details">{log.details}</div>
+                <span className="activity-log-timestamp">{formatDateTime(log.timestamp)}</span>
+                <span className="activity-log-user">{log.user}</span>
+                <span className="activity-log-action-tag">{log.action}</span>
+                <span className="activity-log-details">{log.details}</span>
+                <button
+                  className="activity-log-delete-btn"
+                  title="Delete this log entry"
+                  onClick={() => handleDeleteLog(log.id)}
+                >
+                  🗑️
+                </button>
               </div>
             ))}
           </div>
