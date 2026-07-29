@@ -117,7 +117,7 @@ export default function MyProject() {
         onBack={() => navigate('/dashboard')}
         onNavigate={() => {}}
         isProjectUser={true}
-        canEdit={true}
+        canEdit={false}
         editMode={editMode}
         onEdit={handleEdit}
         onSave={handleSave}
