@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from '../firebase';
+import { auth, db, doc, getDoc, onAuthStateChanged, signInWithEmailAndPassword, signOut } from '../firebase';
 import { ROLES } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -8,19 +8,33 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [superAdminClicks, setSuperAdminClicks] = useState(0);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-  // Listen to Firebase Auth state
+  // Listen to Firebase Auth state and fetch role from Firestore UID collection
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setFirebaseUser(firebaseUser);
+
+        // Fetch user role from Firestore 'UID' collection
+        let role = ROLES.ADMIN;
+        try {
+          const userDocRef = doc(db, 'UID', firebaseUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData.role === 'superadmin') {
+              role = ROLES.SUPER_ADMIN;
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching user role from Firestore:', err);
+        }
+
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-          role: ROLES.ADMIN,
+          role,
           loginTime: new Date().toISOString(),
         });
       } else {
@@ -59,22 +73,13 @@ export function AuthProvider({ children }) {
   };
 
   const isAuthenticated = !!user;
-  const isAdmin = isAuthenticated;
+  const isAdmin = isAuthenticated && user?.role === ROLES.ADMIN;
+  const isSuperAdmin = isAuthenticated && user?.role === ROLES.SUPER_ADMIN;
   const isGuest = false;
 
   const hasPermission = (roles) => {
     if (!user || !roles) return false;
     return roles.includes(user.role);
-  };
-
-  const clickSuperAdmin = () => {
-    const newClicks = superAdminClicks + 1;
-    setSuperAdminClicks(newClicks);
-    if (newClicks >= 5) {
-      setIsSuperAdmin(true);
-      return true;
-    }
-    return false;
   };
 
   return (
@@ -90,8 +95,7 @@ export function AuthProvider({ children }) {
         isGuest,
         isSuperAdmin,
         hasPermission,
-        clickSuperAdmin,
-        superAdminClicks,
+        ROLES,
       }}
     >
       {children}
