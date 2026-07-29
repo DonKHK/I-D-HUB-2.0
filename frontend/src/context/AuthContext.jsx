@@ -101,23 +101,44 @@ export function AuthProvider({ children }) {
 
   const projectLogin = async (projectId, password) => {
     try {
-      // Verify project credentials exist in Firestore
+      // Step 1: Sign in anonymously FIRST to get auth credentials
+      const userCredential = await signInAnonymously(auth);
+      const fbUser = userCredential.user;
+      
+      // Step 2: Now verify project credentials from Firestore (we're authenticated)
       const q = query(collection(db, 'projects'), where('id', '==', projectId), where('projectPassword', '==', password));
       const snapshot = await getDocs(q);
-      if (snapshot.empty) {
+      let valid = !snapshot.empty;
+      
+      if (!valid) {
         // Also try matching by doc ID
         const projectRef = doc(db, 'projects', projectId);
         const projectSnap = await getDoc(projectRef);
-        if (!projectSnap.exists() || projectSnap.data().projectPassword !== password) {
-          return { success: false, error: 'Project ID 或密碼不正確' };
+        if (projectSnap.exists() && projectSnap.data().projectPassword === password) {
+          valid = true;
         }
       }
       
-      // Store project ID in session storage BEFORE signing in
+      if (!valid) {
+        // Wrong credentials: sign out and clean up
+        await signOut(auth);
+        return { success: false, error: 'Project ID 或密碼不正確' };
+      }
+      
+      // Step 3: Store project ID in session storage
       sessionStorage.setItem('pmis_project_login_id', projectId);
       
-      // Sign in anonymously (this will trigger onAuthStateChanged which reads sessionStorage)
-      await signInAnonymously(auth);
+      // Step 4: Manually set user as PROJECT_USER (onAuthStateChanged may have already fired as GUEST)
+      setFirebaseUser(fbUser);
+      setUser({
+        uid: fbUser.uid,
+        email: `project_${projectId}@project`,
+        displayName: `Project: ${projectId}`,
+        role: ROLES.PROJECT_USER,
+        projectId,
+        loginTime: new Date().toISOString(),
+      });
+      
       return { success: true };
     } catch (error) {
       sessionStorage.removeItem('pmis_project_login_id');
