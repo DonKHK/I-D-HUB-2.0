@@ -190,60 +190,10 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
   const { user, isSuperAdmin } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  /* ── localStorage helpers ── */
-  const localStorageKey = `pmis_local_stages_${project.id}`;
-  const localStorageLogsKey = `pmis_local_logs_${project.id}`;
-
-  // Save stages + logs to localStorage (always works for PW users)
-  const saveStagesLocally = (stages) => {
-    try {
-      localStorage.setItem(localStorageKey, JSON.stringify({
-        stages,
-        savedAt: new Date().toISOString()
-      }));
-    } catch (e) { /* ignore */ }
-  };
-
-  const saveLogsLocally = (logs) => {
-    try {
-      localStorage.setItem(localStorageLogsKey, JSON.stringify({
-        logs,
-        savedAt: new Date().toISOString()
-      }));
-    } catch (e) { /* ignore */ }
-  };
-
-  // Build the "latest" project by merging from context AND localStorage
-  // For PW users, localStorage always wins (since Firestore writes fail)
+  // Derive project from context (Firestore is now writable by PW users too)
   const latestProject = useMemo(() => {
-    // 1. Get project from context
     const found = projects.find((p) => p.id === project.id);
-    let base = found || project;
-
-    // 2. Merge stages from localStorage (ALWAYS prefer local stages if they exist)
-    try {
-      const localData = JSON.parse(localStorage.getItem(localStorageKey) || 'null');
-      if (localData && localData.stages && localData.stages.length > 0) {
-        base = { ...base, stages: localData.stages };
-      }
-    } catch (e) { /* ignore */ }
-
-    // 3. Merge logs from localStorage (ALWAYS prefer local logs if they exist)
-    try {
-      const localLogsData = JSON.parse(localStorage.getItem(localStorageLogsKey) || 'null');
-      if (localLogsData && localLogsData.logs && localLogsData.logs.length > 0) {
-        // Merge: take all logs from context + any local logs not already in context
-        const contextLogs = base.logs || [];
-        const localLogs = localLogsData.logs;
-        const contextLogIds = new Set(contextLogs.map(l => l.id));
-        const newLocalLogs = localLogs.filter(l => !contextLogIds.has(l.id));
-        if (newLocalLogs.length > 0) {
-          base = { ...base, logs: [...contextLogs, ...newLocalLogs] };
-        }
-      }
-    } catch (e) { /* ignore */ }
-
-    return base;
+    return found || project;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id, projects, refreshKey]);
 
@@ -270,14 +220,8 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       budgetUsed: parseFloat(stageForm.budgetUsed) || 0,
     };
     const updatedStages = [...(latestProject.stages || []), newStage];
-
-    // 1. Save to localStorage FIRST (always works for PW users)
-    saveStagesLocally(updatedStages);
-
-    // 2. Try Firestore (will fail silently for PW users)
     updateProject(project.id, { stages: updatedStages });
 
-    // 3. Add log to localStorage
     const newLog = {
       id: 'log-' + Date.now(),
       timestamp: new Date().toISOString(),
@@ -286,10 +230,8 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       user: user?.displayName || user?.email || 'Unknown',
     };
     const updatedLogs = [...(latestProject.logs || []), newLog];
-    saveLogsLocally(updatedLogs);
     updateProject(project.id, { logs: updatedLogs });
 
-    // 4. Force re-render to re-read from localStorage
     setRefreshKey((k) => k + 1);
 
     setShowStageForm(false);
@@ -308,13 +250,8 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       s.id === editingStage ? { ...stageForm, id: s.id, budget: parseFloat(stageForm.budget) || 0, budgetUsed: parseFloat(stageForm.budgetUsed) || 0 } : s
     );
 
-    // 1. Save to localStorage FIRST
-    saveStagesLocally(updatedStages);
-
-    // 2. Try Firestore
     updateProject(project.id, { stages: updatedStages });
 
-    // 3. Add log
     const changedFields = [];
     if (oldStage) {
       if (oldStage.type !== stageForm.type) changedFields.push(`type: ${oldStage.type} → ${stageForm.type}`);
@@ -331,7 +268,6 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       user: user?.displayName || user?.email || 'Unknown',
     };
     const updatedLogs = [...(latestProject.logs || []), newLog];
-    saveLogsLocally(updatedLogs);
     updateProject(project.id, { logs: updatedLogs });
 
     setRefreshKey((k) => k + 1);
@@ -349,13 +285,8 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
     const deletedStage = (latestProject.stages || []).find((s) => s.id === stageId);
     const updatedStages = (latestProject.stages || []).filter((s) => s.id !== stageId);
 
-    // 1. Save to localStorage FIRST
-    saveStagesLocally(updatedStages);
-
-    // 2. Try Firestore
     updateProject(project.id, { stages: updatedStages });
 
-    // 3. Add log
     if (deletedStage) {
       const newLog = {
         id: 'log-' + Date.now(),
@@ -365,7 +296,6 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
         user: user?.displayName || user?.email || 'Unknown',
       };
       const updatedLogs = [...(latestProject.logs || []), newLog];
-      saveLogsLocally(updatedLogs);
       updateProject(project.id, { logs: updatedLogs });
     }
 
@@ -374,9 +304,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
   };
 
   const handleDeleteLog = (logId) => {
-    // For PW users, also save log deletes to localStorage
     const updatedLogs = (latestProject.logs || []).filter((log) => log.id !== logId);
-    saveLogsLocally(updatedLogs);
     updateProject(project.id, { logs: updatedLogs });
     setRefreshKey((k) => k + 1);
   };
