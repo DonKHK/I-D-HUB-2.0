@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { SIDEBAR_ITEMS, SIDEBAR_BOTTOM } from '../utils/constants';
+import { SIDEBAR_ITEMS, SIDEBAR_ITEMS_PROJECT_USER, SIDEBAR_BOTTOM } from '../utils/constants';
 
 export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRestore }) {
   const { user, hasPermission, logout } = useAuth();
@@ -15,8 +15,10 @@ export default function Sidebar({ activePage, onNavigate, onSync, onBackup, onRe
     localStorage.setItem('idhub_sidebar_collapsed', String(collapsed));
   }, [collapsed]);
 
-  const visibleItems = SIDEBAR_ITEMS.filter((item) => hasPermission(item.roles));
-  const visibleBottom = SIDEBAR_BOTTOM.filter((item) => hasPermission(item.roles));
+  const isProjectUser = user?.role === 'project_user';
+  const itemsSource = isProjectUser ? SIDEBAR_ITEMS_PROJECT_USER : SIDEBAR_ITEMS;
+  const visibleItems = itemsSource.filter((item) => hasPermission(item.roles));
+  const visibleBottom = isProjectUser ? [] :SIDEBAR_BOTTOM.filter((item) => hasPermission(item.roles));
 
   const handleNav = (key) => {
     if (key === 'sync') {

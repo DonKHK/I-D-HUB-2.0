@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import { useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import MyProjects from './pages/MyProjects';
+import MyProject from './pages/MyProject';
 import ProjectForm from './pages/ProjectForm';
 import IdeaSubmission from './pages/IdeaSubmission';
 import PendingApproval from './pages/PendingApproval';
@@ -22,6 +23,7 @@ const ROUTE_MAP = {
   'dashboard': '/dashboard',
   'all-projects': '/all-projects',
   'my-projects': '/my-projects',
+  'my-project': '/my-project',
   'idea-submission': '/idea-submission',
   'pending-approval': '/pending-approval',
   'approved-projects': '/approved-projects',
@@ -48,7 +50,7 @@ function ProjectFormWrapper() {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isGuest } = useAuth();
+  const { isAuthenticated, isGuest, isProjectUser } = useAuth();
   const [sidebarKey, setSidebarKey] = useState('dashboard');
 
   // Sync sidebar active state with URL
@@ -92,6 +94,13 @@ function AppContent() {
     }
   }
 
+  // Project users: only allow access to their own project page
+  if (isProjectUser) {
+    if (location.pathname !== '/my-project') {
+      return <Navigate to="/my-project" replace />;
+    }
+  }
+
   return (
     <div className="app-layout">
       <Sidebar
@@ -105,6 +114,7 @@ function AppContent() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/my-projects" element={<MyProjects onNavigate={handleSidebarNavigate} />} />
           <Route path="/my-projects/:id" element={<MyProjects onNavigate={handleSidebarNavigate} />} />
+          <Route path="/my-project" element={<MyProject />} />
           <Route path="/project-form/:mode" element={<ProjectFormWrapper />} />
           <Route path="/idea-submission" element={<IdeaSubmission onBack={() => navigate('/dashboard')} />} />
           <Route path="/pending-approval" element={<PendingApproval onNavigate={handleSidebarNavigate} />} />

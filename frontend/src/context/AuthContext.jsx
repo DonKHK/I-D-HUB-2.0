@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db, doc, getDoc, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from '../firebase';
+import { auth, db, doc, getDoc, collection, query, where, getDocs, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from '../firebase';
 import { ROLES } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -38,15 +38,29 @@ export function AuthProvider({ children }) {
           loginTime: new Date().toISOString(),
         });
       } else if (firebaseUser && firebaseUser.isAnonymous) {
-        // Anonymous guest user
+        // Anonymous user - could be guest OR project_user
         setFirebaseUser(firebaseUser);
-        setUser({
-          uid: firebaseUser.uid,
-          email: 'guest@guest',
-          displayName: 'Guest',
-          role: ROLES.GUEST,
-          loginTime: new Date().toISOString(),
-        });
+        
+        // Check if this anonymous session has a stored project login
+        const storedProjectId = sessionStorage.getItem('pmis_project_login_id');
+        if (storedProjectId) {
+          setUser({
+            uid: firebaseUser.uid,
+            email: `project_${storedProjectId}@project`,
+            displayName: `Project: ${storedProjectId}`,
+            role: ROLES.PROJECT_USER,
+            projectId: storedProjectId,
+            loginTime: new Date().toISOString(),
+          });
+        } else {
+          setUser({
+            uid: firebaseUser.uid,
+            email: 'guest@guest',
+            displayName: 'Guest',
+            role: ROLES.GUEST,
+            loginTime: new Date().toISOString(),
+          });
+        }
       } else {
         setFirebaseUser(null);
         setUser(null);
@@ -76,6 +90,7 @@ export function AuthProvider({ children }) {
 
   const guestLogin = async () => {
     try {
+      sessionStorage.removeItem('pmis_project_login_id');
       const result = await signInAnonymously(auth);
       return { success: true };
     } catch (error) {
@@ -84,7 +99,35 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const projectLogin = async (projectId, password) => {
+    try {
+      // Verify project credentials exist in Firestore
+      const q = query(collection(db, 'projects'), where('id', '==', projectId), where('projectPassword', '==', password));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        // Also try matching by doc ID
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        if (!projectSnap.exists() || projectSnap.data().projectPassword !== password) {
+          return { success: false, error: 'Project ID 或密碼不正確' };
+        }
+      }
+      
+      // Store project ID in session storage BEFORE signing in
+      sessionStorage.setItem('pmis_project_login_id', projectId);
+      
+      // Sign in anonymously (this will trigger onAuthStateChanged which reads sessionStorage)
+      await signInAnonymously(auth);
+      return { success: true };
+    } catch (error) {
+      sessionStorage.removeItem('pmis_project_login_id');
+      console.error('Project login error:', error);
+      return { success: false, error: '登入失敗：' + error.message };
+    }
+  };
+
   const logout = async () => {
+    sessionStorage.removeItem('pmis_project_login_id');
     try {
       await signOut(auth);
     } catch (error) {
@@ -98,6 +141,8 @@ export function AuthProvider({ children }) {
   const isAdmin = isAuthenticated && user?.role === ROLES.ADMIN;
   const isSuperAdmin = isAuthenticated && user?.role === ROLES.SUPER_ADMIN;
   const isGuest = isAuthenticated && user?.role === ROLES.GUEST;
+  const isProjectUser = isAuthenticated && user?.role === ROLES.PROJECT_USER;
+  const userProjectId = isProjectUser ? user?.projectId : null;
 
   const hasPermission = (roles) => {
     if (!user || !roles) return false;
@@ -112,11 +157,14 @@ export function AuthProvider({ children }) {
         loading,
         login,
         guestLogin,
+        projectLogin,
         logout,
         isAuthenticated,
         isAdmin,
         isGuest,
         isSuperAdmin,
+        isProjectUser,
+        userProjectId,
         hasPermission,
         ROLES,
       }}

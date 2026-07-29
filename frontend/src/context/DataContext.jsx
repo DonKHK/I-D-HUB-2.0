@@ -778,6 +778,27 @@ export function DataProvider({ children }) {
     return project;
   }, []);
 
+  // Generate a random password for project login
+  const generateProjectPassword = useCallback(() => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pwd = '';
+    for (let i = 0; i < 10; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pwd;
+  }, []);
+
+  // Set/update project password
+  const updateProjectPassword = useCallback(async (projectId, password) => {
+    await saveToFirestore(COLLECTIONS.PROJECTS, projectId, { projectPassword: password });
+    setProjects((prev) => {
+      const newList = prev.map((p) => (p.id === projectId ? { ...p, projectPassword: password } : p));
+      cacheToLocal('pmis_projects', newList);
+      return newList;
+    });
+    return password;
+  }, [saveToFirestore, cacheToLocal]);
+
   // Settings
   const updateSettings = useCallback(async (newSettings) => {
     setSettings((prev) => {
@@ -925,6 +946,8 @@ export function DataProvider({ children }) {
         backupAll,
         restoreBackup,
         syncFromRemote,
+        generateProjectPassword,
+        updateProjectPassword,
       }}
     >
       {children}

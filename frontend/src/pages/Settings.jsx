@@ -2,8 +2,90 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { DEFAULT_SETTINGS } from '../utils/constants';
 
+// Row component for managing a single project's login credentials
+function ProjectCredentialRow({ project, generateProjectPassword, updateProjectPassword }) {
+  const [password, setPassword] = useState(project.projectPassword || '');
+  const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleGenerate = () => {
+    const newPwd = generateProjectPassword();
+    setPassword(newPwd);
+  };
+
+  const handleSave = async () => {
+    if (!password.trim()) return;
+    setSaving(true);
+    await updateProjectPassword(project.id, password.trim());
+    setSaving(false);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopy = () => {
+    if (password) {
+      navigator.clipboard.writeText(password).catch(() => {});
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <tr>
+      <td><code>{project.id}</code></td>
+      <td>{project.name || 'Untitled'}</td>
+      <td>
+        <span className={`status-badge status--${(project.status || 'Planning').toLowerCase().replace(/\s+/g, '-')}`}>
+          {project.status || 'Planning'}
+        </span>
+      </td>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input
+            type="text"
+            className="form-input"
+            style={{ width: '140px', fontFamily: 'monospace', fontSize: '0.9rem' }}
+            placeholder="Click Generate"
+            value={password}
+            readOnly
+          />
+          {password && (
+            <button
+              className="btn btn--secondary"
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+              onClick={handleCopy}
+              title="Copy password"
+            >
+              {copied ? '✓' : '📋'}
+            </button>
+          )}
+        </div>
+      </td>
+      <td>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            className="btn btn--primary"
+            style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}
+            onClick={handleGenerate}
+          >
+            Generate
+          </button>
+          <button
+            className="btn btn--success"
+            style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', opacity: password && !saving ? 1 : 0.5 }}
+            onClick={handleSave}
+            disabled={!password || saving}
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function Settings() {
-  const { settings, updateSettings, resetSettings } = useData();
+  const { settings, updateSettings, resetSettings, projects, generateProjectPassword, updateProjectPassword } = useData();
   const [saved, setSaved] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
 
@@ -310,6 +392,47 @@ export default function Settings() {
                 <span className="form-color-value">{settings.alertInfoColor}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Project Credentials (Super Admin only) */}
+        <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
+          <h2 className="settings-section-title">🔑 Project Credentials</h2>
+          <p className="settings-section-desc">
+            Generate and manage login passwords for project users. Each password allows a project user to log in
+            and view their own project details only.
+          </p>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table" style={{ minWidth: '600px' }}>
+              <thead>
+                <tr>
+                  <th>Project ID</th>
+                  <th>Project Name</th>
+                  <th>Status</th>
+                  <th>Login Password</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>
+                      No projects available yet.
+                    </td>
+                  </tr>
+                ) : (
+                  projects.map((project) => (
+                    <ProjectCredentialRow
+                      key={project.id}
+                      project={project}
+                      generateProjectPassword={generateProjectPassword}
+                      updateProjectPassword={updateProjectPassword}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 

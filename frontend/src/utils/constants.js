@@ -2,6 +2,7 @@ export const ROLES = {
   GUEST: 'guest',
   ADMIN: 'admin',
   SUPER_ADMIN: 'superadmin',
+  PROJECT_USER: 'project_user',
 };
 
 export const STATUS = {
@@ -49,6 +50,11 @@ export const SIDEBAR_ITEMS = [
   { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['admin', 'superadmin'] },
   { key: 'alerts', label: 'Alerts', icon: '⚠️', roles: ['admin', 'superadmin'] },
   { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['admin', 'superadmin'] },
+];
+
+// For PROJECT_USER - only can see their own project
+export const SIDEBAR_ITEMS_PROJECT_USER = [
+  { key: 'my-project', label: 'My Project', icon: '📁', roles: ['project_user'] },
 ];
 
 export const DEFAULT_SETTINGS = {
