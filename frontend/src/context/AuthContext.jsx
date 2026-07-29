@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db, doc, getDoc, onAuthStateChanged, signInWithEmailAndPassword, signOut } from '../firebase';
+import { auth, db, doc, getDoc, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInAnonymously } from '../firebase';
 import { ROLES } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
   // Listen to Firebase Auth state and fetch role from Firestore UID collection
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+      if (firebaseUser && !firebaseUser.isAnonymous) {
         setFirebaseUser(firebaseUser);
 
         // Fetch user role from Firestore 'UID' collection
@@ -35,6 +35,16 @@ export function AuthProvider({ children }) {
           email: firebaseUser.email,
           displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
           role,
+          loginTime: new Date().toISOString(),
+        });
+      } else if (firebaseUser && firebaseUser.isAnonymous) {
+        // Anonymous guest user
+        setFirebaseUser(firebaseUser);
+        setUser({
+          uid: firebaseUser.uid,
+          email: 'guest@guest',
+          displayName: 'Guest',
+          role: ROLES.GUEST,
           loginTime: new Date().toISOString(),
         });
       } else {
@@ -64,29 +74,24 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const guestLogin = () => {
-    const guestUser = {
-      uid: 'guest',
-      email: 'guest@guest',
-      displayName: 'Guest',
-      role: ROLES.GUEST,
-      loginTime: new Date().toISOString(),
-    };
-    setFirebaseUser(null);
-    setUser(guestUser);
+  const guestLogin = async () => {
+    try {
+      const result = await signInAnonymously(auth);
+      return { success: true };
+    } catch (error) {
+      console.error('Guest login error:', error);
+      return { success: false, error: 'Guest login failed: ' + error.message };
+    }
   };
 
   const logout = async () => {
-    if (user?.role === ROLES.GUEST) {
-      setUser(null);
-      setFirebaseUser(null);
-      return;
-    }
     try {
       await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
     }
+    setUser(null);
+    setFirebaseUser(null);
   };
 
   const isAuthenticated = !!user;
