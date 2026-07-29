@@ -312,13 +312,14 @@ export default function MyProjects({ onNavigate }) {
 }
 
 /* ───── Collapsible Section Helper ───── */
-function CollapsibleSection({ title, defaultOpen = false, children }) {
+function CollapsibleSection({ title, defaultOpen = false, actions, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className={`detail-collapsible ${open ? 'detail-collapsible--open' : ''}`}>
       <div className="detail-collapsible-header" onClick={() => setOpen(!open)}>
         <span className="detail-collapsible-arrow">{open ? '▼' : '▶'}</span>
         <h3>{title}</h3>
+        {actions && <div className="detail-collapsible-actions" onClick={(e) => e.stopPropagation()}>{actions}</div>}
       </div>
       {open && <div className="detail-collapsible-body">{children}</div>}
     </div>
@@ -773,16 +774,21 @@ function ProjectDetailPage({ project, onBack, onNavigate }) {
       </Modal>
 
       {/* ===== ACTIVITY LOG ===== */}
-      <CollapsibleSection title={`Activity Log 活動記錄 (${(latestProject.logs || []).length})`} defaultOpen={false}>
+      <CollapsibleSection
+        title={`Activity Log 活動記錄 (${(latestProject.logs || []).length})`}
+        defaultOpen={false}
+        actions={
+          <button
+            className="btn btn--small"
+            onClick={() => setRefreshKey((k) => k + 1)}
+          >
+            🔄 Refresh
+          </button>
+        }
+      >
         <div className="activity-log-toolbar">
           <span className="activity-log-count">{latestProject.logs?.length || 0} entries</span>
           <div className="activity-log-actions">
-            <button
-              className="btn btn--small"
-              onClick={() => setRefreshKey((k) => k + 1)}
-            >
-              🔄 Refresh
-            </button>
             <button
               className="btn btn--small"
               onClick={() => exportLogsToTxt(latestProject)}

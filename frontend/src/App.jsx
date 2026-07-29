@@ -48,7 +48,7 @@ function ProjectFormWrapper() {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isGuest } = useAuth();
   const [sidebarKey, setSidebarKey] = useState('dashboard');
 
   // Sync sidebar active state with URL
@@ -82,6 +82,14 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
+  }
+
+  // Guest users: redirect to /all-projects if they try to access restricted pages
+  if (isGuest) {
+    const guestRoutes = ['/all-projects', '/funding-schemes', '/idea-submission'];
+    if (!guestRoutes.includes(location.pathname)) {
+      return <Navigate to="/all-projects" replace />;
+    }
   }
 
   return (

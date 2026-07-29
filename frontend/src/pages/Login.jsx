@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading, login } = useAuth();
+  const { isAuthenticated, loading: authLoading, login, guestLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -97,7 +97,7 @@ export default function Login() {
           </button>
 
           <div className="login-secondary-btns">
-            <button type="button" className="login-btn login-btn--guest">
+            <button type="button" className="login-btn login-btn--guest" onClick={guestLogin}>
               Guest
             </button>
             <button type="button" className="login-btn login-btn--project">

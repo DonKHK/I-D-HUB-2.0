@@ -1466,11 +1466,11 @@ body {
 
 .login-card {
   background: white;
-  border-radius: 16px;
-  padding: 2.5rem 2.5rem 2rem;
+  border-radius: 12px;
+  padding: 2.5rem;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .login-card__header {
@@ -1496,7 +1496,6 @@ body {
   font-size: 1.5rem;
   color: #1a237e;
   margin-bottom: 0.25rem;
-  font-weight: 700;
 }
 
 .login-subtitle {
@@ -1536,127 +1535,41 @@ body {
   font-weight: 500;
 }
 
-.login-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.login-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #374151;
-  letter-spacing: 0.01em;
-}
-
-.login-input {
-  width: 100%;
-  padding: 0.7rem 0.85rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background: #fafafa;
-}
-
-.login-input:focus {
-  outline: none;
-  border-color: #3949ab;
-  box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.15);
-  background: #fff;
-}
-
-.login-input::placeholder {
-  color: #9ca3af;
-  font-size: 0.9rem;
-}
-
-.login-password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.login-password-wrapper .login-input {
-  padding-right: 2.5rem;
-}
-
-.login-toggle-pw {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0.25rem;
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity 0.15s;
-}
-
-.login-toggle-pw:hover {
-  opacity: 1;
-}
-
 .login-btn {
   width: 100%;
   padding: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.login-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.login-btn--admin {
-  background: linear-gradient(135deg, #1a237e, #3949ab);
-  color: #fff;
   margin-top: 0.5rem;
-}
-
-.login-btn--admin:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(26, 35, 126, 0.35);
-  transform: translateY(-1px);
-}
-
-.login-secondary-btns {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-.login-btn--guest,
-.login-btn--project {
-  flex: 1;
-  background: #f3f4f6;
-  color: #4b5563;
-  border: 1.5px solid #e5e7eb;
-  font-weight: 500;
-}
-
-.login-btn--guest:hover,
-.login-btn--project:hover {
-  background: #e5e7eb;
-  border-color: #d1d5db;
-  transform: translateY(-1px);
+  font-size: 1rem;
 }
 
 .login-error {
   background: #ffebee;
   color: #c62828;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 0.85rem;
   text-align: center;
-  font-weight: 500;
+}
+
+.login-hint {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.login-hint strong {
+  color: #555;
+}
+
+.login-hint code {
+  background: #e8eaf6;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: #1a237e;
 }
 
 /* ===== PENDING APPROVAL ===== */
@@ -3461,15 +3374,6 @@ body {
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
-  justify-content: space-between;
-}
-
-.detail-collapsible-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  flex-shrink: 0;
 }
 
 .detail-collapsible-header:hover {
@@ -5183,6 +5087,328 @@ body {
   background: #e2e8f0;
 }
 
+/* ===== ALL PROJECTS ===== */
+.all-projects-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.all-projects-back-btn {
+  background: #1a237e;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.all-projects-back-btn:hover {
+  background: #283593;
+}
+
+.all-projects-info-box {
+  background: #e8eaf6;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #c5cae9;
+}
+
+.all-projects-info-box p {
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.all-projects-info-box p:last-of-type {
+  margin-bottom: 0.75rem;
+}
+
+.all-projects-contacts {
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.all-projects-contacts a {
+  color: #1a237e;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.all-projects-contacts a:hover {
+  text-decoration: underline;
+}
+
+.all-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+/* Project Cards */
+.proj-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.proj-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.proj-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.proj-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.proj-card-ids {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.proj-card-id {
+  font-size: 0.75rem;
+  font-family: monospace;
+  background: #f0f2f5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: #666;
+}
+
+.proj-card-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #1a237e;
+}
+
+.proj-card-desc {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.proj-card-detail {
+  font-size: 0.8rem;
+  color: #888;
+  line-height: 1.5;
+  min-height: 160px;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 12;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+
+.proj-card-owner {
+  font-size: 0.88rem;
+  color: #555;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.proj-card-owner-label {
+  color: #999;
+}
+
+/* All Projects Status Badges */
+.all-projects-status {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.all-projects-status--completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.all-projects-status--progress {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.all-projects-status--planning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Proj dot color variants */
+.proj-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.proj-dot--green {
+  background: #10b981;
+}
+
+.proj-dot--blue {
+  background: #3b82f6;
+}
+
+.proj-dot--amber {
+  background: #f59e0b;
+}
+
+/* Page wide layout */
+.page--wide {
+  max-width: 1400px;
+}
+
+/* ===== MY PROJECTS (idprojecthub style) ===== */
+.myprojects-header {
+  margin-bottom: 24px;
+}
+
+.myprojects-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .myprojects-header-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.myprojects-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.myprojects-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---- Filter Tabs ---- */
+.myprojects-filters {
+  display: flex;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.myprojects-filter-btn {
+  padding: 8px 20px;
+  border-radius: 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.myprojects-filter-btn:hover {
+  color: #1e293b;
+}
+
+.myprojects-filter-btn--active {
+  background: #165DFF;
+  color: white;
+}
+
+.myprojects-filter-btn--active:hover {
+  color: white;
+}
+
+/* ---- Sort Select ---- */
+.myprojects-sort {
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.myprojects-sort:focus {
+  border-color: #165DFF;
+}
+
+/* ---- Add Button ---- */
+.myprojects-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #165DFF;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.myprojects-add-btn:hover {
+  background: #0e4ad6;
+}
+
+/* ---- Grid ---- */
+.myprojects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 600px) {
+  .myprojects-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .empty-text {
   grid-column: 1 / -1;
   text-align: center;
@@ -5191,162 +5417,79 @@ body {
   font-size: 0.95rem;
 }
 
-/* ========== Activity Log ========== */
+/* ===== Activity Log ===== */
 .activity-log-section {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
 }
 
-.activity-log-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.activity-log-header h3 {
-  margin: 0;
+.activity-log-section h3 {
   font-size: 1.1rem;
+  font-weight: 600;
   color: #1e293b;
-}
-
-.activity-log-export-btn {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.activity-log-export-btn:hover {
-  background: #e2e8f0;
+  margin: 0 0 1rem 0;
 }
 
 .activity-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #fafafa;
+  padding-right: 0.5rem;
 }
 
 .activity-log-item {
-  padding: 0.6rem 0.85rem;
-  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   font-size: 0.85rem;
-  line-height: 1.45;
+  color: #334155;
+  line-height: 1.5;
 }
 
-.activity-log-item:last-child {
-  border-bottom: none;
-}
-
-.activity-log-item .log-timestamp {
+.activity-log-time {
+  font-size: 0.72rem;
   color: #94a3b8;
-  font-size: 0.75rem;
-  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  min-width: 5rem;
+  padding-top: 2px;
 }
 
-.activity-log-item .log-user {
-  color: #3b82f6;
+.activity-log-action {
+  white-space: nowrap;
   font-weight: 600;
+  color: #6366f1;
 }
 
-.activity-log-item .log-action {
+.activity-log-detail {
+  color: #475569;
+}
+
+.activity-log-export-btn {
+  margin-top: 0.75rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.activity-log-export-btn:hover {
+  background: #f1f5f9;
   color: #1e293b;
-  font-weight: 500;
-}
-
-.activity-log-item .log-details {
-  color: #64748b;
-  font-size: 0.8rem;
-  margin-top: 0.1rem;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 .activity-log-empty {
-  padding: 2rem 1rem;
-  text-align: center;
   color: #94a3b8;
   font-size: 0.9rem;
-}
-
-/* ===== Activity Log horizontal entry layout (MyProjects) ===== */
-.activity-log-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.6rem;
-}
-.activity-log-count {
-  font-size: 0.85rem;
-  color: #64748b;
-}
-.activity-log-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.activity-log-entry {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.85rem;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.85rem;
-  line-height: 1.45;
-}
-.activity-log-entry:last-child {
-  border-bottom: none;
-}
-.activity-log-entry:hover {
-  background: #f1f5f9;
-}
-
-.activity-log-entry .activity-log-timestamp {
-  color: #94a3b8;
-  white-space: nowrap;
-  min-width: 11em;
-}
-.activity-log-entry .activity-log-user {
-  color: #3b82f6;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.activity-log-entry .activity-log-action-tag {
-  display: inline-block;
-  background: #e0e7ff;
-  color: #1e3a8a;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-.activity-log-entry .activity-log-details {
-  color: #475569;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.activity-log-delete-btn {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.15rem 0.35rem;
-  border-radius: 4px;
-  opacity: 0.5;
-  transition: opacity 0.15s, background 0.15s;
-}
-.activity-log-delete-btn:hover {
-  opacity: 1;
-  background: #fee2e2;
+  padding: 1rem 0;
 }

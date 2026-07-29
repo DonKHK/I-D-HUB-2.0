@@ -64,7 +64,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const guestLogin = () => {
+    const guestUser = {
+      uid: 'guest',
+      email: 'guest@guest',
+      displayName: 'Guest',
+      role: ROLES.GUEST,
+      loginTime: new Date().toISOString(),
+    };
+    setFirebaseUser(null);
+    setUser(guestUser);
+  };
+
   const logout = async () => {
+    if (user?.role === ROLES.GUEST) {
+      setUser(null);
+      setFirebaseUser(null);
+      return;
+    }
     try {
       await signOut(auth);
     } catch (error) {
@@ -75,7 +92,7 @@ export function AuthProvider({ children }) {
   const isAuthenticated = !!user;
   const isAdmin = isAuthenticated && user?.role === ROLES.ADMIN;
   const isSuperAdmin = isAuthenticated && user?.role === ROLES.SUPER_ADMIN;
-  const isGuest = false;
+  const isGuest = isAuthenticated && user?.role === ROLES.GUEST;
 
   const hasPermission = (roles) => {
     if (!user || !roles) return false;
@@ -89,6 +106,7 @@ export function AuthProvider({ children }) {
         firebaseUser,
         loading,
         login,
+        guestLogin,
         logout,
         isAuthenticated,
         isAdmin,
