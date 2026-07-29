@@ -18,12 +18,33 @@ export function AuthProvider({ children }) {
         // Fetch user role from Firestore 'UID' collection
         let role = ROLES.ADMIN;
         try {
+          // Try 1: Look up by Firebase Auth UID (document ID = firebaseUser.uid)
           const userDocRef = doc(db, 'UID', firebaseUser.uid);
           const userDocSnap = await getDoc(userDocRef);
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
             if (userData.role === 'superadmin') {
               role = ROLES.SUPER_ADMIN;
+            }
+          } else {
+            // Try 2: Fallback — look up by email field in UID collection
+            const emailQuery = query(collection(db, 'UID'), where('email', '==', firebaseUser.email));
+            const emailSnapshot = await getDocs(emailQuery);
+            if (!emailSnapshot.empty) {
+              const userData = emailSnapshot.docs[0].data();
+              if (userData.role === 'superadmin') {
+                role = ROLES.SUPER_ADMIN;
+              }
+            } else {
+              // Try 3: Use email address as document ID directly
+              const emailDocRef = doc(db, 'UID', firebaseUser.email);
+              const emailDocSnap = await getDoc(emailDocRef);
+              if (emailDocSnap.exists()) {
+                const userData = emailDocSnap.data();
+                if (userData.role === 'superadmin') {
+                  role = ROLES.SUPER_ADMIN;
+                }
+              }
             }
           }
         } catch (err) {
