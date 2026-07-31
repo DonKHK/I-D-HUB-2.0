@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency } from '../utils/helpers';
 import Modal from '../components/Modal';
 
