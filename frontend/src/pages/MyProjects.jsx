@@ -219,13 +219,15 @@ export default function MyProjects({ onNavigate }) {
                     {project.status || 'Planning'}
                   </span>
                 </div>
-                <button
-                  className="myprojects-delete-icon"
-                  title="Delete project"
-                  onClick={() => setDeleteConfirm(project.id)}
-                >
-                  🗑️
-                </button>
+                {isSuperAdmin && (
+                  <button
+                    className="myprojects-delete-icon"
+                    title="Delete project"
+                    onClick={() => setDeleteConfirm(project.id)}
+                  >
+                    🗑️
+                  </button>
+                )}
               </div>
 
               {/* Title */}
@@ -287,12 +289,14 @@ export default function MyProjects({ onNavigate }) {
                 >
                   Detail
                 </button>
-                <button
-                  className="myprojects-btn-edit"
-                  onClick={() => onNavigate && onNavigate('project-form', project)}
-                >
-                  Edit
-                </button>
+                {isSuperAdmin && (
+                  <button
+                    className="myprojects-btn-edit"
+                    onClick={() => onNavigate && onNavigate('project-form', project)}
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
             </div>
           );

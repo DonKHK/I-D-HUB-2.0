@@ -50,7 +50,7 @@ function ProjectFormWrapper() {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isGuest, isProjectUser } = useAuth();
+  const { isAuthenticated, isGuest, isProjectUser, isSuperAdmin } = useAuth();
   const [sidebarKey, setSidebarKey] = useState('dashboard');
 
   // Sync sidebar active state with URL
@@ -98,6 +98,17 @@ function AppContent() {
   if (isProjectUser) {
     if (location.pathname !== '/my-project') {
       return <Navigate to="/my-project" replace />;
+    }
+  }
+
+  // Admin (non-superadmin): block access to superadmin-only pages
+  if (isAuthenticated && !isSuperAdmin) {
+    const superAdminOnlyPrefixes = ['/settings', '/report-export'];
+    const isSuperAdminOnlyRoute =
+      superAdminOnlyPrefixes.includes(location.pathname) ||
+      location.pathname.startsWith('/project-form');
+    if (isSuperAdminOnlyRoute) {
+      return <Navigate to="/dashboard" replace />;
     }
   }
 

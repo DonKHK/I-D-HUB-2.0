@@ -47,9 +47,9 @@ export const SIDEBAR_ITEMS = [
   { key: 'approved-projects', label: 'Approved Projects', icon: '✅', roles: ['admin', 'superadmin'] },
   { key: 'idea-submission', label: 'Submit Idea', icon: '💡', roles: ['guest', 'admin', 'superadmin'] },
   { key: 'funding-schemes', label: 'Funding Schemes', icon: '💰', roles: ['guest', 'admin', 'superadmin'] },
-  { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['admin', 'superadmin'] },
+  { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['superadmin'] },
   { key: 'alerts', label: 'Alerts', icon: '⚠️', roles: ['admin', 'superadmin'] },
-  { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['admin', 'superadmin'] },
+  { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['superadmin'] },
 ];
 
 // For PROJECT_USER - only can see their own project

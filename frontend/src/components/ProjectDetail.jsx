@@ -341,8 +341,10 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
                 </>
               ) : (
                 <>
-                  <button className="btn btn--outline" onClick={onEdit}>✏️ Edit Project</button>
-                  {!isProjectUser && (
+                  {isSuperAdmin && (
+                    <button className="btn btn--outline" onClick={onEdit}>✏️ Edit Project</button>
+                  )}
+                  {isSuperAdmin && !isProjectUser && (
                     <button className="btn btn--danger" onClick={() => setDeleteConfirm(true)}>Delete</button>
                   )}
                 </>
@@ -494,9 +496,11 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       <div className="detail-section">
         <div className="card-header-row">
           <h3>Project Stages 項目階段 ({latestProject.stages?.length || 0})</h3>
-          <button className="btn btn--small" onClick={() => { resetStageForm(); setShowStageForm(true); setEditingStage(null); }}>
-            + Add Stage
-          </button>
+          {isSuperAdmin && (
+            <button className="btn btn--small" onClick={() => { resetStageForm(); setShowStageForm(true); setEditingStage(null); }}>
+              + Add Stage
+            </button>
+          )}
         </div>
         {(latestProject.stages || []).length === 0 && <p className="empty-text">No stages defined</p>}
         <div className="stages-list">
@@ -518,10 +522,12 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
                   Used: {formatCurrency(stage.budgetUsed)}
                 </span>
               </div>
-              <div className="stage-actions">
-                <button className="btn btn--small btn--outline" onClick={() => handleEditStage(stage)}>Edit</button>
-                <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
-              </div>
+              {isSuperAdmin && (
+                <div className="stage-actions">
+                  <button className="btn btn--small btn--outline" onClick={() => handleEditStage(stage)}>Edit</button>
+                  <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -636,7 +642,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
                 <span className="activity-log-user">{log.user}</span>
                 <span className="activity-log-action-tag">{log.action}</span>
                 <span className="activity-log-details">{log.details}</span>
-                {!isProjectUser && (
+                {isSuperAdmin && !isProjectUser && (
                   <button
                     className="activity-log-delete-btn"
                     title="Delete this log entry"

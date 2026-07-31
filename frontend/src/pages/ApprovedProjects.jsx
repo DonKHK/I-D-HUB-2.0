@@ -7,6 +7,7 @@ import Modal from '../components/Modal';
 export default function ApprovedProjects() {
   const navigate = useNavigate();
   const { ideas, projects, deleteProject, permanentlyDeleteIdea } = useData();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState('');
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -67,21 +68,23 @@ export default function ApprovedProjects() {
             <div key={idea.id} className="project-card">
               <div className="project-card__header">
                 <span className="status-badge status-badge--approved">Approved</span>
-                <button
-                  className="btn btn--danger btn--sm"
-                  style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteModal({
-                      id: project ? project.id : idea.id,
-                      name: idea.title,
-                      ideaId: idea.id,
-                    });
-                  }}
-                  title="Delete project"
-                >
-                  🗑️ Delete
-                </button>
+                {isSuperAdmin && (
+                  <button
+                    className="btn btn--danger btn--sm"
+                    style={{ marginLeft: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteModal({
+                        id: project ? project.id : idea.id,
+                        name: idea.title,
+                        ideaId: idea.id,
+                      });
+                    }}
+                    title="Delete project"
+                  >
+                    🗑️ Delete
+                  </button>
+                )}
               </div>
               <div className="project-card__body">
                 <h3 className="project-card__title">{idea.title}</h3>

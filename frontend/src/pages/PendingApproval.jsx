@@ -253,7 +253,7 @@ Idea details:
             View Details
           </button>
 
-          {type === 'pending' && (
+          {type === 'pending' && isSuperAdmin && (
             <>
               {/* AI Analysis Button */}
               {idea.aiAnalysis ? (
@@ -283,7 +283,7 @@ Idea details:
             </button>
           )}
 
-          {type === 'deleted' && (
+          {type === 'deleted' && isSuperAdmin && (
             <>
               <button className="btn btn--small btn--primary" onClick={() => setRestoreModal(idea.id)}>
                 Restore
