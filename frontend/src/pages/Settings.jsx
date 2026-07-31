@@ -404,7 +404,7 @@ export default function Settings() {
           </p>
 
           <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ minWidth: '600px' }}>
+            <table className="data-table" style={{ minWidth: '900px' }}>
               <thead>
                 <tr>
                   <th>Project ID</th>

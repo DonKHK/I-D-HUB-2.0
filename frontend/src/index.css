@@ -5582,3 +5582,39 @@ body {
   color: #94a3b8;
   margin: 0.25rem 0 0;
 }
+
+/* ===== DATA TABLE ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: #fff;
+}
+
+.data-table th {
+  background: #f8f9fc;
+  font-weight: 600;
+  color: #1a237e;
+  text-align: left;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eef0f4;
+  vertical-align: middle;
+}
+
+.data-table tr:hover td {
+  background: #f8f9fc;
+}
+
+.data-table code {
+  background: #f1f3f9;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
