@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import { DEFAULT_SETTINGS } from '../utils/constants';
 
@@ -85,9 +85,15 @@ function ProjectCredentialRow({ project, generateProjectPassword, updateProjectP
 }
 
 export default function Settings() {
-  const { settings, updateSettings, resetSettings, projects, generateProjectPassword, updateProjectPassword } = useData();
+  const { settings, updateSettings, resetSettings, projects, generateProjectPassword, updateProjectPassword, backupAll, restoreBackup } = useData();
   const [saved, setSaved] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [restoreConfirm, setRestoreConfirm] = useState(false);
+  const [restoreFile, setRestoreFile] = useState(null);
+  const [restoring, setRestoring] = useState(false);
+  const [backupMsg, setBackupMsg] = useState('');
+  const [restoreMsg, setRestoreMsg] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleChange = (key, value) => {
     updateSettings({ [key]: value });
@@ -104,6 +110,44 @@ export default function Settings() {
     setResetConfirm(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleBackup = () => {
+    const data = backupAll();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `idhub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setBackupMsg('Backup downloaded successfully!');
+    setTimeout(() => setBackupMsg(''), 3000);
+  };
+
+  const handleRestoreFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setRestoreFile(file);
+    setRestoreConfirm(true);
+  };
+
+  const handleRestore = async () => {
+    if (!restoreFile) return;
+    setRestoring(true);
+    try {
+      const text = await restoreFile.text();
+      const data = JSON.parse(text);
+      await restoreBackup(data);
+      setRestoreMsg(`Restore completed successfully! Loaded ${data.projects?.length || 0} projects, ${data.ideas?.length || 0} ideas.`);
+    } catch (err) {
+      setRestoreMsg('Restore failed: invalid or unreadable backup file.');
+    }
+    setRestoring(false);
+    setRestoreConfirm(false);
+    setRestoreFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setTimeout(() => setRestoreMsg(''), 5000);
   };
 
   return (
@@ -391,6 +435,69 @@ export default function Settings() {
                 />
                 <span className="form-color-value">{settings.alertInfoColor}</span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Backup & Restore */}
+        <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
+          <h2 className="settings-section-title">💾 Backup & Restore</h2>
+          <p className="settings-section-desc">
+            Download a full system backup or restore from an existing backup file.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {backupMsg && (
+              <div className="alert alert--success">{backupMsg}</div>
+            )}
+            {restoreMsg && (
+              <div className={`alert ${restoreMsg.startsWith('Restore failed') ? 'alert--warning' : 'alert--success'}`}>
+                {restoreMsg}
+              </div>
+            )}
+
+            {restoreConfirm && (
+              <div className="alert alert--warning" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <span>
+                  Are you sure you want to restore from <strong>{restoreFile?.name}</strong>?
+                  This will overwrite all current projects, ideas and settings.
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                  <button
+                    className="btn btn--primary"
+                    onClick={handleRestore}
+                    disabled={restoring}
+                  >
+                    {restoring ? 'Restoring...' : 'Yes, Restore'}
+                  </button>
+                  <button
+                    className="btn btn--secondary"
+                    onClick={() => {
+                      setRestoreConfirm(false);
+                      setRestoreFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <button className="btn btn--primary" onClick={handleBackup}>
+                💾 Full System Backup
+              </button>
+              <button className="btn btn--secondary" onClick={() => fileInputRef.current?.click()}>
+                📥 Restore Backup
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json,application/json"
+                style={{ display: 'none' }}
+                onChange={handleRestoreFileChange}
+              />
             </div>
           </div>
         </div>

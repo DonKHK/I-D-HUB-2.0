@@ -900,23 +900,6 @@ export function DataProvider({ children }) {
     return () => clearInterval(pollInterval);
   }, [uid]);
 
-  // Manual sync trigger
-  const syncFromRemote = useCallback(async () => {
-    const remoteIdeas = await apiGet();
-    if (!remoteIdeas || !Array.isArray(remoteIdeas)) {
-      return { success: false, message: 'Backend not reachable' };
-    }
-    setIdeas((currentIdeas) => {
-      const byId = {};
-      currentIdeas.forEach((i) => { byId[i.id] = i; });
-      remoteIdeas.forEach((r) => { byId[r.id] = { ...(byId[r.id] || {}), ...r }; });
-      const merged = Object.values(byId);
-      try { localStorage.setItem('pmis_ideas', JSON.stringify(merged)); } catch (e) { /* ignore */ }
-      return merged;
-    });
-    return { success: true, message: `Synced ${remoteIdeas.length} ideas from backend` };
-  }, []);
-
   return (
     <DataContext.Provider
       value={{
@@ -945,7 +928,6 @@ export function DataProvider({ children }) {
         resetSettings,
         backupAll,
         restoreBackup,
-        syncFromRemote,
         generateProjectPassword,
         updateProjectPassword,
       }}

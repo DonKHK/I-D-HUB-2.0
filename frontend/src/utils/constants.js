@@ -74,8 +74,3 @@ export const DEFAULT_SETTINGS = {
   alertInfoColor: '#3b82f6',
 };
 
-export const SIDEBAR_BOTTOM = [
-  { key: 'sync', label: 'Sync Latest Data', icon: '🔄', roles: ['admin', 'superadmin'] },
-  { key: 'backup', label: 'Full System Backup', icon: '💾', roles: ['superadmin'] },
-  { key: 'restore', label: 'Restore Backup', icon: '📥', roles: ['superadmin'] },
-];
