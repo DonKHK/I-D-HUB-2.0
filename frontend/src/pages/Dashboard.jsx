@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
 import { calculateHealth, formatCurrency, daysUntil, calculateIdeaHealth } from '../utils/helpers';
 import Chart from 'chart.js/auto';
 
-export default function Dashboard({ onNavigate }) {
+export default function Dashboard() {
   const { projects, ideas } = useData();
-  const { isAuthenticated } = useAuth();
   const [showAllIdeas, setShowAllIdeas] = useState(false);
   const healthChartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -196,17 +194,6 @@ export default function Dashboard({ onNavigate }) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      {isAuthenticated && (
-        <div className="dashboard-actions-ref">
-          <button className="btn-ref btn-ref--primary" onClick={() => onNavigate && onNavigate('idea-submission')}>
-            <i className="fa fa-plus" /> Submit New Idea
-          </button>
-          <button className="btn-ref btn-ref--outline" onClick={() => onNavigate && onNavigate('my-projects')}>
-            <i className="fa fa-folder-open" /> Manage Projects
-          </button>
-        </div>
-      )}
     </div>
   );
 }
