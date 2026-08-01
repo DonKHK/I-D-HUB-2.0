@@ -4,7 +4,7 @@ import { calculateHealth, formatCurrency, daysUntil, calculateIdeaHealth } from 
 import Chart from 'chart.js/auto';
 
 export default function Dashboard() {
-  const { projects, ideas } = useData();
+  const { projects, ideas, settings } = useData();
   const [showAllIdeas, setShowAllIdeas] = useState(false);
   const healthChartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -15,21 +15,21 @@ export default function Dashboard() {
     const inProgress = projects.filter((p) => p.status === 'In Progress').length;
     const planning = projects.filter((p) => p.status === 'Planning').length;
     const completed = projects.filter((p) => p.status === 'Completed').length;
-    const healthStats = projects.map((p) => calculateHealth(p));
+    const healthStats = projects.map((p) => calculateHealth(p, settings));
     const yellow = healthStats.filter((h) => h.status === 'warning').length;
     const red = healthStats.filter((h) => h.status === 'critical').length;
     return { total, inProgress, planning, completed, yellow, red };
-  }, [projects]);
+  }, [projects, settings]);
 
   // === Health Distribution ===
   const healthDistribution = useMemo(() => {
-    const h = { healthy: 0, warning: 0, critical: 0 };
+    const h = { completed: 0, healthy: 0, warning: 0, critical: 0 };
     projects.forEach((p) => {
-      const health = calculateHealth(p);
+      const health = calculateHealth(p, settings);
       h[health.status] = (h[health.status] || 0) + 1;
     });
     return h;
-  }, [projects]);
+  }, [projects, settings]);
 
   // === Upcoming Items ===
   const upcomingItems = useMemo(() => {
@@ -67,10 +67,10 @@ export default function Dashboard() {
       chartInstance.current = new Chart(healthChartRef.current, {
         type: 'doughnut',
         data: {
-          labels: ['Healthy', 'Warning', 'Critical'],
+          labels: ['Completed', 'Healthy', 'Warning', 'Critical'],
           datasets: [{
-            data: [healthDistribution.healthy, healthDistribution.warning, healthDistribution.critical],
-            backgroundColor: ['#00B42A', '#FF7D00', '#F53F3F'],
+            data: [healthDistribution.completed, healthDistribution.healthy, healthDistribution.warning, healthDistribution.critical],
+            backgroundColor: [settings.alertCompletedColor || '#3b82f6', settings.alertSuccessColor || '#22c55e', settings.alertWarningColor || '#eab308', settings.alertCriticalColor || '#ef4444'],
             borderWidth: 6,
             borderColor: '#fff',
           }],
@@ -88,7 +88,7 @@ export default function Dashboard() {
     return () => {
       if (chartInstance.current) chartInstance.current.destroy();
     };
-  }, [healthDistribution]);
+  }, [healthDistribution, settings]);
 
   const kpiData = [
     { label: 'Total Projects', value: stats.total, icon: 'fa-folder-open', color: '#165DFF' },

@@ -31,15 +31,24 @@ export function generateIdeaId(existingIds = []) {
 
 /**
  * Calculate health status of a project
- * Returns: 'healthy' | 'warning' | 'critical'
+ * Returns: 'completed' | 'critical' | 'warning' | 'healthy'
  *
- * Priority: Red conditions > Yellow conditions > Green (On Track)
+ * Priority: Completed (blue) > Red conditions > Yellow conditions > Green (On Track)
+ * - Completed: project status === 'Completed'
  * - Red: No End Date / No Budget / Overdue / Budget Overrun (>= 105%)
  * - Yellow: Due within 14 days / Budget close to limit (> 95%)
  * - Green: everything else
+ *
+ * Colors come from settings (optional) so users can customize them.
  */
-export function calculateHealth(project) {
+export function calculateHealth(project, settings = {}) {
   const today = new Date();
+
+  // Completed projects are always blue
+  if (project.status === 'Completed') {
+    return { status: 'completed', label: '🔵 Completed', color: settings.alertCompletedColor || '#3b82f6', reasons: [] };
+  }
+
   const redReasons = [];
   const yellowReasons = [];
 
@@ -72,12 +81,12 @@ export function calculateHealth(project) {
   const allReasons = [...redReasons, ...yellowReasons];
 
   if (redReasons.length > 0) {
-    return { status: 'critical', label: `🔴 ${allReasons.join(', ')}`, color: '#ef4444', reasons: allReasons };
+    return { status: 'critical', label: `🔴 ${allReasons.join(', ')}`, color: settings.alertCriticalColor || '#ef4444', reasons: allReasons };
   }
   if (yellowReasons.length > 0) {
-    return { status: 'warning', label: `🟡 ${allReasons.join(', ')}`, color: '#eab308', reasons: allReasons };
+    return { status: 'warning', label: `🟡 ${allReasons.join(', ')}`, color: settings.alertWarningColor || '#eab308', reasons: allReasons };
   }
-  return { status: 'healthy', label: '🟢 On Track', color: '#22c55e', reasons: [] };
+  return { status: 'healthy', label: '🟢 On Track', color: settings.alertSuccessColor || '#22c55e', reasons: [] };
 }
 
 /**

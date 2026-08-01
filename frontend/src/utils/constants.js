@@ -67,10 +67,9 @@ export const DEFAULT_SETTINGS = {
   emailOnOverdue: true,
   emailOnBudgetExceeded: true,
   emailFrequency: 'daily',
-  healthWeightDate: 1,
-  healthWeightBudget: 1,
   alertCriticalColor: '#ef4444',
   alertWarningColor: '#eab308',
-  alertInfoColor: '#3b82f6',
+  alertSuccessColor: '#22c55e',
+  alertCompletedColor: '#3b82f6',
 };
 

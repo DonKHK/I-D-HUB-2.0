@@ -17,7 +17,7 @@ export default function MyProjects({ onNavigate }) {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { projects, ideas, deleteProject } = useData();
+  const { projects, ideas, deleteProject, settings } = useData();
   const { isSuperAdmin } = useAuth();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('created-desc');
@@ -155,7 +155,7 @@ export default function MyProjects({ onNavigate }) {
       <div className="myprojects-grid">
         {filtered.length === 0 && <p className="empty-text">No projects available</p>}
         {filtered.map((project) => {
-          const health = calculateHealth(project);
+          const health = calculateHealth(project, settings);
           return (
             <div key={project.id} className={`myprojects-card ${project._isApprovedIdea ? 'myprojects-card--idea' : ''}`}>
               {project._isApprovedIdea && <div className="myprojects-idea-badge">✅ Approved Idea</div>}
@@ -163,7 +163,7 @@ export default function MyProjects({ onNavigate }) {
               <div className="myprojects-card-top">
                 <div className="myprojects-card-health">
                   <span
-                    className={`health-dot-simple ${health.status === 'critical' ? 'health-red' : health.status === 'warning' ? 'health-yellow' : 'health-green'}`}
+                    className={`health-dot-simple ${health.status === 'critical' ? 'health-red' : health.status === 'warning' ? 'health-yellow' : health.status === 'completed' ? 'health-blue' : 'health-green'}`}
                     style={{ backgroundColor: health.color }}
                   />
                   <span className="myprojects-health-label">{health.label}</span>

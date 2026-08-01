@@ -355,52 +355,10 @@ export default function Settings() {
           )}
         </div>
 
-        {/* Health Score Weights */}
-        <div className="settings-section card">
-          <h2 className="settings-section-title">📊 Health Score Weights</h2>
-          <p className="settings-section-desc">Adjust the impact of date and budget on the project health score.</p>
-
-          <div className="form-group">
-            <label className="form-label">
-              Date Weight
-              <span className="form-hint">Impact of deadline/overdue on health score</span>
-            </label>
-            <div className="form-range-row">
-              <input
-                type="range"
-                min="0"
-                max="3"
-                step="0.5"
-                value={settings.healthWeightDate}
-                onChange={(e) => handleChange('healthWeightDate', parseFloat(e.target.value))}
-              />
-              <span className="form-range-value">{settings.healthWeightDate}x</span>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">
-              Budget Weight
-              <span className="form-hint">Impact of budget usage on health score</span>
-            </label>
-            <div className="form-range-row">
-              <input
-                type="range"
-                min="0"
-                max="3"
-                step="0.5"
-                value={settings.healthWeightBudget}
-                onChange={(e) => handleChange('healthWeightBudget', parseFloat(e.target.value))}
-              />
-              <span className="form-range-value">{settings.healthWeightBudget}x</span>
-            </div>
-          </div>
-        </div>
-
         {/* Alert Colors */}
         <div className="settings-section card">
           <h2 className="settings-section-title">🎨 Alert Colors</h2>
-          <p className="settings-section-desc">Customize the colors used for different severity levels.</p>
+          <p className="settings-section-desc">Customize the colors used for different project health levels.</p>
 
           <div className="form-color-row">
             <div className="form-group">
@@ -426,14 +384,25 @@ export default function Settings() {
               </div>
             </div>
             <div className="form-group">
-              <label className="form-label">Info Color</label>
+              <label className="form-label">On Track Color</label>
               <div className="form-color-picker">
                 <input
                   type="color"
-                  value={settings.alertInfoColor}
-                  onChange={(e) => handleChange('alertInfoColor', e.target.value)}
+                  value={settings.alertSuccessColor}
+                  onChange={(e) => handleChange('alertSuccessColor', e.target.value)}
                 />
-                <span className="form-color-value">{settings.alertInfoColor}</span>
+                <span className="form-color-value">{settings.alertSuccessColor}</span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Completed Color</label>
+              <div className="form-color-picker">
+                <input
+                  type="color"
+                  value={settings.alertCompletedColor}
+                  onChange={(e) => handleChange('alertCompletedColor', e.target.value)}
+                />
+                <span className="form-color-value">{settings.alertCompletedColor}</span>
               </div>
             </div>
           </div>

@@ -186,7 +186,7 @@ function IdeaDetailSection({ idea }) {
 
 /* ───── Main Project Detail Component ───── */
 export default function ProjectDetail({ project, onBack, onNavigate, isProjectUser = false, editMode, onEdit, onSave, onCancel, editForm, onEditFormChange, canEdit = true }) {
-  const { projects, ideas, updateProject, deleteProject } = useData();
+  const { projects, ideas, updateProject, deleteProject, settings } = useData();
   const { user, isSuperAdmin } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -198,7 +198,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
   }, [project.id, projects, refreshKey]);
 
   // Derive the latest project from context so Activity Log stays up-to-date
-  const health = calculateHealth(latestProject);
+  const health = calculateHealth(latestProject, settings);
 
   // Find linked idea via originalIdeaId
   const linkedIdea = useMemo(() => {
