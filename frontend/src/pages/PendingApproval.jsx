@@ -231,20 +231,20 @@ Idea details:
   const runAiAnalysis = async () => {
     // Provider-specific validation
     if (aiProvider === 'cloudflare') {
-      if (!aiAccountId.trim()) {
+      if (!String(aiAccountId || '').trim()) {
         setAiError('Please enter your Cloudflare Account ID.');
         return;
       }
-      if (!aiCloudflareToken.trim()) {
+      if (!String(aiCloudflareToken || '').trim()) {
         setAiError('Please enter your Cloudflare API Token.');
         return;
       }
     } else {
-      if (!aiApiKey.trim()) {
+      if (!String(aiApiKey || '').trim()) {
         setAiError('Please enter an API Key.');
         return;
       }
-      if (aiProvider === 'custom' && !aiEndpoint.trim()) {
+      if (aiProvider === 'custom' && !String(aiEndpoint || '').trim()) {
         setAiError('Please enter an API endpoint URL.');
         return;
       }
@@ -695,7 +695,7 @@ Idea details:
         </div>
         <div className="modal-actions">
           <button className="btn btn--outline" onClick={() => setRejectModal(null)}>Cancel</button>
-          <button className="btn btn--danger" onClick={() => handleReject(rejectModal)} disabled={!rejectReason.trim()}>
+      <button className="btn btn--danger" onClick={() => handleReject(rejectModal)} disabled={!String(rejectReason || '').trim()}>
             Reject
           </button>
         </div>
