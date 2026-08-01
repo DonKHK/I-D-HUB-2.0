@@ -8,6 +8,63 @@ import Modal from '../components/Modal';
 // Backend API base URL — uses Vite proxy (/api -> localhost:5000) by default
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api';
 
+// Robust AI JSON parser — AI models often return malformed JSON (truncated strings,
+// trailing commas, unescaped newlines, smart quotes, markdown fences).
+const safeParseAiJson = (raw) => {
+  let str = String(raw || '').trim();
+  if (!str) throw new Error('AI 回傳內容為空。');
+
+  // Remove markdown code fences (```json ... ``` or ``` ... ```)
+  str = str.replace(/```(?:json)?/gi, '').trim();
+
+  // Extract the first {...} to the last } — ignore surrounding prose
+  const firstBrace = str.indexOf('{');
+  const lastBrace = str.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    str = str.slice(firstBrace, lastBrace + 1).trim();
+  }
+
+  const fixTrailingCommas = (s) => s.replace(/,\s*([}\]])/g, '$1');
+
+  // Repair literal newlines that appear inside JSON string values
+  const repairRawNewlinesInStrings = (s) => {
+    let fixed = '';
+    let inString = false;
+    let escape = false;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (inString) {
+        if (escape) { fixed += ch; escape = false; }
+        else if (ch === '\\') { fixed += ch; escape = true; }
+        else if (ch === '"') { fixed += ch; inString = false; }
+        else if (ch === '\n' || ch === '\r') { fixed += '\\n'; }
+        else { fixed += ch; }
+      } else {
+        if (ch === '"') inString = true;
+        fixed += ch;
+      }
+    }
+    return fixed;
+  };
+
+  const attempts = [
+    () => JSON.parse(str),
+    () => JSON.parse(fixTrailingCommas(str)),
+    () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(str))),
+    () => JSON.parse(fixTrailingCommas(str.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"'))),
+    () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(str.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"')))),
+  ];
+
+  for (const attempt of attempts) {
+    try {
+      const parsed = attempt();
+      if (parsed && typeof parsed === 'object') return parsed;
+    } catch (e) { /* try next strategy */ }
+  }
+
+  throw new Error('AI 回傳嘅分析格式無效（可能被截斷）。請再試一次，或轉用其他 AI 模型。');
+};
+
 export default function PendingApproval({ onNavigate }) {
   const navigate = useNavigate();
   const {
@@ -215,12 +272,8 @@ Idea details:
         throw new Error('No response content from API.');
       }
 
-      // Parse JSON from response - handle potential markdown fences
-      let jsonStr = content.trim();
-      if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.replace(/```(json)?/g, '').trim();
-      }
-      const parsed = JSON.parse(jsonStr);
+      // Parse JSON from response — robust parser handles malformed AI output
+      const parsed = safeParseAiJson(content);
 
       const analysis = {
         creativity: parsed.creativity || { score: 0, comment: '' },
