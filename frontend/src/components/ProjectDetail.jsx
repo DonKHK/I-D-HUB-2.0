@@ -496,7 +496,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       <div className="detail-section">
         <div className="card-header-row">
           <h3>Project Stages 項目階段 ({latestProject.stages?.length || 0})</h3>
-          {isSuperAdmin && (
+          {(isSuperAdmin || isProjectUser) && (
             <button className="btn btn--small" onClick={() => { resetStageForm(); setShowStageForm(true); setEditingStage(null); }}>
               + Add Stage
             </button>
@@ -522,7 +522,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
                   Used: {formatCurrency(stage.budgetUsed)}
                 </span>
               </div>
-              {isSuperAdmin && (
+              {(isSuperAdmin || isProjectUser) && (
                 <div className="stage-actions">
                   <button className="btn btn--small btn--outline" onClick={() => handleEditStage(stage)}>Edit</button>
                   <button className="btn btn--small btn--danger" onClick={() => setDeleteStageConfirm(stage.id)}>Delete</button>
