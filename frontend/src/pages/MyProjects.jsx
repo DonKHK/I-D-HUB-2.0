@@ -147,7 +147,12 @@ export default function MyProjects({ onNavigate }) {
         <button className="btn btn--text" onClick={() => setViewProject(null)}>
           ← Back to Projects
         </button>
-        <ProjectDetail project={viewProject} onBack={() => setViewProject(null)} onNavigate={onNavigate} />
+        <ProjectDetail
+          project={viewProject}
+          onBack={() => setViewProject(null)}
+          onNavigate={onNavigate}
+          onEdit={() => onNavigate && onNavigate('project-form', viewProject)}
+        />
       </div>
     );
   }

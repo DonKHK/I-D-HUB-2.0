@@ -244,8 +244,15 @@ export default function ProjectForm({ editProject, onBack }) {
         if (oldProject.holder !== form.holder) changes.push(`holder: "${oldProject.holder}" → "${form.holder}"`);
         if (oldProject.manager !== form.manager) changes.push(`manager: "${oldProject.manager}" → "${form.manager}"`);
 
-        updateProject(editProject.id, projectData);
-        addProjectLog(editProject, 'Project Updated', `Updated project fields: ${changes.join('; ') || 'no major field changes'}`, user, updateProject);
+        const newLog = {
+          id: 'log-' + Date.now(),
+          timestamp: new Date().toISOString(),
+          action: 'Project Updated',
+          details: `Updated project fields: ${changes.join('; ') || 'no major field changes'}`,
+          user: user?.displayName || user?.email || 'Unknown',
+        };
+        const updatedLogs = [...(editProject.logs || []), newLog];
+        updateProject(editProject.id, { ...projectData, logs: updatedLogs });
       } else {
         const existingIds = projects.map((p) => p.id);
         const newProject = {

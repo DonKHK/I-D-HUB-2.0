@@ -7,7 +7,7 @@ import { addProjectLog } from '../utils/helpers';
 
 export default function MyProject() {
   const navigate = useNavigate();
-  const { userProjectId } = useAuth();
+  const { user, userProjectId } = useAuth();
   const { projects, updateProject } = useData();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +79,7 @@ export default function MyProject() {
 
     updateProject(project.id, editForm);
     if (changedFields.length > 0) {
-      addProjectLog(project, 'Project Edited', `Updated: ${changedFields.join('; ')}`, null, updateProject);
+      addProjectLog(project, 'Project Edited', `Updated: ${changedFields.join('; ')}`, user, updateProject);
     }
     setEditMode(false);
     setRefreshKey((k) => k + 1);
