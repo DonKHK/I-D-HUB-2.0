@@ -244,6 +244,35 @@ export default function ProjectForm({ editProject, onBack }) {
         if (oldProject.holder !== form.holder) changes.push(`holder: "${oldProject.holder}" → "${form.holder}"`);
         if (oldProject.manager !== form.manager) changes.push(`manager: "${oldProject.manager}" → "${form.manager}"`);
 
+        // Compare stages to detect add / delete / edit
+        const oldStages = oldProject.stages || [];
+        const oldStageIds = new Set(oldStages.map((s) => s.id));
+        const newStageIds = new Set(stages.map((s) => s.id));
+
+        // Added stages
+        const addedStages = stages.filter((s) => !oldStageIds.has(s.id));
+        addedStages.forEach((s) => changes.push(`added stage: "${s.type || s.name || s.stage || 'Untitled'}"`));
+
+        // Deleted stages
+        const deletedStages = oldStages.filter((s) => !newStageIds.has(s.id));
+        deletedStages.forEach((s) => changes.push(`deleted stage: "${s.type || s.name || s.stage || 'Untitled'}"`));
+
+        // Edited stages (same id, changed fields)
+        stages.forEach((s) => {
+          const old = oldStages.find((os) => os.id === s.id);
+          if (!old) return;
+          const changed = [];
+          if ((old.type || '') !== (s.type || '')) changed.push('type');
+          if ((old.status || '') !== (s.status || '')) changed.push('status');
+          if ((old.startDate || '') !== (s.startDate || '')) changed.push('startDate');
+          if ((old.endDate || '') !== (s.endDate || '')) changed.push('endDate');
+          if (Number(old.budget || 0) !== Number(s.budget || 0)) changed.push('budget');
+          if ((old.description || '') !== (s.description || '')) changed.push('description');
+          if (changed.length > 0) {
+            changes.push(`edited stage "${s.type || s.name || s.stage || 'Untitled'}": ${changed.join(', ')}`);
+          }
+        });
+
         const newLog = {
           id: 'log-' + Date.now(),
           timestamp: new Date().toISOString(),
