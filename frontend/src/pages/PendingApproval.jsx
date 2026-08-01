@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency, calculateIdeaHealth } from '../utils/helpers';
 import Modal from '../components/Modal';
 
+// Backend API base URL — uses Vite proxy (/api -> localhost:5000) by default
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api';
+
 export default function PendingApproval({ onNavigate }) {
   const navigate = useNavigate();
   const {
@@ -160,62 +163,39 @@ Idea details:
     const idea = aiModal;
     const prompt = buildPrompt(idea);
 
-    let url, headers, body;
     // 'contentKey' tells us where to read the AI response text from
     let responseContentKey = null;
-
     if (aiProvider === 'cloudflare') {
-      // Cloudflare Workers AI
-      const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct';
-      url = `https://api.cloudflare.com/client/v4/accounts/${aiAccountId.trim()}/ai/run/${cfModel}`;
-      headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${aiCloudflareToken.trim()}`,
-      };
-      body = {
-        messages: [
-          { role: 'system', content: 'You are a helpful project evaluation assistant. Always respond with valid JSON only.' },
-          { role: 'user', content: prompt },
-        ],
-      };
       responseContentKey = 'result.response';
-    } else if (aiProvider === 'openai') {
-      url = 'https://api.openai.com/v1/chat/completions';
-      headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${aiApiKey}`,
-      };
-      body = {
-        model: aiModel || 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-      };
-      responseContentKey = 'choices.0.message.content';
     } else {
-      // Custom (OpenAI-compatible)
-      url = aiEndpoint;
-      headers = {
-        'Content-Type': 'application/json',
-        ...(aiApiKey.trim() ? { 'Authorization': `Bearer ${aiApiKey}` } : {}),
-      };
-      body = {
-        model: aiModel || 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-      };
       responseContentKey = 'choices.0.message.content';
     }
 
+    const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct';
+
+    // Send the request through the backend proxy to avoid browser CORS / mixed-content restrictions
     try {
-      const response = await fetch(url, {
+      const response = await fetch(`${API_BASE}/ai/analyze`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: aiProvider,
+          apiKey: aiApiKey,
+          endpoint: aiEndpoint,
+          model: aiProvider === 'cloudflare' ? cfModel : aiModel,
+          accountId: aiAccountId,
+          token: aiCloudflareToken,
+          prompt,
+        }),
       });
 
       if (!response.ok) {
-        const errText = await response.text().catch(() => 'Unknown error');
-        throw new Error(`API error ${response.status}: ${errText}`);
+        let errMsg = `API error ${response.status}`;
+        try {
+          const errData = await response.json();
+          errMsg = errData.error || errData.message || errMsg;
+        } catch (e) { /* response not JSON */ }
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -263,7 +243,11 @@ Idea details:
       updateIdea(idea.id, { aiAnalysis: analysis });
       setAiResult(analysis);
     } catch (err) {
-      setAiError(err.message || 'Analysis failed. Please check your API settings and try again.');
+      if (err?.message === 'Failed to fetch') {
+        setAiError('無法連接到 AI 服務。請檢查網絡連線，並確認 backend server (port 5000) 已啟動。');
+      } else {
+        setAiError(err.message || 'Analysis failed. Please check your API settings and try again.');
+      }
     } finally {
       setAiLoading(false);
     }

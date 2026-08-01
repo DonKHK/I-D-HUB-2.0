@@ -20,6 +20,9 @@ app.get('/api/health', (req, res) => {
 // Ideas API — shared JSON-backed REST endpoints for A/B computer sync
 app.use('/api/ideas', require('./routes/ideas'));
 
+// AI proxy — server-side forwarding to AI providers (avoids browser CORS)
+app.use('/api/ai', require('./routes/ai'));
+
 // Start server
 app.listen(PORT, () => {
   console.log(`I&D Hub Backend server running on port ${PORT}`);
