@@ -27,10 +27,12 @@ export default function PendingApproval({ onNavigate }) {
 
   // AI Analysis state
   const [aiModal, setAiModal] = useState(null); // idea object when modal is open
-  const [aiProvider, setAiProvider] = useState('openai'); // 'openai' | 'custom'
+  const [aiProvider, setAiProvider] = useState('openai'); // 'openai' | 'custom' | 'cloudflare'
   const [aiApiKey, setAiApiKey] = useState('');
   const [aiEndpoint, setAiEndpoint] = useState('');
   const [aiModel, setAiModel] = useState('gpt-3.5-turbo');
+  const [aiAccountId, setAiAccountId] = useState('');
+  const [aiCloudflareToken, setAiCloudflareToken] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const [aiResult, setAiResult] = useState(null);
@@ -69,6 +71,8 @@ export default function PendingApproval({ onNavigate }) {
     setAiApiKey('');
     setAiEndpoint('');
     setAiModel('gpt-3.5-turbo');
+    setAiAccountId('');
+    setAiCloudflareToken('');
     setAiLoading(false);
     setAiError('');
     setAiResult(null);
@@ -90,14 +94,19 @@ export default function PendingApproval({ onNavigate }) {
   };
 
   const buildPrompt = (idea) => {
-    return `You are an AI project evaluation assistant. Analyze the following project idea and return a JSON object (no markdown, no code fences) with the following keys:
+    return `You are an AI project evaluation assistant. Analyze whether this idea is feasible to become a real project. Return a STRICT JSON object (no markdown, no code fences) with the following keys:
 
 {
   "creativity": { "score": <1-10>, "comment": "..." },
   "marketDemand": { "score": <1-10>, "comment": "..." },
   "existingSolutions": { "score": <1-10>, "comment": "..." },
-  "feasibility": { "score": <1-10>, "comment": "..." },
+  "budgetFeasibility": { "score": <1-10>, "comment": "Is the budget realistic and sufficient?" },
+  "timelineFeasibility": { "score": <1-10>, "comment": "Is the timeline realistic?" },
+  "scopeClarity": { "score": <1-10>, "comment": "Are scope and deliverables clearly defined?" },
+  "riskLevel": { "score": <1-10>, "comment": "Lower = riskier. Comment on risks." },
   "overallScore": <1-10>,
+  "recommendation": "Approve | Conditional | Reject",
+  "recommendationReason": "...",
   "summary": "..."
 }
 
@@ -109,19 +118,39 @@ Idea details:
 - Scope: ${idea.projectScope || 'N/A'}
 - Deliverables: ${idea.deliverables || 'N/A'}
 - Benefits: ${idea.benefits || 'N/A'}
-- Budget: ${idea.totalBudget || 'N/A'}
+- Total Budget: ${idea.totalBudget || 'N/A'} (HKD)
+- Fund Source: ${idea.fundSource || 'N/A'}
+- Expected Start: ${idea.expectedStartDate || 'N/A'}
+- Target Completion: ${idea.targetCompletionDate || 'N/A'}
+- Resource Requirements: ${idea.resourceRequirements || 'N/A'}
+- Cross-dept Assistance: ${idea.crossDeptAssistance || 'N/A'}
+- Risks: ${idea.risks || 'N/A'}
+- Expected Outcome: ${idea.expectedOutcome || 'N/A'}
 - Tech Direction: ${idea.techDirection || 'N/A'}
-- Innovation: ${idea.innovationElement || 'N/A'}`;
+- Innovation: ${idea.innovationElement || 'N/A'}
+- Tech Requirements: ${idea.technicalRequirements || 'N/A'}`;
   };
 
   const runAiAnalysis = async () => {
-    if (!aiApiKey.trim()) {
-      setAiError('Please enter an API Key.');
-      return;
-    }
-    if (aiProvider === 'custom' && !aiEndpoint.trim()) {
-      setAiError('Please enter an API endpoint URL.');
-      return;
+    // Provider-specific validation
+    if (aiProvider === 'cloudflare') {
+      if (!aiAccountId.trim()) {
+        setAiError('Please enter your Cloudflare Account ID.');
+        return;
+      }
+      if (!aiCloudflareToken.trim()) {
+        setAiError('Please enter your Cloudflare API Token.');
+        return;
+      }
+    } else {
+      if (!aiApiKey.trim()) {
+        setAiError('Please enter an API Key.');
+        return;
+      }
+      if (aiProvider === 'custom' && !aiEndpoint.trim()) {
+        setAiError('Please enter an API endpoint URL.');
+        return;
+      }
     }
 
     setAiLoading(true);
@@ -132,8 +161,25 @@ Idea details:
     const prompt = buildPrompt(idea);
 
     let url, headers, body;
+    // 'contentKey' tells us where to read the AI response text from
+    let responseContentKey = null;
 
-    if (aiProvider === 'openai') {
+    if (aiProvider === 'cloudflare') {
+      // Cloudflare Workers AI
+      const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct';
+      url = `https://api.cloudflare.com/client/v4/accounts/${aiAccountId.trim()}/ai/run/${cfModel}`;
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiCloudflareToken.trim()}`,
+      };
+      body = {
+        messages: [
+          { role: 'system', content: 'You are a helpful project evaluation assistant. Always respond with valid JSON only.' },
+          { role: 'user', content: prompt },
+        ],
+      };
+      responseContentKey = 'result.response';
+    } else if (aiProvider === 'openai') {
       url = 'https://api.openai.com/v1/chat/completions';
       headers = {
         'Content-Type': 'application/json',
@@ -144,6 +190,7 @@ Idea details:
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
       };
+      responseContentKey = 'choices.0.message.content';
     } else {
       // Custom (OpenAI-compatible)
       url = aiEndpoint;
@@ -156,6 +203,7 @@ Idea details:
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
       };
+      responseContentKey = 'choices.0.message.content';
     }
 
     try {
@@ -171,7 +219,18 @@ Idea details:
       }
 
       const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
+
+      // Cloudflare returns { success: false, errors: [...] } on failure
+      if (aiProvider === 'cloudflare' && data.success === false) {
+        const errMsg = data.errors?.[0]?.message || 'Cloudflare API error';
+        throw new Error(errMsg);
+      }
+
+      // Extract the raw text content from the provider-specific response shape
+      const content = responseContentKey
+        ? responseContentKey.split('.').reduce((obj, key) => (obj == null ? undefined : obj[key]), data)
+        : null;
+
       if (!content) {
         throw new Error('No response content from API.');
       }
@@ -187,12 +246,17 @@ Idea details:
         creativity: parsed.creativity || { score: 0, comment: '' },
         marketDemand: parsed.marketDemand || { score: 0, comment: '' },
         existingSolutions: parsed.existingSolutions || { score: 0, comment: '' },
-        feasibility: parsed.feasibility || { score: 0, comment: '' },
+        budgetFeasibility: parsed.budgetFeasibility || { score: 0, comment: '' },
+        timelineFeasibility: parsed.timelineFeasibility || { score: 0, comment: '' },
+        scopeClarity: parsed.scopeClarity || { score: 0, comment: '' },
+        riskLevel: parsed.riskLevel || { score: 0, comment: '' },
         overallScore: parsed.overallScore || 0,
+        recommendation: parsed.recommendation || '',
+        recommendationReason: parsed.recommendationReason || '',
         summary: parsed.summary || '',
         analyzedAt: new Date().toISOString(),
         provider: aiProvider,
-        model: aiModel,
+        model: aiProvider === 'cloudflare' ? (aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct') : aiModel,
       };
 
       // Save to idea
@@ -311,7 +375,7 @@ Idea details:
   // Render AI report content
   const renderAiReport = (analysis) => {
     if (!analysis) return null;
-    const { creativity, marketDemand, existingSolutions, feasibility, overallScore, summary, analyzedAt, provider, model } = analysis;
+    const { creativity, marketDemand, existingSolutions, budgetFeasibility, timelineFeasibility, scopeClarity, riskLevel, overallScore, recommendation, recommendationReason, summary, analyzedAt, provider, model } = analysis;
 
     const scoreBar = (score) => {
       const pct = Math.min(100, Math.max(0, score * 10));
@@ -325,6 +389,17 @@ Idea details:
       );
     };
 
+    const scoreItem = (label, item) =>
+      item && (
+        <div className="ai-score-item">
+          <label>{label}</label>
+          {scoreBar(item.score || 0)}
+          {item.comment && <p className="ai-score-comment">{item.comment}</p>}
+        </div>
+      );
+
+    const recommendationColor = !recommendation ? '#6b7280' : recommendation === 'Approve' ? '#22c55e' : recommendation === 'Conditional' ? '#eab308' : '#ef4444';
+
     return (
       <div className="ai-report">
         <div className="ai-report-meta">
@@ -333,32 +408,29 @@ Idea details:
         </div>
 
         <div className="ai-score-grid">
-          <div className="ai-score-item">
-            <label>Creativity</label>
-            {scoreBar(creativity?.score || 0)}
-            {creativity?.comment && <p className="ai-score-comment">{creativity.comment}</p>}
-          </div>
-          <div className="ai-score-item">
-            <label>Market Demand</label>
-            {scoreBar(marketDemand?.score || 0)}
-            {marketDemand?.comment && <p className="ai-score-comment">{marketDemand.comment}</p>}
-          </div>
-          <div className="ai-score-item">
-            <label>Existing Solutions</label>
-            {scoreBar(existingSolutions?.score || 0)}
-            {existingSolutions?.comment && <p className="ai-score-comment">{existingSolutions.comment}</p>}
-          </div>
-          <div className="ai-score-item">
-            <label>Feasibility</label>
-            {scoreBar(feasibility?.score || 0)}
-            {feasibility?.comment && <p className="ai-score-comment">{feasibility.comment}</p>}
-          </div>
+          {scoreItem('Creativity', creativity)}
+          {scoreItem('Market Demand', marketDemand)}
+          {scoreItem('Existing Solutions', existingSolutions)}
+          {scoreItem('Budget Feasibility', budgetFeasibility)}
+          {scoreItem('Timeline Feasibility', timelineFeasibility)}
+          {scoreItem('Scope Clarity', scopeClarity)}
+          {scoreItem('Risk Level (higher = safer)', riskLevel)}
         </div>
 
         <div className="ai-overall-score">
           <span className="ai-overall-label">Overall Score</span>
           <span className="ai-overall-value">{overallScore}/10</span>
         </div>
+
+        {recommendation && (
+          <div className="ai-recommendation" style={{ marginTop: '1rem', padding: '0.75rem 1rem', borderRadius: '8px', backgroundColor: `${recommendationColor}15`, borderLeft: `4px solid ${recommendationColor}` }}>
+            <span className="ai-recommendation-label" style={{ fontWeight: 700, color: recommendationColor, marginRight: '0.5rem' }}>
+              Recommendation:
+            </span>
+            <span style={{ fontWeight: 600, color: recommendationColor }}>{recommendation}</span>
+            {recommendationReason && <p style={{ marginTop: '0.4rem', color: '#475569', fontSize: '0.9rem' }}>{recommendationReason}</p>}
+          </div>
+        )}
 
         {summary && (
           <div className="ai-summary">
@@ -403,34 +475,39 @@ Idea details:
             >
               Custom (OpenAI-compatible)
             </button>
+            <button
+              className={`ai-provider-tab ${aiProvider === 'cloudflare' ? 'active' : ''}`}
+              onClick={() => setAiProvider('cloudflare')}
+            >
+              Cloudflare AI
+            </button>
           </div>
         </div>
 
-        {/* API Key (both providers) */}
-        <div className="form-group">
-          <label>API Key</label>
-          <input
-            type="password"
-            className="form-input"
-            value={aiApiKey}
-            onChange={(e) => setAiApiKey(e.target.value)}
-            placeholder={aiProvider === 'openai' ? 'sk-...' : 'Enter your API key (leave empty if not required)'}
-          />
-        </div>
-
-        {/* Custom provider fields */}
-        {aiProvider === 'custom' && (
+        {/* Cloudflare provider fields */}
+        {aiProvider === 'cloudflare' ? (
           <>
             <div className="form-group">
-              <label>API Endpoint URL</label>
+              <label>Cloudflare Account ID</label>
               <input
                 type="text"
                 className="form-input"
-                value={aiEndpoint}
-                onChange={(e) => setAiEndpoint(e.target.value)}
-                placeholder="e.g. http://localhost:11434/v1/chat/completions"
+                value={aiAccountId}
+                onChange={(e) => setAiAccountId(e.target.value)}
+                placeholder="e.g. 1a2b3c4d5e6f..."
               />
-              <p className="form-hint">Full URL including /chat/completions path</p>
+              <p className="form-hint">Cloudflare Dashboard → 右邊 Overview → Account ID</p>
+            </div>
+            <div className="form-group">
+              <label>Cloudflare API Token</label>
+              <input
+                type="password"
+                className="form-input"
+                value={aiCloudflareToken}
+                onChange={(e) => setAiCloudflareToken(e.target.value)}
+                placeholder="Enter your Workers AI API Token"
+              />
+              <p className="form-hint">My Profile → API Tokens → Create Token (揀 Workers AI 權限)</p>
             </div>
             <div className="form-group">
               <label>Model Name</label>
@@ -439,23 +516,65 @@ Idea details:
                 className="form-input"
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
-                placeholder="e.g. gpt-3.5-turbo, llama3, mistral"
+                placeholder="@cf/meta/llama-3.1-8b-instruct"
               />
+              <p className="form-hint">預設 @cf/meta/llama-3.1-8b-instruct，可改其他 Workers AI model</p>
             </div>
           </>
-        )}
+        ) : (
+          <>
+            {/* API Key (OpenAI / Custom) */}
+            <div className="form-group">
+              <label>API Key</label>
+              <input
+                type="password"
+                className="form-input"
+                value={aiApiKey}
+                onChange={(e) => setAiApiKey(e.target.value)}
+                placeholder={aiProvider === 'openai' ? 'sk-...' : 'Enter your API key (leave empty if not required)'}
+              />
+            </div>
 
-        {aiProvider === 'openai' && (
-          <div className="form-group">
-            <label>Model Name</label>
-            <input
-              type="text"
-              className="form-input"
-              value={aiModel}
-              onChange={(e) => setAiModel(e.target.value)}
-              placeholder="gpt-3.5-turbo"
-            />
-          </div>
+            {/* Custom provider fields */}
+            {aiProvider === 'custom' && (
+              <>
+                <div className="form-group">
+                  <label>API Endpoint URL</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={aiEndpoint}
+                    onChange={(e) => setAiEndpoint(e.target.value)}
+                    placeholder="e.g. http://localhost:11434/v1/chat/completions"
+                  />
+                  <p className="form-hint">Full URL including /chat/completions path</p>
+                </div>
+                <div className="form-group">
+                  <label>Model Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={aiModel}
+                    onChange={(e) => setAiModel(e.target.value)}
+                    placeholder="e.g. gpt-3.5-turbo, llama3, mistral"
+                  />
+                </div>
+              </>
+            )}
+
+            {aiProvider === 'openai' && (
+              <div className="form-group">
+                <label>Model Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={aiModel}
+                  onChange={(e) => setAiModel(e.target.value)}
+                  placeholder="gpt-3.5-turbo"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {aiError && <p className="form-error">{aiError}</p>}
