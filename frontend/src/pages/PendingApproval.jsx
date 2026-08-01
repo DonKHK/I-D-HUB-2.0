@@ -115,7 +115,7 @@ export default function PendingApproval({ onNavigate }) {
     restoreIdea,
     approveIdea,
   } = useData();
-  const { isSuperAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin } = useAuth();
 
   const [approveModal, setApproveModal] = useState(null);
   const [rejectModal, setRejectModal] = useState(null);
@@ -481,27 +481,42 @@ After completing the analysis above, output a STRICT JSON object (no markdown, n
             View Details
           </button>
 
-          {type === 'pending' && isSuperAdmin && (
+          {type === 'pending' && (isAdmin || isSuperAdmin) && (
             <>
-              {/* AI Analysis Button */}
+              {/* AI Analysis Button — admin can analyze/view; superadmin can also re-analyze */}
               {idea.aiAnalysis ? (
-                <button className="btn btn--small btn--ai" onClick={() => openViewAiModal(idea)} title="View AI Analysis Report">
-                  📊 AI Report
-                </button>
+                <>
+                  <button className="btn btn--small btn--ai" onClick={() => openViewAiModal(idea)} title="View AI Analysis Report">
+                    📊 AI Report
+                  </button>
+                  {isSuperAdmin && (
+                    <button
+                      className="btn btn--small btn--ai-outline"
+                      onClick={() => openAiModal(idea)}
+                      title="Re-run AI Analysis to generate a new report"
+                    >
+                      🔄 Re-Analyze
+                    </button>
+                  )}
+                </>
               ) : (
                 <button className="btn btn--small btn--ai-outline" onClick={() => openAiModal(idea)} title="Run AI Analysis">
                   🤖 AI Analyze
                 </button>
               )}
-              <button className="btn btn--small btn--primary" onClick={() => setApproveModal(idea.id)}>
-                Approve
-              </button>
-              <button className="btn btn--small btn--danger" onClick={() => setRejectModal(idea.id)}>
-                Reject
-              </button>
-              <button className="btn btn--small btn--outline-danger" onClick={() => setSoftDeleteModal(idea.id)} title="Soft delete">
-                🗑️
-              </button>
+              {isSuperAdmin && (
+                <>
+                  <button className="btn btn--small btn--primary" onClick={() => setApproveModal(idea.id)}>
+                    Approve
+                  </button>
+                  <button className="btn btn--small btn--danger" onClick={() => setRejectModal(idea.id)}>
+                    Reject
+                  </button>
+                  <button className="btn btn--small btn--outline-danger" onClick={() => setSoftDeleteModal(idea.id)} title="Soft delete">
+                    🗑️
+                  </button>
+                </>
+              )}
             </>
           )}
 

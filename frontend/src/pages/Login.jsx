@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { auth, signInWithEmailAndPassword, sendPasswordResetEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from '../firebase';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,12 +11,20 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMode, setLoginMode] = useState('admin'); // 'admin' or 'project'
+  const [loginMode, setLoginMode] = useState('admin'); // 'admin' | 'project' | 'forgot' | 'change-password'
 
   // Project login fields
   const [projectId, setProjectId] = useState('');
   const [projectPassword, setProjectPassword] = useState('');
   const [showProjectPassword, setShowProjectPassword] = useState(false);
+
+  // Forgot / Change password state
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [changeEmail, setChangeEmail] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -26,6 +35,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
 
     if (loginMode === 'admin') {
       if (!email.trim() || !password.trim()) {
@@ -38,7 +48,7 @@ export default function Login() {
         setError(result.error);
         setLoading(false);
       }
-    } else {
+    } else if (loginMode === 'project') {
       if (!projectId.trim() || !projectPassword.trim()) {
         setError('請輸入 Project ID 和密碼');
         return;
@@ -50,7 +60,93 @@ export default function Login() {
         setLoading(false);
       }
       // On success, will redirect via isAuthenticated effect
+    } else if (loginMode === 'forgot') {
+      handleForgotPassword();
+    } else if (loginMode === 'change-password') {
+      handleChangePassword();
     }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, forgotEmail.trim());
+      setSuccessMsg('重設密碼電郵已發送！請檢查你的收件箱。');
+      // Switch back to admin login after success
+      setTimeout(() => {
+        setLoginMode('admin');
+        setSuccessMsg('');
+        setLoading(false);
+      }, 3000);
+    } catch (err) {
+      let msg = '發送失敗';
+      switch (err.code) {
+        case 'auth/user-not-found': msg = '找不到此用戶'; break;
+        case 'auth/invalid-email': msg = '無效的電郵地址'; break;
+        default: msg = err.message;
+      }
+      setError(msg);
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!changeEmail.trim() || !oldPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+      setError('請填寫所有欄位');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('兩次輸入的新密碼不一致');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('新密碼最少需要 6 個字元');
+      return;
+    }
+    setLoading(true);
+    try {
+      // Sign in with old password to verify identity and get current user
+      const credential = await signInWithEmailAndPassword(auth, changeEmail.trim(), oldPassword);
+      const user = credential.user;
+
+      // Re-authenticate with the credential (required before updatePassword)
+      await reauthenticateWithCredential(user, EmailAuthProvider.credential(changeEmail.trim(), oldPassword));
+
+      // Update the password
+      await updatePassword(user, newPassword);
+
+      setSuccessMsg('密碼已成功更改！');
+      setTimeout(() => {
+        setLoginMode('admin');
+        setSuccessMsg('');
+        setLoading(false);
+        setChangeEmail('');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }, 3000);
+    } catch (err) {
+      let msg = '更改密碼失敗';
+      switch (err.code) {
+        case 'auth/user-not-found': msg = '找不到此用戶'; break;
+        case 'auth/wrong-password': msg = '舊密碼錯誤'; break;
+        case 'auth/invalid-credential': msg = '電郵或舊密碼錯誤'; break;
+        case 'auth/too-many-requests': msg = '嘗試次數過多，請稍後再試'; break;
+        default: msg = err.message;
+      }
+      setError(msg);
+      setLoading(false);
+    }
+  };
+
+  const switchMode = (mode) => {
+    setLoginMode(mode);
+    setError('');
+    setSuccessMsg('');
   };
 
   if (authLoading) {
@@ -76,27 +172,29 @@ export default function Login() {
           <p className="login-department">Innovation & Development Department</p>
         </div>
 
-        {/* Tab switcher */}
-        <div className="login-tabs">
-          <button
-            type="button"
-            className={`login-tab ${loginMode === 'admin' ? 'login-tab--active' : ''}`}
-            onClick={() => { setLoginMode('admin'); setError(''); }}
-          >
-            Admin Login
-          </button>
-          <button
-            type="button"
-            className={`login-tab ${loginMode === 'project' ? 'login-tab--active' : ''}`}
-            onClick={() => { setLoginMode('project'); setError(''); }}
-          >
-            Project Login
-          </button>
-        </div>
+        {/* Tab switcher (hidden in forgot/change modes) */}
+        {['admin', 'project'].includes(loginMode) && (
+          <div className="login-tabs">
+            <button
+              type="button"
+              className={`login-tab ${loginMode === 'admin' ? 'login-tab--active' : ''}`}
+              onClick={() => switchMode('admin')}
+            >
+              Admin Login
+            </button>
+            <button
+              type="button"
+              className={`login-tab ${loginMode === 'project' ? 'login-tab--active' : ''}`}
+              onClick={() => switchMode('project')}
+            >
+              Project Login
+            </button>
+          </div>
+        )}
 
         <form className="login-form" onSubmit={handleSubmit}>
 
-          {loginMode === 'admin' ? (
+          {loginMode === 'admin' && (
             <>
               <div className="login-input-group">
                 <label className="login-label">Login Email :</label>
@@ -136,13 +234,24 @@ export default function Login() {
                 {loading ? 'Processing...' : 'Login'}
               </button>
 
+              <div className="login-secondary-links">
+                <button type="button" className="login-link-btn" onClick={() => switchMode('forgot')}>
+                  Forgot Password?
+                </button>
+                <button type="button" className="login-link-btn" onClick={() => switchMode('change-password')}>
+                  Change Password
+                </button>
+              </div>
+
               <div className="login-secondary-btns">
                 <button type="button" className="login-btn login-btn--guest" onClick={guestLogin}>
                   Guest
                 </button>
               </div>
             </>
-          ) : (
+          )}
+
+          {loginMode === 'project' && (
             <>
               <div className="login-input-group">
                 <label className="login-label">Project ID :</label>
@@ -185,6 +294,99 @@ export default function Login() {
               <p className="login-hint">
                 Project ID 和密碼由系統管理員提供
               </p>
+            </>
+          )}
+
+          {loginMode === 'forgot' && (
+            <>
+              <h2 className="login-mode-title">🔑 重設密碼</h2>
+              <div className="login-input-group">
+                <label className="login-label">Login Email :</label>
+                <input
+                  type="email"
+                  className="login-input"
+                  placeholder="your@idd.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              {error && <p className="login-error">{error}</p>}
+              {successMsg && <p className="login-success">{successMsg}</p>}
+
+              <button type="submit" className="login-btn login-btn--admin" disabled={loading}>
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+
+              <div className="login-secondary-links">
+                <button type="button" className="login-link-btn" onClick={() => switchMode('admin')}>
+                  ← Back to Login
+                </button>
+              </div>
+            </>
+          )}
+
+          {loginMode === 'change-password' && (
+            <>
+              <h2 className="login-mode-title">🔒 更改密碼</h2>
+              <div className="login-input-group">
+                <label className="login-label">Login Email :</label>
+                <input
+                  type="email"
+                  className="login-input"
+                  placeholder="your@idd.com"
+                  value={changeEmail}
+                  onChange={(e) => setChangeEmail(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div className="login-input-group">
+                <label className="login-label">Current Password :</label>
+                <input
+                  type="password"
+                  className="login-input"
+                  placeholder="Enter current password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="login-input-group">
+                <label className="login-label">New Password :</label>
+                <input
+                  type="password"
+                  className="login-input"
+                  placeholder="Enter new password (min 6 chars)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="login-input-group">
+                <label className="login-label">Confirm New Password :</label>
+                <input
+                  type="password"
+                  className="login-input"
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+
+              {error && <p className="login-error">{error}</p>}
+              {successMsg && <p className="login-success">{successMsg}</p>}
+
+              <button type="submit" className="login-btn login-btn--admin" disabled={loading}>
+                {loading ? 'Updating...' : 'Change Password'}
+              </button>
+
+              <div className="login-secondary-links">
+                <button type="button" className="login-link-btn" onClick={() => switchMode('admin')}>
+                  ← Back to Login
+                </button>
+              </div>
             </>
           )}
         </form>
