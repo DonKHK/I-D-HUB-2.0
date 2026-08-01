@@ -64,7 +64,6 @@ const emptyForm = {
   projectPhases: '',
   risks: '',
   // Timeline & Termination
-  targetCompletionDate: '',
   terminationCondition1: '',
   terminationCondition2: '',
   terminationCondition3: '',
@@ -142,7 +141,6 @@ export default function ProjectForm({ editProject, onBack }) {
         benefits: editProject.benefits || '',
         projectPhases: editProject.projectPhases || '',
         risks: editProject.risks || '',
-        targetCompletionDate: editProject.targetCompletionDate || '',
         terminationCondition1: editProject.terminationCondition1 || '',
         terminationCondition2: editProject.terminationCondition2 || '',
         terminationCondition3: editProject.terminationCondition3 || '',
@@ -477,10 +475,6 @@ export default function ProjectForm({ editProject, onBack }) {
               <label>End Date 結束日期</label>
               <input type="date" value={form.endDate} onChange={(e) => handleChange('endDate', e.target.value)} />
             </div>
-          </div>
-          <div className="form-group">
-            <label>Target Completion Date 目標完成日期</label>
-            <input type="date" value={form.targetCompletionDate} onChange={(e) => handleChange('targetCompletionDate', e.target.value)} />
           </div>
         </div>
 

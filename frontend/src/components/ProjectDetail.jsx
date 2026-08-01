@@ -455,7 +455,6 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
               <p>{formatDate(project.endDate) || 'TBD'}</p>
             )}
           </div>
-          {project.targetCompletionDate && <div className="detail-field"><label>Target Completion 目標完成</label><p>{project.targetCompletionDate}</p></div>}
         </div>
       </CollapsibleSection>
 
