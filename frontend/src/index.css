@@ -5569,6 +5569,41 @@ body {
   color: #334155;
 }
 
+/* Secondary action buttons (Forgot Password / Change Password) */
+.login-secondary-links {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.login-secondary-links--single {
+  margin-top: 0.5rem;
+}
+
+.login-btn--link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.7rem 0.5rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-btn--link:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 .login-secondary-btns {
   display: flex;
   flex-direction: column;

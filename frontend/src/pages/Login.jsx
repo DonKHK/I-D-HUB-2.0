@@ -235,10 +235,10 @@ export default function Login() {
               </button>
 
               <div className="login-secondary-links">
-                <button type="button" className="login-link-btn" onClick={() => switchMode('forgot')}>
+                <button type="button" className="login-btn login-btn--link" onClick={() => switchMode('forgot')}>
                   Forgot Password?
                 </button>
-                <button type="button" className="login-link-btn" onClick={() => switchMode('change-password')}>
+                <button type="button" className="login-btn login-btn--link" onClick={() => switchMode('change-password')}>
                   Change Password
                 </button>
               </div>
@@ -319,8 +319,8 @@ export default function Login() {
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
 
-              <div className="login-secondary-links">
-                <button type="button" className="login-link-btn" onClick={() => switchMode('admin')}>
+              <div className="login-secondary-links login-secondary-links--single">
+                <button type="button" className="login-btn login-btn--link" onClick={() => switchMode('admin')}>
                   ← Back to Login
                 </button>
               </div>
@@ -382,8 +382,8 @@ export default function Login() {
                 {loading ? 'Updating...' : 'Change Password'}
               </button>
 
-              <div className="login-secondary-links">
-                <button type="button" className="login-link-btn" onClick={() => switchMode('admin')}>
+              <div className="login-secondary-links login-secondary-links--single">
+                <button type="button" className="login-btn login-btn--link" onClick={() => switchMode('admin')}>
                   ← Back to Login
                 </button>
               </div>
