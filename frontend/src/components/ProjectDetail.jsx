@@ -356,7 +356,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
           <span className="detail-meta-health">
             <span className="health-dot health-dot--large" style={{ backgroundColor: health.color }} />
             <span className="detail-meta-text" style={{ color: health.color }}>
-              {health.label}{health.reasons && health.reasons.length > 0 ? ` - ${health.reasons.join(', ')}` : ''}
+              {health.label}
             </span>
           </span>
           <span className="detail-divider">|</span>

@@ -6,53 +6,6 @@ import { calculateHealth, formatDate, formatDateTime, formatCurrency, daysUntil 
 import Modal from '../components/Modal';
 import ProjectDetail from '../components/ProjectDetail';
 
-/* ───── health logic matching idprojecthub ───── */
-function getProjectHealth(p) {
-  if (!p.endDate) {
-    return { color: '#ef4444', label: 'No End Date', cls: 'health-red' };
-  }
-  if (!p.budget || p.budget <= 0) {
-    return { color: '#ef4444', label: 'No Budget', cls: 'health-red' };
-  }
-
-  const now = new Date();
-  const end = new Date(p.endDate);
-  const diffDays = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-
-  let label = '';
-  let color = '#22c55e';
-  let cls = 'health-green';
-
-  if (diffDays < 0) {
-    label = `Overdue ${Math.abs(diffDays)} days`;
-    color = '#ef4444';
-    cls = 'health-red';
-  } else if (diffDays <= 14) {
-    label = `Remaining ${diffDays} days`;
-    color = '#eab308';
-    cls = 'health-yellow';
-  } else {
-    label = 'Normal';
-    color = '#22c55e';
-    cls = 'health-green';
-  }
-
-  if (p.budgetUsed && p.budgetUsed > 0) {
-    const ratio = p.budgetUsed / p.budget;
-    if (ratio > 1.05) {
-      label += ' | Budget Overrun';
-      color = '#ef4444';
-      cls = 'health-red';
-    } else if (ratio > 0.95 && cls !== 'health-red') {
-      label += ' | Budget close to limit';
-      color = '#eab308';
-      cls = 'health-yellow';
-    }
-  }
-
-  return { color, label, cls };
-}
-
 /* ───── Status badge class ───── */
 function statusClass(status) {
   if (status === 'Completed') return 'badge-completed';
@@ -202,7 +155,7 @@ export default function MyProjects({ onNavigate }) {
       <div className="myprojects-grid">
         {filtered.length === 0 && <p className="empty-text">No projects available</p>}
         {filtered.map((project) => {
-          const health = getProjectHealth(project);
+          const health = calculateHealth(project);
           return (
             <div key={project.id} className={`myprojects-card ${project._isApprovedIdea ? 'myprojects-card--idea' : ''}`}>
               {project._isApprovedIdea && <div className="myprojects-idea-badge">✅ Approved Idea</div>}
@@ -210,7 +163,7 @@ export default function MyProjects({ onNavigate }) {
               <div className="myprojects-card-top">
                 <div className="myprojects-card-health">
                   <span
-                    className={`health-dot-simple ${health.cls}`}
+                    className={`health-dot-simple ${health.status === 'critical' ? 'health-red' : health.status === 'warning' ? 'health-yellow' : 'health-green'}`}
                     style={{ backgroundColor: health.color }}
                   />
                   <span className="myprojects-health-label">{health.label}</span>

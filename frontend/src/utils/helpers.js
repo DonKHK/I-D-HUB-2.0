@@ -32,55 +32,52 @@ export function generateIdeaId(existingIds = []) {
 /**
  * Calculate health status of a project
  * Returns: 'healthy' | 'warning' | 'critical'
+ *
+ * Priority: Red conditions > Yellow conditions > Green (On Track)
+ * - Red: No End Date / No Budget / Overdue / Budget Overrun (>= 105%)
+ * - Yellow: Due within 14 days / Budget close to limit (> 95%)
+ * - Green: everything else
  */
 export function calculateHealth(project) {
   const today = new Date();
-  let score = 0;
-  let reasons = [];
+  const redReasons = [];
+  const yellowReasons = [];
 
-  // Check end date
-  if (project.endDate) {
-    const end = new Date(project.endDate);
-    const daysDiff = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-    if (daysDiff < 0) {
-      score -= 2;
-      reasons.push(`Overdue by ${Math.abs(daysDiff)} days`);
-    } else if (daysDiff <= 14) {
-      score -= 1;
-      reasons.push(`Due within ${daysDiff} days`);
-    }
+  // End date checks
+  if (!project.endDate) {
+    redReasons.push('No End Date');
   } else {
-    score -= 1;
-    reasons.push('No end date set');
+    const end = new Date(project.endDate);
+    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) {
+      redReasons.push('Overdue');
+    } else if (diffDays <= 14) {
+      yellowReasons.push(`Due within ${diffDays} days`);
+    }
   }
 
-  // Check budget
-  if (project.budget && project.budget > 0) {
+  // Budget checks
+  if (!project.budget || project.budget <= 0) {
+    redReasons.push('No Budget');
+  } else {
     const used = project.budgetUsed || 0;
     const ratio = used / project.budget;
-    if (ratio > 0.9) {
-      score -= 2;
-      reasons.push(`Budget ${Math.round(ratio * 100)}% used`);
-    } else if (ratio > 0.75) {
-      score -= 1;
-      reasons.push(`Budget ${Math.round(ratio * 100)}% used`);
-    }
-  } else if (project.budget === 0 || project.budget === undefined) {
-    score -= 1;
-    reasons.push('No budget set');
-  }
-
-  // Check start date
-  if (project.startDate && project.status !== 'Completed') {
-    const start = new Date(project.startDate);
-    if (today < start) {
-      // Not yet started, ok
+    if (ratio >= 1.05) {
+      redReasons.push('Budget Overrun');
+    } else if (ratio > 0.95) {
+      yellowReasons.push('Budget Close to Limit');
     }
   }
 
-  if (score >= 0) return { status: 'healthy', label: 'Healthy', color: '#22c55e', reasons };
-  if (score >= -1) return { status: 'warning', label: 'Warning', color: '#eab308', reasons };
-  return { status: 'critical', label: 'Critical', color: '#ef4444', reasons };
+  const allReasons = [...redReasons, ...yellowReasons];
+
+  if (redReasons.length > 0) {
+    return { status: 'critical', label: `🔴 ${allReasons.join(', ')}`, color: '#ef4444', reasons: allReasons };
+  }
+  if (yellowReasons.length > 0) {
+    return { status: 'warning', label: `🟡 ${allReasons.join(', ')}`, color: '#eab308', reasons: allReasons };
+  }
+  return { status: 'healthy', label: '🟢 On Track', color: '#22c55e', reasons: [] };
 }
 
 /**
