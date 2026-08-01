@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
   let url, headers, payload;
 
   if (provider === 'cloudflare') {
-    const cfModel = model && model.startsWith('@cf/') ? model : '@cf/meta/llama-3.1-8b-instruct';
+    const cfModel = model && model.startsWith('@cf/') ? model : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b';
     if (!accountId) return res.status(400).json({ error: 'Missing Cloudflare Account ID' });
     if (!token) return res.status(400).json({ error: 'Missing Cloudflare API Token' });
     // Note: model is NOT URL-encoded so the / in @cf/meta/... stays intact

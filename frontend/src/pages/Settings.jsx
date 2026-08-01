@@ -408,6 +408,30 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* AI Report Prompt */}
+        <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
+          <h2 className="settings-section-title">🤖 AI Report Prompt</h2>
+          <p className="settings-section-desc">
+            Customize the prompt used by the AI analysis report. The idea details and scorecard JSON output
+            requirement are automatically appended after your prompt.
+          </p>
+
+          <div className="form-group">
+            <label className="form-label">
+              AI Analysis Prompt
+              <span className="form-hint">Edit the prompt to change how the AI evaluates ideas. Leave unchanged to use the default.</span>
+            </label>
+            <textarea
+              className="form-input form-input--textarea"
+              rows="12"
+              style={{ fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}
+              value={settings.aiPrompt || ''}
+              onChange={(e) => handleChange('aiPrompt', e.target.value)}
+              placeholder="Enter your custom AI analysis prompt..."
+            />
+          </div>
+        </div>
+
         {/* Backup & Restore */}
         <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
           <h2 className="settings-section-title">💾 Backup & Restore</h2>

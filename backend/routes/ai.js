@@ -20,7 +20,7 @@ router.post('/analyze', async (req, res) => {
   let url, headers, body;
 
   if (provider === 'cloudflare') {
-    const cfModel = model && model.startsWith('@cf/') ? model : '@cf/meta/llama-3.1-8b-instruct';
+    const cfModel = model && model.startsWith('@cf/') ? model : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b';
     if (!accountId) return res.status(400).json({ error: 'Missing Cloudflare Account ID' });
     if (!token) return res.status(400).json({ error: 'Missing Cloudflare API Token' });
     url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${cfModel}`;

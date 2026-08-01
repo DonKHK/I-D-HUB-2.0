@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency, calculateIdeaHealth } from '../utils/helpers';
+import { DEFAULT_AI_PROMPT } from '../utils/constants';
 import Modal from '../components/Modal';
 
 // Backend API base URL — uses Vite proxy (/api -> localhost:5000) by default
@@ -107,6 +108,7 @@ export default function PendingApproval({ onNavigate }) {
   const {
     ideas,
     projects,
+    settings,
     updateIdea,
     deleteIdea,
     permanentlyDeleteIdea,
@@ -191,21 +193,10 @@ export default function PendingApproval({ onNavigate }) {
   };
 
   const buildPrompt = (idea) => {
-    return `You are an AI project evaluation assistant. Analyze whether this idea is feasible to become a real project. Return a STRICT JSON object (no markdown, no code fences) with the following keys:
+    // Use the user-customizable prompt from Settings, fall back to default
+    const userPrompt = (settings && settings.aiPrompt) || DEFAULT_AI_PROMPT;
 
-{
-  "creativity": { "score": <1-10>, "comment": "..." },
-  "marketDemand": { "score": <1-10>, "comment": "..." },
-  "existingSolutions": { "score": <1-10>, "comment": "..." },
-  "budgetFeasibility": { "score": <1-10>, "comment": "Is the budget realistic and sufficient?" },
-  "timelineFeasibility": { "score": <1-10>, "comment": "Is the timeline realistic?" },
-  "scopeClarity": { "score": <1-10>, "comment": "Are scope and deliverables clearly defined?" },
-  "riskLevel": { "score": <1-10>, "comment": "Lower = riskier. Comment on risks." },
-  "overallScore": <1-10>,
-  "recommendation": "Approve | Conditional | Reject",
-  "recommendationReason": "...",
-  "summary": "..."
-}
+    return `${userPrompt}
 
 Idea details:
 - Title: ${idea.title || 'N/A'}
@@ -225,7 +216,23 @@ Idea details:
 - Expected Outcome: ${idea.expectedOutcome || 'N/A'}
 - Tech Direction: ${idea.techDirection || 'N/A'}
 - Innovation: ${idea.innovationElement || 'N/A'}
-- Tech Requirements: ${idea.technicalRequirements || 'N/A'}`;
+- Tech Requirements: ${idea.technicalRequirements || 'N/A'}
+
+--- Output format requirement ---
+After completing the analysis above, output a STRICT JSON object (no markdown, no code fences) with the following keys for the scorecard:
+{
+  "creativity": { "score": <1-10>, "comment": "..." },
+  "marketDemand": { "score": <1-10>, "comment": "..." },
+  "existingSolutions": { "score": <1-10>, "comment": "..." },
+  "budgetFeasibility": { "score": <1-10>, "comment": "Is the budget realistic and sufficient?" },
+  "timelineFeasibility": { "score": <1-10>, "comment": "Is the timeline realistic?" },
+  "scopeClarity": { "score": <1-10>, "comment": "Are scope and deliverables clearly defined?" },
+  "riskLevel": { "score": <1-10>, "comment": "Lower = riskier. Comment on risks." },
+  "overallScore": <1-10>,
+  "recommendation": "Approve | Conditional | Reject",
+  "recommendationReason": "...",
+  "summary": "..."
+}`;
   };
 
   const runAiAnalysis = async () => {
@@ -265,7 +272,7 @@ Idea details:
       responseContentKey = 'choices.0.message.content';
     }
 
-    const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct';
+    const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b';
 
     // Send the request through the backend proxy to avoid browser CORS / mixed-content restrictions
     try {
@@ -326,7 +333,7 @@ Idea details:
         summary: parsed.summary || '',
         analyzedAt: new Date().toISOString(),
         provider: aiProvider,
-        model: aiProvider === 'cloudflare' ? (aiModel.startsWith('@cf/') ? aiModel : '@cf/meta/llama-3.1-8b-instruct') : aiModel,
+        model: aiProvider === 'cloudflare' ? (aiModel.startsWith('@cf/') ? aiModel : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b') : aiModel,
       };
 
       // Save to idea
@@ -551,7 +558,11 @@ Idea details:
             </button>
             <button
               className={`ai-provider-tab ${aiProvider === 'cloudflare' ? 'active' : ''}`}
-              onClick={() => setAiProvider('cloudflare')}
+              onClick={() => {
+                setAiProvider('cloudflare');
+                // Default to DeepSeek on Cloudflare if no @cf/ model is set
+                setAiModel((m) => (m && m.startsWith('@cf/') ? m : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b'));
+              }}
             >
               Cloudflare AI
             </button>
@@ -590,9 +601,9 @@ Idea details:
                 className="form-input"
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
-                placeholder="@cf/meta/llama-3.1-8b-instruct"
+                placeholder="@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"
               />
-              <p className="form-hint">預設 @cf/meta/llama-3.1-8b-instruct，可改其他 Workers AI model</p>
+              <p className="form-hint">預設 @cf/deepseek-ai/deepseek-r1-distill-qwen-32b，可改其他 Workers AI model</p>
             </div>
           </>
         ) : (

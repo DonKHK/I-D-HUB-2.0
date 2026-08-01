@@ -4,7 +4,7 @@ export default function Modal({ isOpen, onClose, title, children, wide }) {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div
         className={`modal ${wide ? 'modal--wide' : ''}`}
         onClick={(e) => e.stopPropagation()}

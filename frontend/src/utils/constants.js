@@ -57,6 +57,40 @@ export const SIDEBAR_ITEMS_PROJECT_USER = [
   { key: 'my-project', label: 'My Project', icon: '📁', roles: ['project_user'] },
 ];
 
+export const DEFAULT_AI_PROMPT = `Please act as a professional innovation project evaluation consultant. Analyze the following Innovation Idea comprehensively and produce a report suitable for submission to the company's Innovation Committee for approval.
+
+1. Executive Summary
+Use 3-5 sentences to clearly explain the problem this idea solves, its core value, and target users.
+
+2. Scorecard Overview
+Score each dimension from 1-10 with a brief justification:
+- Market demand and pain-point clarity
+- Technical feasibility
+- Commercial value and return potential
+- Alignment with the company's existing business/strategy
+- Execution difficulty and risk
+- Degree of innovation
+- Overall recommended score (weighted)
+
+3. Detailed Analysis
+- Problem & opportunity analysis
+- Solution assessment (strengths, weaknesses, differentiation)
+- Target market & competitive landscape
+- Technology roadmap & feasibility
+- Business model & potential revenue
+- Required resources (people, funding, time, external partners)
+- Key risks & mitigation recommendations
+
+4. AI Recommendations for this Idea
+- Provide specific, actionable optimization suggestions (product direction, technology roadmap, business model, go-to-market strategy, etc.)
+- Highlight areas that can be strengthened or supplemented
+- Suggest valuable extension directions that may have been overlooked
+
+5. Appendices (Optional)
+- Recommend what additional materials or data the committee should request for further decision-making.
+
+Write in a professional, objective, concise tone suitable for reading by a Hong Kong corporate internal committee. Use English.`;
+
 export const DEFAULT_SETTINGS = {
   overdueWarningDays: 7,
   overdueCriticalDays: 0,
@@ -67,6 +101,7 @@ export const DEFAULT_SETTINGS = {
   emailOnOverdue: true,
   emailOnBudgetExceeded: true,
   emailFrequency: 'daily',
+  aiPrompt: DEFAULT_AI_PROMPT,
   alertCriticalColor: '#ef4444',
   alertWarningColor: '#eab308',
   alertSuccessColor: '#22c55e',
