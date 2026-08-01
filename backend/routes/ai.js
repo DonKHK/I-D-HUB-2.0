@@ -30,6 +30,7 @@ router.post('/analyze', async (req, res) => {
         { role: 'system', content: 'You are a helpful project evaluation assistant. Always respond with valid JSON only.' },
         { role: 'user', content: prompt },
       ],
+      max_tokens: 4096,
     };
   } else if (provider === 'custom') {
     if (!endpoint) return res.status(400).json({ error: 'Missing custom API endpoint URL' });
@@ -38,13 +39,13 @@ router.post('/analyze', async (req, res) => {
       'Content-Type': 'application/json',
       ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
     };
-    body = { model, messages: [{ role: 'user', content: prompt }], temperature: 0.3 };
+    body = { model, messages: [{ role: 'user', content: prompt }], temperature: 0.3, max_tokens: 4096 };
   } else {
     // OpenAI (default)
     if (!apiKey) return res.status(400).json({ error: 'Missing OpenAI API Key' });
     url = 'https://api.openai.com/v1/chat/completions';
     headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` };
-    body = { model, messages: [{ role: 'user', content: prompt }], temperature: 0.3 };
+    body = { model, messages: [{ role: 'user', content: prompt }], temperature: 0.3, max_tokens: 4096 };
   }
 
   try {
@@ -61,8 +62,18 @@ router.post('/analyze', async (req, res) => {
       return res.status(upstream.status).json({ error: `Provider error ${upstream.status}: ${text}` });
     }
 
-    // Forward the raw provider JSON back to the frontend
-    res.status(upstream.status).json(JSON.parse(text));
+    // Forward the raw provider JSON back to the frontend.
+    // Never crash if the provider returns malformed JSON.
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error(`[routes/ai] Provider ${provider} returned non-JSON body:`, text.slice(0, 300));
+      return res.status(502).json({
+        error: `AI provider (${provider}) returned an invalid response. Please try again or use a different model.`,
+      });
+    }
+    res.status(upstream.status).json(data);
   } catch (e) {
     console.error(`[routes/ai] Cannot reach provider ${provider}:`, e.message);
     return res.status(502).json({

@@ -47,12 +47,49 @@ const safeParseAiJson = (raw) => {
     return fixed;
   };
 
+  // Repair truncated JSON: count { vs } and close any unclosed strings
+  const repairTruncated = (s) => {
+    let fixed = '';
+    let inString = false;
+    let escape = false;
+    let openBraces = 0;
+    let openBrackets = 0;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (inString) {
+        if (escape) { fixed += ch; escape = false; }
+        else if (ch === '\\') { fixed += ch; escape = true; }
+        else if (ch === '"') { fixed += ch; inString = false; }
+        else if (ch === '\n' || ch === '\r') { fixed += '\\n'; }
+        else { fixed += ch; }
+      } else {
+        if (ch === '"') { inString = true; }
+        else if (ch === '{') openBraces++;
+        else if (ch === '}') openBraces = Math.max(0, openBraces - 1);
+        else if (ch === '[') openBrackets++;
+        else if (ch === ']') openBrackets = Math.max(0, openBrackets - 1);
+        fixed += ch;
+      }
+    }
+    // Close any unclosed string
+    if (inString) {
+      fixed += '"';
+    }
+    // Close any unclosed braces/brackets
+    for (let i = 0; i < openBrackets; i++) fixed += ']';
+    for (let i = 0; i < openBraces; i++) fixed += '}';
+    return fixed;
+  };
+
   const attempts = [
     () => JSON.parse(str),
     () => JSON.parse(fixTrailingCommas(str)),
     () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(str))),
     () => JSON.parse(fixTrailingCommas(str.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"'))),
     () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(str.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"')))),
+    // Truncation repair
+    () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(repairTruncated(fixTrailingCommas(str))))),
+    () => JSON.parse(fixTrailingCommas(repairRawNewlinesInStrings(repairTruncated(fixTrailingCommas(str.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"')))))),
   ];
 
   for (const attempt of attempts) {
