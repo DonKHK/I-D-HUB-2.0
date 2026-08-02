@@ -689,6 +689,8 @@ export function DataProvider({ children }) {
         } else {
           setFundingSchemes(list);
           try { localStorage.setItem('pmis_funding_schemes', JSON.stringify(list)); } catch (e) { /* ignore */ }
+          // Backfill any missing default schemes so newer ones appear for logged-in users
+          mergeMissingSchemes(list);
         }
       },
       (err) => {
@@ -763,6 +765,32 @@ export function DataProvider({ children }) {
         setFundingSchemes(DEFAULT_FUNDING_SCHEMES);
         seededSchemesRef.current = true;
       }
+    }
+  }, []);
+
+  // Merge missing default funding schemes into Firestore (by id or name).
+  // Ensures logged-in users (admin/superadmin) also get the latest funding
+  // scheme list even when Firestore already has older records.
+  const mergeMissingSchemes = useCallback(async (existingSchemes) => {
+    try {
+      const missingSchemes = DEFAULT_FUNDING_SCHEMES.filter((ds) => {
+        const nameKey = (ds.name || '').toLowerCase();
+        return !existingSchemes.some((s) =>
+          s.id === ds.id || (s.name || '').toLowerCase() === nameKey
+        );
+      });
+
+      if (missingSchemes.length > 0) {
+        const batch = writeBatch(db);
+        for (const scheme of missingSchemes) {
+          const ref = doc(collection(db, COLLECTIONS.FUNDING_SCHEMES));
+          batch.set(ref, { ...scheme, uid: 'system', createdAt: scheme.createdAt || new Date().toISOString() });
+        }
+        await batch.commit();
+        console.log(`%c[PMIS] Added ${missingSchemes.length} missing funding schemes to Firestore`, 'color: blue; font-weight: bold');
+      }
+    } catch (e) {
+      console.warn('Merge missing schemes failed:', e.message || e);
     }
   }, []);
 
