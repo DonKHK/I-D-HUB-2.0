@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<title>I&D Hub – User Manual (English)</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+<style>
+  body { font-family: 'Calibri', Arial, sans-serif; font-size: 11pt; line-height: 1.5; margin: 40px; color: #1f2937; }
+  h1 { color: #1a237e; font-size: 20pt; border-bottom: 2px solid #1a237e; padding-bottom: 8px; }
+  h2 { color: #1a237e; font-size: 14pt; margin-top: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+  h3 { color: #334155; font-size: 12pt; margin-top: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 10pt; text-align: left; }
+  th { background: #eff6ff; font-weight: bold; }
+  .support { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 14px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>I&D Hub – User Manual (English)</h1>
+<p><strong>Version:</strong> v2.0 &nbsp;|&nbsp; <strong>Last Updated:</strong> August 2026</p>
+
+<h2>1. Overview</h2>
+<p>I&D Hub is the Innovation & Development Project Management System. URL: https://frontend-alpha-bay-74.vercel.app/</p>
+
+<h3>Roles</h3>
+<table>
+<tr><th>Role</th><th>Access</th></tr>
+<tr><td>Superadmin</td><td>Full system access: approvals, AI analysis, settings, all users</td></tr>
+<tr><td>Admin</td><td>Projects + AI analysis (view/analyse; no approvals/settings)</td></tr>
+<tr><td>Project User</td><td>View/update own project only</td></tr>
+<tr><td>Guest</td><td>Browse projects, submit idea, view funding schemes</td></tr>
+</table>
+
+<h2>2. Role Permission Matrix (Key)</h2>
+<table>
+<tr><th>Function</th><th>Super</th><th>Admin</th><th>Proj</th><th>Guest</th></tr>
+<tr><td>Dashboard</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>All Projects</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>My Projects</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Pending Approval view</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Approve/Reject</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>AI Analyze</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>AI Report view</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Re-Analyze</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Delete/Restore</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Submit Idea</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>Funding (browse)</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>Funding (edit)</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Settings</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Alerts / Report Export</td><td>✓</td><td>✓ / ✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>My Project</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td></tr>
+<tr><td>Change / Forgot Password</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+</table>
+
+<h2>3. Login & Account</h2>
+<h3>Login</h3>
+<p>Admin/Superadmin: Admin Login tab → email + password → Login.</p>
+<p>Project User: Project Login tab → Project ID + password.</p>
+<p>Guest: click Guest button.</p>
+<h3>Forgot Password</h3>
+<p>Forgot Password? → enter email → Send Reset Link → follow email link.</p>
+<h3>Change Password</h3>
+<p>Change Password → email + current password + new password (min 6) + confirm.</p>
+
+<h2>4. Superadmin – Key Functions</h2>
+<h3>Dashboard</h3>
+<p>6 KPIs (Total/In Progress/Planning/Completed/Due Soon/At Risk), health doughnut chart, upcoming/overdue list, recent ideas.</p>
+<h3>Pending Approval (core)</h3>
+<p>Four sections: Pending / Approved / Rejected / Deleted.</p>
+<p>AI Analyze → choose provider (OpenAI / Custom / Cloudflare – default @cf/deepseek-ai/deepseek-r1-distill-qwen-32b) → Run Analysis. Result shows 7-dimension scorecard, overall score, recommendation, full report, "For reference only." Export Word downloads .doc.</p>
+<p>With existing report: AI Report (view) / Export Word / Re-Analyze (regenerate).</p>
+<p>Approve → auto-creates project (IDNDYYMMNNN). Reject → reason required. 🗑️ soft delete → Deleted. Restore → back to Pending. Permanently Delete (⚠️ irreversible).</p>
+<h3>Submit Idea</h3>
+<p>8-step wizard: Applicant Info → Project Details → Timeline → Budget → Resources → Technical → Current Stage → IP & Attachments.</p>
+<h3>Funding Schemes</h3>
+<p>Add/Edit/Delete schemes (name*, provider*, amount, description, eligibility, deadline, status).</p>
+<h3>Settings</h3>
+<p>Overdue/Budget thresholds, Email notifications, Alert colors, AI Report Prompt, Backup & Restore, Project Credentials.</p>
+<h3>Alerts / Report Export</h3>
+<p>Alerts: critical/warning/info. Export Excel: Projects / Ideas / Funding / All-in-one.</p>
+
+<h2>5. Admin</h2>
+<p>Dashboard / All Projects / My Projects: same as Superadmin.</p>
+<p>Pending Approval: can AI Analyze, view AI Report, Export Word. Cannot approve/reject, Re-Analyze, delete/restore.</p>
+<p>Funding Schemes: browse only.</p>
+
+<h2>6. Project User</h2>
+<p>Login with Project ID + password → My Project page. View overview, stages, activity log. Edit basic fields → Save (logged).</p>
+
+<h2>7. Guest</h2>
+<p>Browse All Projects, Submit Idea, view Funding Schemes only.</p>
+
+<h2>8. FAQ (Summary)</h2>
+<table>
+<tr><th>Issue</th><th>Solution</th></tr>
+<tr><td>Forgot password</td><td>Admin Login → Forgot Password? → email link</td></tr>
+<tr><td>AI "Failed to fetch"</td><td>Check network / local endpoint / backend port 5000 / try another provider</td></tr>
+<tr><td>AI invalid format</td><td>Re-run or use DeepSeek model</td></tr>
+<tr><td>Admin approve?</td><td>No – Superadmin only</td></tr>
+<tr><td>No Full Report</td><td>AI must output "report" key; try DeepSeek / Re-Analyze</td></tr>
+<tr><td>Modal closes outside?</td><td>No – use ✕ or Cancel</td></tr>
+<tr><td>Export Word later?</td><td>Open AI Report → Export Word anytime</td></tr>
+</table>
+
+<h2>9. Support</h2>
+<div class="support">
+<p><strong>Don Kwan</strong><br/>
+📧 don.kwan@asiaalliedgroup.com<br/>
+📞 3798 5724</p>
+<p>Please provide: your role, page/function used, problem description (+ screenshot), date/time.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+<meta charset="utf-8">
+<title>I&D Hub – 用戶說明書（中文版）</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+<style>
+  body { font-family: 'Microsoft JhengHei', 'PingFang TC', Arial, sans-serif; font-size: 11pt; line-height: 1.5; margin: 40px; color: #1f2937; }
+  h1 { color: #1a237e; font-size: 20pt; border-bottom: 2px solid #1a237e; padding-bottom: 8px; }
+  h2 { color: #1a237e; font-size: 14pt; margin-top: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+  h3 { color: #334155; font-size: 12pt; margin-top: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 10pt; text-align: left; }
+  th { background: #eff6ff; font-weight: bold; }
+  .support { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 14px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>I&D Hub – 用戶說明書（中文版）</h1>
+<p><strong>版本：</strong> v2.0 &nbsp;|&nbsp; <strong>最後更新：</strong> 2026 年 8 月</p>
+
+<h2>1. 系統簡介</h2>
+<p>I&D Hub 係創新及發展項目管理系統。網址：https://frontend-alpha-bay-74.vercel.app/</p>
+
+<h3>角色</h3>
+<table>
+<tr><th>角色</th><th>權限</th></tr>
+<tr><td>Superadmin（超級管理員）</td><td>系統全部權限：審批、AI 分析、設定、所有用戶</td></tr>
+<tr><td>Admin（管理員）</td><td>項目管理 + AI 分析（冇審批 / 冇設定權限）</td></tr>
+<tr><td>Project User（項目用戶）</td><td>只可以查看 / 更新自己嘅項目</td></tr>
+<tr><td>Guest（訪客）</td><td>瀏覽公開項目、提交意念、查看資助計劃</td></tr>
+</table>
+
+<h2>2. 角色權限對照表（重點）</h2>
+<table>
+<tr><th>功能</th><th>Super</th><th>Admin</th><th>Proj</th><th>Guest</th></tr>
+<tr><td>Dashboard（總覽）</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>All Projects（全部項目）</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>My Projects（我的項目）</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Pending Approval（審批頁）</td><td>✓</td><td>✓（只可查看）</td><td>✗</td><td>✗</td></tr>
+<tr><td>審批 / 拒絕意念</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>AI Analyze（分析）</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>AI Report（查看報告）</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+<tr><td>Re-Analyze（重新分析）</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>刪除 / 恢復</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Submit Idea（提交意念）</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>Funding（瀏覽）</td><td>✓</td><td>✓</td><td>✗</td><td>✓</td></tr>
+<tr><td>Funding（編輯）</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Settings（系統設定）</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>Alerts / Report Export</td><td>✓</td><td>✓ / ✗</td><td>✗</td><td>✗</td></tr>
+<tr><td>My Project（自己項目）</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td></tr>
+<tr><td>更改 / 忘記密碼</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td></tr>
+</table>
+
+<h2>3. 登入及帳戶</h2>
+<h3>登入</h3>
+<p>Admin / Superadmin：Admin Login 分頁 → 電郵 + 密碼 → Login。</p>
+<p>Project User：Project Login 分頁 → Project ID + 密碼。</p>
+<p>Guest：撳 Guest 按鈕。</p>
+<h3>忘記密碼</h3>
+<p>Forgot Password? → 輸入電郵 → Send Reset Link → 按郵件連結重設。</p>
+<h3>更改密碼</h3>
+<p>Change Password → 電郵 + 現時密碼 + 新密碼（最少 6 字元）+ 確認。</p>
+
+<h2>4. Superadmin 主要功能</h2>
+<h3>Dashboard（總覽）</h3>
+<p>6 個 KPI（全部/進行中/規劃/已完成/即將到期/有風險）、健康圓環圖、即將到期列表、最新意念。</p>
+<h3>Pending Approval（審批頁，核心）</h3>
+<p>四個區塊：Pending / Approved / Rejected / Deleted。</p>
+<p>AI Analyze → 揀供應商（OpenAI / Custom / Cloudflare – 預設 @cf/deepseek-ai/deepseek-r1-distill-qwen-32b）→ Run Analysis。結果：7 維評分卡、總分、建議、完整報告、*For reference only.*。Export Word 下載 .doc。</p>
+<p>已有報告：AI Report（查看）/ Export Word / Re-Analyze（重新生成）。</p>
+<p>Approve → 自動建立項目（IDNDYYMMNNN）。Reject → 需要原因。🗑️ 軟刪除 → Deleted。Restore → 返回 Pending。Permanently Delete（⚠️ 無法復原）。</p>
+<h3>Submit Idea（提交意念）</h3>
+<p>8 步精靈：申請人資料 → 項目詳情 → 時間 → 預算 → 資源 → 技術 → 現時階段 → IP 及附件。</p>
+<h3>Funding Schemes（資助計劃）</h3>
+<p>新增 / 編輯 / 刪除計劃（名稱*、提供者*、金額、描述、資格、截止日、狀態）。</p>
+<h3>Settings（系統設定）</h3>
+<p>逾期 / 預算設定、電郵通知、警報顏色、AI 報告提示詞、備份及恢復、項目憑證。</p>
+<h3>Alerts / Report Export</h3>
+<p>警報：嚴重 / 警告 / 資訊。Excel 匯出：項目 / 意念 / 資助計劃 / 全部。</p>
+
+<h2>5. Admin（管理員）</h2>
+<p>Dashboard / All Projects / My Projects：同 Superadmin 一樣。</p>
+<p>Pending Approval：可以 AI Analyze、查看 AI Report、Export Word。唔可以審批/拒絕、Re-Analyze、刪除/恢復。</p>
+<p>Funding Schemes：只可以瀏覽。</p>
+
+<h2>6. Project User（項目用戶）</h2>
+<p>用 Project ID + 密碼登入 → My Project 頁面。查看總覽、階段、活動記錄。Edit 基本欄位 → Save（記錄）。</p>
+
+<h2>7. Guest（訪客）</h2>
+<p>只可以瀏覽 All Projects、提交意念、查看資助計劃。</p>
+
+<h2>8. 常見問題（簡表）</h2>
+<table>
+<tr><th>問題</th><th>解決方法</th></tr>
+<tr><td>唔記得密碼</td><td>Admin Login → Forgot Password? → 電郵連結</td></tr>
+<tr><td>AI "Failed to fetch"</td><td>檢查網絡 / 自訂端點 / 後端 port 5000 / 換供應商</td></tr>
+<tr><td>AI 格式無效</td><td>再 Run 或改用 DeepSeek 模型</td></tr>
+<tr><td>Admin 可以審批？</td><td>唔可以，只有 Superadmin</td></tr>
+<tr><td>冇完整報告</td><td>AI 要輸出 "report" 欄位；試 DeepSeek / Re-Analyze</td></tr>
+<tr><td>彈窗撳外面關？</td><td>唔會，用 ✕ 或 Cancel</td></tr>
+<tr><td>之後再 Export Word？</td><td>開 AI Report → Export Word，任何時間</td></tr>
+</table>
+
+<h2>9. 技術支援</h2>
+<div class="support">
+<p><strong>Don Kwan</strong><br/>
+📧 don.kwan@asiaalliedgroup.com<br/>
+📞 3798 5724</p>
+<p>聯絡時請提供：你嘅角色、使用中頁面/功能、問題描述（可附截圖）、發生日期/時間。</p>
+</div>
+
+</body>
+</html>
