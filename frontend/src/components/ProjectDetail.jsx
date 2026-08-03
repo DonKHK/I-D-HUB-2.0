@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { formatDate, formatDateTime, formatCurrency, calculateHealth, addProjectLog, exportLogsToTxt } from '../utils/helpers';
+import { formatDate, formatDateTime, formatCurrency, calculateHealth, calculateStageHealth, addProjectLog, exportLogsToTxt } from '../utils/helpers';
 import Modal from './Modal';
 
 /* ───── Collapsible Section Helper ───── */
@@ -503,21 +503,36 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
         </div>
         {(latestProject.stages || []).length === 0 && <p className="empty-text">No stages defined</p>}
         <div className="stages-list">
-          {(latestProject.stages || []).map((stage) => (
+          {(latestProject.stages || []).map((stage) => {
+            const stageHealth = calculateStageHealth(stage, settings);
+            const isStageCritical = stageHealth.status === 'critical';
+            const isStageWarning = stageHealth.status === 'warning';
+            const isStageCompleted = stageHealth.status === 'completed';
+            return (
             <div key={stage.id} className="stage-card">
               <div className="stage-header">
                 <span className="stage-type">{stage.name || stage.type || stage.stage || '-'}</span>
-                <span className={`status-badge status-badge--small ${stageBadgeClass(stage.status)}`}>
-                  {stage.status}
+                <span className="stage-header-right">
+                  <span className={`status-badge status-badge--small ${stageBadgeClass(stage.status)}`}>
+                    {stage.status}
+                  </span>
+                  <span className="stage-health" style={{ color: stageHealth.color }}>
+                    <span className="health-dot" style={{ backgroundColor: stageHealth.color }} />
+                    {stageHealth.label}
+                  </span>
                 </span>
               </div>
               <p className="stage-desc">{stage.description}</p>
               <div className="stage-dates">
-                <span>📅 {formatDate(stage.startDate)} - {formatDate(stage.endDate)}</span>
+                <span className={`${isStageCritical ? 'text-danger' : isStageWarning ? 'text-warning' : ''}`}>
+                  📅 {formatDate(stage.startDate)} - {formatDate(stage.endDate)}
+                </span>
               </div>
               <div className="stage-budget">
-                <span>💰 {formatCurrency(stage.budget)}</span>
-                <span className={stage.budgetUsed > stage.budget * 0.9 ? 'text-danger' : ''}>
+                <span className={`${isStageCritical ? 'text-danger' : isStageWarning ? 'text-warning' : ''}`}>
+                  💰 {formatCurrency(stage.budget)}
+                </span>
+                <span className={`${isStageCritical ? 'text-danger' : isStageWarning ? 'text-warning' : ''}`}>
                   Used: {formatCurrency(stage.budgetUsed)}
                 </span>
               </div>
@@ -528,7 +543,8 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

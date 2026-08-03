@@ -90,6 +90,22 @@ export function calculateHealth(project, settings = {}) {
 }
 
 /**
+ * Calculate health for a Stage (reuses the same project health logic and
+ * Settings thresholds — red/yellow/green/blue identical to projects)
+ */
+export function calculateStageHealth(stage, settings = {}) {
+  return calculateHealth(
+    {
+      status: stage.status || 'Planning',
+      endDate: stage.endDate,
+      budget: stage.budget,
+      budgetUsed: stage.budgetUsed,
+    },
+    settings
+  );
+}
+
+/**
  * Calculate health for an Idea (based on dates)
  */
 export function calculateIdeaHealth(idea) {
