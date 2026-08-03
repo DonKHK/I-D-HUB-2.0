@@ -364,7 +364,14 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
           {project.originalIdeaId && (
             <>
               <span className="detail-divider">|</span>
-              <span className="detail-idea-id">Idea: {project.originalIdeaId}</span>
+              <span
+                className="detail-idea-id"
+                style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+                onClick={() => onNavigate?.(`/idea-detail/${project.originalIdeaId}`)}
+                title="Click to view original idea"
+              >
+                Idea: {project.originalIdeaId}
+              </span>
             </>
           )}
         </div>

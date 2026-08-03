@@ -54,7 +54,8 @@ export default function Dashboard() {
 
   // === Recent Ideas ===
   const recentIdeas = useMemo(() => {
-    const sorted = [...ideas].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const active = ideas.filter((i) => i.status !== 'deleted');
+    const sorted = [...active].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     return showAllIdeas ? sorted : sorted.slice(0, 4);
   }, [ideas, showAllIdeas]);
 
@@ -166,7 +167,8 @@ export default function Dashboard() {
           <h3 className="dashboard-card-ref-title">
             <i className="fa fa-lightbulb-o" style={{ color: '#165DFF' }} /> Recent Ideas
           </h3>
-          {ideas.length > 4 && (
+          {/* Only show View All if there are more than 4 active (non-deleted) ideas */}
+          {ideas.filter((i) => i.status !== 'deleted').length > 4 && (
             <button className="btn-link-ref" onClick={() => setShowAllIdeas(!showAllIdeas)}>
               {showAllIdeas ? 'Collapse' : 'View All'} <i className="fa fa-arrow-right" />
             </button>

@@ -26,14 +26,14 @@ export default function ApprovedProjects() {
   };
 
   const approved = useMemo(() => {
-    let list = ideas.filter((i) => i.status === 'approved');
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    let list = ideas.filter((i) => i.status === 'approved' && !i._migratedTo);
+    const q = String(search || '').toLowerCase();
+    if (q) {
       list = list.filter(
         (i) =>
-          i.title.toLowerCase().includes(q) ||
-          i.id.toLowerCase().includes(q) ||
-          i.applicant.toLowerCase().includes(q)
+          String(i.title || '').toLowerCase().includes(q) ||
+          String(i.id || '').toLowerCase().includes(q) ||
+          String(i.applicant || i.applicantName || '').toLowerCase().includes(q)
       );
     }
     return list;
@@ -55,7 +55,9 @@ export default function ApprovedProjects() {
       </div>
 
       {approved.length === 0 && (
-        <p className="empty-text">{search ? 'No matches found' : 'No approved projects yet'}</p>
+        <p className="empty-text">
+          {search ? 'No matches found' : `No approved projects yet (${ideas.length} ideas in system)`}
+        </p>
       )}
 
       <div className="projects-grid">
