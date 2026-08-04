@@ -988,8 +988,8 @@ export function DataProvider({ children }) {
     const project = {
       id: projectId,
       name: idea.title || idea.projectTitle || 'Untitled',
-      description: idea.oneLineDesc || idea.shortDescription || '',
-      detailContent: idea.projectScope || idea.detailContent || '',
+      description: idea.oneLineDesc || idea.shortDescription || idea.background || idea.projectScope || '',
+      detailContent: idea.projectScope || idea.detailContent || idea.background || '',
       applicantName: idea.applicantName || '',
       department: idea.department || '',
       contactNumber: idea.contactNumber || '',
@@ -1061,8 +1061,8 @@ export function DataProvider({ children }) {
     const project = {
       id: '',
       name: idea.title || idea.projectTitle || 'Untitled',
-      description: idea.oneLineDesc || idea.shortDescription || '',
-      detailContent: idea.projectScope || idea.detailContent || '',
+      description: idea.oneLineDesc || idea.shortDescription || idea.background || idea.projectScope || '',
+      detailContent: idea.projectScope || idea.detailContent || idea.background || '',
       applicantName: idea.applicantName || '',
       department: idea.department || '',
       contactNumber: idea.contactNumber || '',

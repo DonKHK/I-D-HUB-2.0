@@ -4,7 +4,7 @@ import { useData } from '../context/DataContext';
 import Modal from '../components/Modal';
 
 export default function AllProjects({ onNavigate }) {
-  const { projects } = useData();
+  const { projects, ideas } = useData();
   const { isAuthenticated, logout } = useAuth();
 
   const [demoModal, setDemoModal] = useState(null);
@@ -31,6 +31,12 @@ export default function AllProjects({ onNavigate }) {
     if (p.status === 'Completed') return 'proj-dot--green';
     if (p.status === 'In Progress') return 'proj-dot--blue';
     return 'proj-dot--amber';
+  };
+
+  // Find the linked idea for fallback descriptions (some auto-generated projects lack description)
+  const getLinkedIdea = (p) => {
+    if (!p.originalIdeaId) return null;
+    return ideas.find((i) => i.id === p.originalIdeaId) || null;
   };
 
   return (
@@ -68,34 +74,49 @@ export default function AllProjects({ onNavigate }) {
             No project data available
           </p>
         )}
-        {projects.map((p) => (
-          <div key={p.id} className="proj-card">
-            <div className="proj-card-top">
-              <div className="proj-card-badges">
-                <span className={`proj-dot ${getHealthDotClass(p)}`} />
-                <span className={`all-projects-status ${getStatusBadgeClass(p)}`}>
-                  {getStatusLabel(p.status)}
-                </span>
+        {projects.map((p) => {
+          const linkedIdea = getLinkedIdea(p);
+          const desc =
+            p.description ||
+            p.detailContent ||
+            p.background ||
+            (linkedIdea && (linkedIdea.background || linkedIdea.oneLineDesc || linkedIdea.projectScope)) ||
+            'No description';
+          const detail =
+            p.detail ||
+            p.detailContent ||
+            (linkedIdea && (linkedIdea.projectScope || linkedIdea.background)) ||
+            'No details';
+
+          return (
+            <div key={p.id} className="proj-card">
+              <div className="proj-card-top">
+                <div className="proj-card-badges">
+                  <span className={`proj-dot ${getHealthDotClass(p)}`} />
+                  <span className={`all-projects-status ${getStatusBadgeClass(p)}`}>
+                    {getStatusLabel(p.status)}
+                  </span>
+                </div>
+                <div className="proj-card-ids">
+                  <span className="proj-card-id">ID: {p.id}</span>
+                  {p.originalIdeaId && (
+                    <span className="proj-card-idea-id">Idea: {p.originalIdeaId}</span>
+                  )}
+                </div>
               </div>
-              <div className="proj-card-ids">
-                <span className="proj-card-id">ID: {p.id}</span>
-                {p.originalIdeaId && (
-                  <span className="proj-card-idea-id">Idea: {p.originalIdeaId}</span>
-                )}
+              <h3 className="proj-card-name">{p.name || 'Untitled Project'}</h3>
+              <p className="proj-card-desc">{desc}</p>
+              <p className="proj-card-detail">{detail}</p>
+              <div className="proj-card-owner">
+                <span className="proj-card-owner-label">Owner: </span>
+                {p.owner || p.holder || '—'}
               </div>
+              <button className="btn btn--small btn--demo" onClick={() => setDemoModal(p)}>
+                🔗 DEMO
+              </button>
             </div>
-            <h3 className="proj-card-name">{p.name || 'Untitled Project'}</h3>
-            <p className="proj-card-desc">{p.description || 'No description'}</p>
-            <p className="proj-card-detail">{p.detail || p.detailContent || 'No details'}</p>
-            <div className="proj-card-owner">
-              <span className="proj-card-owner-label">Owner: </span>
-              {p.owner || p.holder || '—'}
-            </div>
-            <button className="btn btn--small btn--demo" onClick={() => setDemoModal(p)}>
-              🔗 DEMO
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* DEMO Modal */}
