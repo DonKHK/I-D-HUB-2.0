@@ -3758,31 +3758,6 @@ body {
   justify-content: space-between;
 }
 
-.stage-header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.stage-health {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.text-danger {
-  color: #dc2626;
-  font-weight: 600;
-}
-
-.text-warning {
-  color: #f59e0b;
-  font-weight: 600;
-}
-
 .stage-type {
   display: inline-block;
   background: #eef2ff;
@@ -3899,7 +3874,11 @@ body {
 }
 
 .stage-chip-dot--orange {
-  background: #f59e0b;
+  background: #f97316;
+}
+
+.stage-chip-dot--red {
+  background: #ef4444;
 }
 
 .stage-chip-dot--gray {

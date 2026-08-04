@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { calculateHealth, formatDate, formatDateTime, formatCurrency, daysUntil } from '../utils/helpers';
+import { calculateHealth, calculateStageHealth, formatDate, formatDateTime, formatCurrency, daysUntil } from '../utils/helpers';
 import Modal from '../components/Modal';
 import ProjectDetail from '../components/ProjectDetail';
 
@@ -226,12 +226,21 @@ export default function MyProjects({ onNavigate }) {
                 <div className="myprojects-card-stages">
                   <span className="myprojects-stages-label">Stages:</span>
                   <div className="myprojects-stages-chips">
-                    {(project.stages || []).slice(0, 4).map((stage) => (
-                      <span key={stage.id} className={`stage-chip stage-chip--${stage.status === 'Completed' ? 'completed' : stage.status === 'In Progress' ? 'progress' : stage.status === 'On Hold' ? 'hold' : 'pending'}`}>
-                        <span className={`stage-chip-dot stage-chip-dot--${stage.status === 'Completed' ? 'green' : stage.status === 'In Progress' ? 'blue' : stage.status === 'On Hold' ? 'orange' : 'gray'}`} />
-                        {stage.type}
-                      </span>
-                    ))}
+                    {(project.stages || []).slice(0, 4).map((stage) => {
+                      const stageHealth = calculateStageHealth(stage, settings);
+                      const chipClass = stageHealth.status === 'completed' ? 'completed'
+                        : stageHealth.status === 'critical' ? 'hold'
+                        : stageHealth.status === 'warning' ? 'progress' : 'pending';
+                      const dotClass = stageHealth.status === 'completed' ? 'blue'
+                        : stageHealth.status === 'critical' ? 'red'
+                        : stageHealth.status === 'warning' ? 'orange' : 'green';
+                      return (
+                        <span key={stage.id} className={`stage-chip stage-chip--${chipClass}`}>
+                          <span className={`stage-chip-dot stage-chip-dot--${dotClass}`} />
+                          {stage.type}
+                        </span>
+                      );
+                    })}
                     {(project.stages || []).length > 4 && (
                       <span className="stage-chip stage-chip--more">+{project.stages.length - 4} more</span>
                     )}
