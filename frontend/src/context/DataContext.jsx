@@ -611,6 +611,86 @@ export function DataProvider({ children }) {
     migrationRunningRef.current = false;
   }, []);
 
+  // Repair ideas that were saved to Firestore under a random auto-generated doc
+  // ID while carrying their real IDEA-XXXXXX id in the data. This happened for
+  // ideas submitted before addIdea used the idea's own ID as the doc ID, which
+  // made approve/reject/delete operations target a non-existent doc and left
+  // the real idea stuck in its old status.
+  // We copy the full data to the correct doc ID (preserving any existing status
+  // decision such as approved/rejected/deleted) and atomically remove the old
+  // random doc. Idempotent — becomes a no-op once all docs are correct.
+  const healMisplacedIdeas = useCallback(async (rawList) => {
+    if (!uid || !Array.isArray(rawList) || rawList.length === 0) return;
+
+    // Normalize Firestore Timestamps (or ISO strings) to ISO strings so the
+    // healed doc is consistently sortable/displayable.
+    const toIso = (v) => {
+      if (!v) return undefined;
+      if (typeof v === 'object' && typeof v.seconds === 'number') {
+        return new Date(v.seconds * 1000).toISOString();
+      }
+      return v;
+    };
+
+    const misplaced = rawList.filter((d) => {
+      const innerId = d?.id;
+      return innerId && String(innerId).startsWith('IDEA-') && d.docId && d.docId !== innerId;
+    });
+    if (misplaced.length === 0) return;
+
+    console.log(`[PMIS] Healing ${misplaced.length} idea document(s) with mismatched doc IDs…`);
+    for (const item of misplaced) {
+      const innerId = item.id;
+      const oldDocId = item.docId;
+      try {
+        // Read the target doc to preserve any existing status decision
+        // (e.g. an "approved" partial doc created by a previous approve attempt)
+        const targetRef = doc(db, COLLECTIONS.IDEAS, innerId);
+        const targetSnap = await getDoc(targetRef);
+        const existing = targetSnap.exists() ? targetSnap.data() : {};
+
+        const preserve = {};
+        for (const key of ['status', 'approvedAt', 'rejectedAt', 'deletedAt', 'rejectReason']) {
+          if (existing[key] !== undefined) preserve[key] = existing[key];
+        }
+
+        const { docId: _ignoredDocId, ...cleanData } = item;
+
+        // Atomically write the full idea to the correct doc and delete the old one
+        const batch = writeBatch(db);
+        batch.set(targetRef, {
+          ...cleanData,
+          createdAt: toIso(cleanData.createdAt) || new Date().toISOString(),
+          ...preserve,
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+        batch.delete(doc(db, COLLECTIONS.IDEAS, oldDocId));
+        await batch.commit();
+
+        console.log(`[PMIS] Healed idea ${innerId} (moved from doc ${oldDocId})`);
+      } catch (err) {
+        console.error(`[PMIS] Healing failed for ${innerId}:`, err.message || err);
+      }
+    }
+  }, [uid]);
+
+  // Dedupe ideas by their logical id (IDEA-XXXXXX), preferring the most
+  // complete record. Without this, a misplaced idea (stored under a random doc
+  // ID) and a partial status-only doc at the correct ID (created by an earlier
+  // approve attempt) would both render during the healing window.
+  const dedupeIdeas = useCallback((arr) => {
+    const byId = new Map();
+    for (const item of arr || []) {
+      const key = item?.id;
+      if (!key) continue;
+      const existing = byId.get(key);
+      if (!existing || Object.keys(item).length > Object.keys(existing).length) {
+        byId.set(key, item);
+      }
+    }
+    return Array.from(byId.values());
+  }, []);
+
   // Fetch data when user is authenticated
   useEffect(() => {
     if (!uid) {
@@ -655,7 +735,17 @@ export function DataProvider({ children }) {
     const unsubIdeas = onSnapshot(
       query(collection(db, COLLECTIONS.IDEAS), orderBy('createdAt', 'desc')),
       (snapshot) => {
-        const list = snapshot.docs.map(snapshotToData);
+        const list = dedupeIdeas(snapshot.docs.map(snapshotToData));
+
+        // One-time repair: older ideas may be stored under a random doc ID while
+        // carrying their real IDEA-XXXXXX id in the data. Move them to the correct
+        // doc so approve/reject/delete work on the right record.
+        const isAnonymousUser = firebaseUser?.isAnonymous === true;
+        if (!isAnonymousUser) {
+          const rawList = snapshot.docs.map((d) => ({ docId: d.id, ...d.data() }));
+          healMisplacedIdeas(rawList);
+        }
+
         if (list.length === 0 && !seededIdeasRef.current) {
           // No ideas yet for this user — seed sample ideas
           seedIdeasToState();
@@ -746,7 +836,7 @@ export function DataProvider({ children }) {
       unsubSchemes();
       unsubSettings();
     };
-  }, [uid, seedIdeasToState, migrateOldProjects]);
+  }, [uid, seedIdeasToState, migrateOldProjects, healMisplacedIdeas, dedupeIdeas]);
 
   // Seed default funding schemes if Firestore is empty
   const seedDefaultSchemes = useCallback(async () => {
@@ -884,7 +974,9 @@ export function DataProvider({ children }) {
   // Idea CRUD — also syncs to backend API for cross-computer A/B sync
   const addIdea = useCallback(async (idea) => {
     const newIdea = { ...idea, createdAt: new Date().toISOString(), status: 'pending', uid };
-    const id = await saveToFirestore(COLLECTIONS.IDEAS, null, newIdea);
+    // Use the idea's own ID (IDEA-XXXXXX) as the Firestore document ID so that
+    // approve/reject/delete operations update the correct document.
+    const id = await saveToFirestore(COLLECTIONS.IDEAS, idea.id || null, newIdea);
     const saved = { ...newIdea, id };
     setIdeas((prev) => [saved, ...prev]);
     cacheToLocal('pmis_ideas', [saved, ...ideas]);

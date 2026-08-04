@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency, calculateHealth, calculateStageHealth, addProjectLog, exportLogsToTxt } from '../utils/helpers';
@@ -186,6 +187,7 @@ function IdeaDetailSection({ idea }) {
 
 /* ───── Main Project Detail Component ───── */
 export default function ProjectDetail({ project, onBack, onNavigate, isProjectUser = false, editMode, onEdit, onSave, onCancel, editForm, onEditFormChange, canEdit = true }) {
+  const navigate = useNavigate();
   const { projects, ideas, updateProject, deleteProject, settings } = useData();
   const { user, isSuperAdmin } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -367,7 +369,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
               <span
                 className="detail-idea-id"
                 style={{ cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
-                onClick={() => onNavigate?.(`/idea-detail/${project.originalIdeaId}`)}
+                onClick={() => navigate(`/idea-detail/${project.originalIdeaId}`)}
                 title="Click to view original idea"
               >
                 Idea: {project.originalIdeaId}
