@@ -50,7 +50,7 @@ export default function Login() {
       }
     } else if (loginMode === 'project') {
       if (!projectId.trim() || !projectPassword.trim()) {
-        setError('請輸入 Project ID 和密碼');
+        setError('請輸入 Login ID 和密碼');
         return;
       }
       setLoading(true);
@@ -258,7 +258,7 @@ export default function Login() {
                 <input
                   type="text"
                   className="login-input"
-                  placeholder="e.g. P2025-001"
+                  placeholder="e.g. IDND2608002pm / IDND2608002owner"
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                   autoFocus
@@ -292,7 +292,7 @@ export default function Login() {
               </button>
 
               <p className="login-hint">
-                Project ID 和密碼由系統管理員提供
+                Login ID（Project ID + pm / owner）和密碼由系統管理員提供
               </p>
             </>
           )}

@@ -112,6 +112,22 @@ export default function MyProject() {
 
   return (
     <div className="page">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <h2 style={{ margin: 0 }}>{project.name || 'My Project'}</h2>
+        <span
+          style={{
+            padding: '0.25rem 0.75rem',
+            borderRadius: '999px',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            background: user?.projectRole === 'owner' ? '#eef2ff' : '#ecfdf5',
+            color: user?.projectRole === 'owner' ? '#4f46e5' : '#059669',
+            border: `1px solid ${user?.projectRole === 'owner' ? '#c7d2fe' : '#a7f3d0'}`,
+          }}
+        >
+          {user?.projectRole === 'owner' ? '👤 Owner' : '👨‍💼 PM'}
+        </span>
+      </div>
       <ProjectDetail
         project={project}
         onBack={() => navigate('/dashboard')}

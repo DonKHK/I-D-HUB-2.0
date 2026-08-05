@@ -2,33 +2,77 @@ import React, { useState, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import { DEFAULT_SETTINGS } from '../utils/constants';
 
-// Row component for managing a single project's login credentials
-function ProjectCredentialRow({ project, generateProjectPassword, updateProjectPassword }) {
-  const [password, setPassword] = useState(project.projectPassword || '');
-  const [copied, setCopied] = useState(false);
+// Row component for managing a single project's login credentials (PM + Owner)
+function ProjectCredentialRow({ project, generateProjectCredentials, updateProjectCredentials }) {
+  const [pmPassword, setPmPassword] = useState(project.pmPassword || '');
+  const [ownerPassword, setOwnerPassword] = useState(project.ownerPassword || '');
+  const [copied, setCopied] = useState(null); // 'pm-id' | 'pm-pw' | 'owner-id' | 'owner-pw' | 'all' | null
   const [saving, setSaving] = useState(false);
 
+  const pmLoginId = `${project.id}pm`;
+  const ownerLoginId = `${project.id}owner`;
+
+  const credentialBlockStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+    padding: '0.5rem',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    background: '#fafafa',
+    minWidth: '240px',
+  };
+  const credentialFieldRowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+  };
+  const credentialLabelStyle = {
+    fontSize: '0.72rem',
+    fontWeight: 600,
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: '0.03em',
+    marginBottom: '0.15rem',
+  };
+
   const handleGenerate = () => {
-    const newPwd = generateProjectPassword();
-    setPassword(newPwd);
+    const creds = generateProjectCredentials(project.id);
+    setPmPassword(creds.pmPassword);
+    setOwnerPassword(creds.ownerPassword);
   };
 
   const handleSave = async () => {
-    if (!password.trim()) return;
+    if (!pmPassword.trim() && !ownerPassword.trim()) return;
     setSaving(true);
-    await updateProjectPassword(project.id, password.trim());
+    await updateProjectCredentials(project.id, {
+      pmPassword: pmPassword.trim() || '',
+      ownerPassword: ownerPassword.trim() || '',
+    });
     setSaving(false);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopied('all');
+    setTimeout(() => setCopied(null), 2000);
   };
 
-  const handleCopy = () => {
-    if (password) {
-      navigator.clipboard.writeText(password).catch(() => {});
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const handleCopy = (text, key) => {
+    if (text) {
+      navigator.clipboard.writeText(text).catch(() => {});
+      setCopied(key);
+      setTimeout(() => setCopied(null), 2000);
     }
   };
+
+  const copyBtn = (text, key, title) => (
+    <button
+      className="btn btn--secondary"
+      style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', flexShrink: 0 }}
+      onClick={() => handleCopy(text, key)}
+      title={title}
+      disabled={!text}
+    >
+      {copied === key ? '✓' : '📋'}
+    </button>
+  );
 
   return (
     <tr>
@@ -40,29 +84,71 @@ function ProjectCredentialRow({ project, generateProjectPassword, updateProjectP
         </span>
       </td>
       <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="text"
-            className="form-input"
-            style={{ width: '140px', fontFamily: 'monospace', fontSize: '0.9rem' }}
-            placeholder="Click Generate"
-            value={password}
-            readOnly
-          />
-          {password && (
-            <button
-              className="btn btn--secondary"
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
-              onClick={handleCopy}
-              title="Copy password"
-            >
-              {copied ? '✓' : '📋'}
-            </button>
-          )}
+        <div style={credentialBlockStyle}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>👨‍💼 PM</div>
+          <div>
+            <div style={credentialLabelStyle}>Login ID</div>
+            <div style={credentialFieldRowStyle}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ width: '150px', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                value={pmLoginId}
+                readOnly
+              />
+              {copyBtn(pmLoginId, 'pm-id', 'Copy PM login ID')}
+            </div>
+          </div>
+          <div>
+            <div style={credentialLabelStyle}>Password</div>
+            <div style={credentialFieldRowStyle}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ width: '150px', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                placeholder="Click Generate"
+                value={pmPassword}
+                readOnly
+              />
+              {copyBtn(pmPassword, 'pm-pw', 'Copy PM password')}
+            </div>
+          </div>
         </div>
       </td>
       <td>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={credentialBlockStyle}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>👤 Owner</div>
+          <div>
+            <div style={credentialLabelStyle}>Login ID</div>
+            <div style={credentialFieldRowStyle}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ width: '150px', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                value={ownerLoginId}
+                readOnly
+              />
+              {copyBtn(ownerLoginId, 'owner-id', 'Copy Owner login ID')}
+            </div>
+          </div>
+          <div>
+            <div style={credentialLabelStyle}>Password</div>
+            <div style={credentialFieldRowStyle}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ width: '150px', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                placeholder="Click Generate"
+                value={ownerPassword}
+                readOnly
+              />
+              {copyBtn(ownerPassword, 'owner-pw', 'Copy Owner password')}
+            </div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <button
             className="btn btn--primary"
             style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}
@@ -72,11 +158,11 @@ function ProjectCredentialRow({ project, generateProjectPassword, updateProjectP
           </button>
           <button
             className="btn btn--success"
-            style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', opacity: password && !saving ? 1 : 0.5 }}
+            style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', opacity: (pmPassword || ownerPassword) && !saving ? 1 : 0.5 }}
             onClick={handleSave}
-            disabled={!password || saving}
+            disabled={(!pmPassword && !ownerPassword) || saving}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? 'Saving...' : copied === 'all' ? '✓ Saved' : 'Save'}
           </button>
         </div>
       </td>
@@ -85,7 +171,7 @@ function ProjectCredentialRow({ project, generateProjectPassword, updateProjectP
 }
 
 export default function Settings() {
-  const { settings, updateSettings, resetSettings, projects, generateProjectPassword, updateProjectPassword, backupAll, restoreBackup } = useData();
+  const { settings, updateSettings, resetSettings, projects, generateProjectCredentials, updateProjectCredentials, backupAll, restoreBackup } = useData();
   const [saved, setSaved] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
   const [restoreConfirm, setRestoreConfirm] = useState(false);
@@ -499,25 +585,26 @@ export default function Settings() {
         <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
           <h2 className="settings-section-title">🔑 Project Credentials</h2>
           <p className="settings-section-desc">
-            Generate and manage login passwords for project users. Each password allows a project user to log in
-            and view their own project details only.
+            Generate and manage login credentials for project users. Each project has two logins — PM and Owner —
+            both access the same project but are identified separately in the activity log.
           </p>
 
           <div style={{ overflowX: 'auto' }}>
-            <table className="data-table" style={{ minWidth: '900px' }}>
+            <table className="data-table" style={{ minWidth: '1350px' }}>
               <thead>
                 <tr>
                   <th>Project ID</th>
                   <th>Project Name</th>
                   <th>Status</th>
-                  <th>Login Password</th>
+                  <th>PM Credentials</th>
+                  <th>Owner Credentials</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {projects.length === 0 ? (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>
                       No projects available yet.
                     </td>
                   </tr>
@@ -526,8 +613,8 @@ export default function Settings() {
                     <ProjectCredentialRow
                       key={project.id}
                       project={project}
-                      generateProjectPassword={generateProjectPassword}
-                      updateProjectPassword={updateProjectPassword}
+                      generateProjectCredentials={generateProjectCredentials}
+                      updateProjectCredentials={updateProjectCredentials}
                     />
                   ))
                 )}

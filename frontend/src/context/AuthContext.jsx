@@ -65,12 +65,14 @@ export function AuthProvider({ children }) {
         // Check if this anonymous session has a stored project login
         const storedProjectId = sessionStorage.getItem('pmis_project_login_id');
         if (storedProjectId) {
+          const storedRole = sessionStorage.getItem('pmis_project_role') === 'owner' ? 'owner' : 'pm';
           setUser({
             uid: firebaseUser.uid,
             email: `project_${storedProjectId}@project`,
-            displayName: `Project: ${storedProjectId}`,
+            displayName: `Project: ${storedProjectId} (${storedRole === 'owner' ? 'Owner' : 'PM'})`,
             role: ROLES.PROJECT_USER,
             projectId: storedProjectId,
+            projectRole: storedRole,
             loginTime: new Date().toISOString(),
           });
         } else {
@@ -112,6 +114,7 @@ export function AuthProvider({ children }) {
   const guestLogin = async () => {
     try {
       sessionStorage.removeItem('pmis_project_login_id');
+      sessionStorage.removeItem('pmis_project_role');
       const result = await signInAnonymously(auth);
       return { success: true };
     } catch (error) {
@@ -120,49 +123,102 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const projectLogin = async (projectId, password) => {
+  const projectLogin = async (loginId, password) => {
     try {
+      const inputId = String(loginId || '').trim();
+      const pwd = String(password || '').trim();
+
       // Step 1: Sign in anonymously FIRST to get auth credentials
       const userCredential = await signInAnonymously(auth);
       const fbUser = userCredential.user;
-      
-      // Step 2: Now verify project credentials from Firestore (we're authenticated)
-      const q = query(collection(db, 'projects'), where('id', '==', projectId), where('projectPassword', '==', password));
+
+      // Step 2: Build candidate project IDs.
+      //   New login format: {projectId}pm  /  {projectId}owner
+      //   Legacy format:    {projectId} + projectPassword
+      const candidates = [inputId];
+      const lower = inputId.toLowerCase();
+      if (lower.endsWith('pm') && inputId.length > 2) candidates.push(inputId.slice(0, -2));
+      if (lower.endsWith('owner') && inputId.length > 5) candidates.push(inputId.slice(0, -5));
+      const uniqueCandidates = [...new Set(candidates)];
+
+      // Step 3: Verify project credentials from Firestore (we're authenticated)
+      let valid = false;
+      let projectId = inputId;
+      let projectRole = 'pm'; // 'pm' | 'owner' (legacy defaults to PM)
+
+      const q = query(collection(db, 'projects'), where('id', 'in', uniqueCandidates));
       const snapshot = await getDocs(q);
-      let valid = !snapshot.empty;
-      
-      if (!valid) {
-        // Also try matching by doc ID
-        const projectRef = doc(db, 'projects', projectId);
-        const projectSnap = await getDoc(projectRef);
-        if (projectSnap.exists() && projectSnap.data().projectPassword === password) {
-          valid = true;
+
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const projectDocId = data.id || docSnap.id;
+
+        if (projectDocId === inputId) {
+          // Exact project ID match — legacy single-password login
+          if (data.projectPassword === pwd) {
+            valid = true;
+            projectId = projectDocId;
+            projectRole = 'pm';
+            break;
+          }
+        } else if (lower.endsWith('owner') && projectDocId === inputId.slice(0, -5)) {
+          // Owner login: {projectId}owner + ownerPassword (accept legacy projectPassword too)
+          if (data.ownerPassword === pwd || data.projectPassword === pwd) {
+            valid = true;
+            projectId = projectDocId;
+            projectRole = 'owner';
+            break;
+          }
+        } else if (lower.endsWith('pm') && projectDocId === inputId.slice(0, -2)) {
+          // PM login: {projectId}pm + pmPassword (accept legacy projectPassword too)
+          if (data.pmPassword === pwd || data.projectPassword === pwd) {
+            valid = true;
+            projectId = projectDocId;
+            projectRole = 'pm';
+            break;
+          }
         }
       }
-      
+
+      if (!valid) {
+        // Fallback: try matching by Firestore document ID directly (legacy)
+        const projectRef = doc(db, 'projects', inputId);
+        const projectSnap = await getDoc(projectRef);
+        if (projectSnap.exists() && projectSnap.data().projectPassword === pwd) {
+          valid = true;
+          projectId = projectSnap.id;
+          projectRole = 'pm';
+        }
+      }
+
       if (!valid) {
         // Wrong credentials: sign out and clean up
         await signOut(auth);
         return { success: false, error: 'Project ID 或密碼不正確' };
       }
-      
-      // Step 3: Store project ID in session storage
+
+      const roleLabel = projectRole === 'owner' ? 'Owner' : 'PM';
+
+      // Step 4: Store project ID + role in session storage
       sessionStorage.setItem('pmis_project_login_id', projectId);
-      
-      // Step 4: Manually set user as PROJECT_USER (onAuthStateChanged may have already fired as GUEST)
+      sessionStorage.setItem('pmis_project_role', projectRole);
+
+      // Step 5: Manually set user as PROJECT_USER (onAuthStateChanged may have already fired as GUEST)
       setFirebaseUser(fbUser);
       setUser({
         uid: fbUser.uid,
         email: `project_${projectId}@project`,
-        displayName: `Project: ${projectId}`,
+        displayName: `Project: ${projectId} (${roleLabel})`,
         role: ROLES.PROJECT_USER,
         projectId,
+        projectRole,
         loginTime: new Date().toISOString(),
       });
-      
+
       return { success: true };
     } catch (error) {
       sessionStorage.removeItem('pmis_project_login_id');
+      sessionStorage.removeItem('pmis_project_role');
       console.error('Project login error:', error);
       return { success: false, error: '登入失敗：' + error.message };
     }
@@ -170,6 +226,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     sessionStorage.removeItem('pmis_project_login_id');
+    sessionStorage.removeItem('pmis_project_role');
     try {
       await signOut(auth);
     } catch (error) {

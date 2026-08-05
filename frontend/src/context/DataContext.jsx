@@ -1224,7 +1224,7 @@ export function DataProvider({ children }) {
     return pwd;
   }, []);
 
-  // Set/update project password
+  // Set/update project password (legacy single-password login)
   const updateProjectPassword = useCallback(async (projectId, password) => {
     await saveToFirestore(COLLECTIONS.PROJECTS, projectId, { projectPassword: password });
     setProjects((prev) => {
@@ -1233,6 +1233,32 @@ export function DataProvider({ children }) {
       return newList;
     });
     return password;
+  }, [saveToFirestore, cacheToLocal]);
+
+  // Generate both PM and Owner credentials for a project.
+  // Login IDs are deterministic: {projectId}pm  /  {projectId}owner
+  const generateProjectCredentials = useCallback((projectId) => {
+    const id = String(projectId || '').trim();
+    return {
+      pmLoginId: `${id}pm`,
+      pmPassword: generateProjectPassword(),
+      ownerLoginId: `${id}owner`,
+      ownerPassword: generateProjectPassword(),
+    };
+  }, [generateProjectPassword]);
+
+  // Set/update PM and Owner passwords for a project
+  const updateProjectCredentials = useCallback(async (projectId, creds) => {
+    const payload = {};
+    if (creds && creds.pmPassword != null) payload.pmPassword = creds.pmPassword;
+    if (creds && creds.ownerPassword != null) payload.ownerPassword = creds.ownerPassword;
+    await saveToFirestore(COLLECTIONS.PROJECTS, projectId, payload);
+    setProjects((prev) => {
+      const newList = prev.map((p) => (p.id === projectId ? { ...p, ...payload } : p));
+      cacheToLocal('pmis_projects', newList);
+      return newList;
+    });
+    return payload;
   }, [saveToFirestore, cacheToLocal]);
 
   // Settings
@@ -1366,6 +1392,8 @@ export function DataProvider({ children }) {
         restoreBackup,
         generateProjectPassword,
         updateProjectPassword,
+        generateProjectCredentials,
+        updateProjectCredentials,
       }}
     >
       {children}

@@ -304,11 +304,13 @@ Edit the prompt used by the AI analysis. The idea details and a JSON scorecard o
 
 #### 4.8.7 Project Credentials
 
-Manage login passwords for Project Users:
+Manage login credentials for Project Users. Each project has **two logins** — one for the **PM** (Project Manager) and one for the **Owner** — so the activity log can tell who did what. Both logins access the **same project**:
 
-- **Generate** — creates a random secure password.
-- **Save** — stores the password for that project.
-- **Copy** — copies the password to the clipboard to share with the project user.
+- **👨‍💼 PM** — Login ID: `<ProjectID>pm` (e.g. `IDND2608002pm`) with its own password.
+- **👤 Owner** — Login ID: `<ProjectID>owner` (e.g. `IDND2608002owner`) with its own password.
+- **Generate** — creates random secure passwords for both PM and Owner.
+- **Save** — stores both passwords for that project.
+- **Copy** — copies the Login ID or password to the clipboard to share with the project user.
 
 ### 4.9 Alerts
 
@@ -377,13 +379,15 @@ Same as Superadmin, **except** Funding Schemes is browse-only (no Add/Edit/Delet
 
 ## 6. Project User Manual
 
-*Project Users log in with a Project ID + password and see only their own project.*
+*Project Users log in with a Login ID + password and see only their own project. Each project has two logins: **PM** (`<ProjectID>pm`) and **Owner** (`<ProjectID>owner`). Both open the same project, but the activity log records who did what.*
 
 ### 6.1 Login
 
 1. On the login page, click the **Project Login** tab.
-2. Enter your **Project ID** and **Password** (provided by your system administrator).
+2. Enter your **Login ID** — your Project ID followed by `pm` or `owner` (e.g. `IDND2608002pm` for the PM, `IDND2608002owner` for the Owner) — and your **Password** (both provided by your system administrator).
 3. Click **Login to Project**.
+
+> 💡 The page still labels the first field "Project ID". Just type your full Login ID (Project ID + `pm` / `owner`) into it.
 
 ### 6.2 My Project page
 
