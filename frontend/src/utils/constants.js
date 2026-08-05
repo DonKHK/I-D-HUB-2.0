@@ -5,6 +5,9 @@ export const ROLES = {
   PROJECT_USER: 'project_user',
 };
 
+// App version label — set per repo (I-D-HUB-2.0 → '2.0', I-D-HUB-3.0 → '3.0')
+export const APP_VERSION = '3.0';
+
 export const STATUS = {
   PLANNING: 'Planning',
   IN_PROGRESS: 'In Progress',

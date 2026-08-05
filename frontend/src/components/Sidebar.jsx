@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { SIDEBAR_ITEMS, SIDEBAR_ITEMS_PROJECT_USER } from '../utils/constants';
+import { APP_VERSION, SIDEBAR_ITEMS, SIDEBAR_ITEMS_PROJECT_USER } from '../utils/constants';
 
 export default function Sidebar({ activePage, onNavigate }) {
   const { user, hasPermission, logout } = useAuth();
@@ -67,7 +67,7 @@ export default function Sidebar({ activePage, onNavigate }) {
         )}
         {!collapsed && (
           <div className="sidebar__footer-info">
-            <div className="sidebar__dev-text">© {new Date().getFullYear()} I.D.E.A.S. HUB 2.0</div>
+            <div className="sidebar__dev-text">© {new Date().getFullYear()} I.D.E.A.S. HUB V{APP_VERSION}</div>
             <div className="sidebar__dev-text">Powered by I.T. Department</div>
           </div>
         )}

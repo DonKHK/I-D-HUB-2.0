@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { APP_VERSION } from '../utils/constants';
 import { auth, signInWithEmailAndPassword, sendPasswordResetEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from '../firebase';
 
 export default function Login() {
@@ -170,6 +171,9 @@ export default function Login() {
           <h1 className="login-title">I&D Hub</h1>
           <p className="login-subtitle">Innovation & Development Hub</p>
           <p className="login-department">Innovation & Development Department</p>
+          <p className="login-version" style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+            Version {APP_VERSION}
+          </p>
         </div>
 
         {/* Tab switcher (hidden in forgot/change modes) */}
