@@ -5657,3 +5657,104 @@ body {
   font-size: 0.85rem;
   white-space: nowrap;
 }
+
+/* ===== MORE FEATURES ===== */
+.more-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.tool-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.tool-card-icon {
+  font-size: 2.2rem;
+}
+
+.tool-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1a237e;
+}
+
+.tool-card-desc {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ===== BUSINESS PLAN ===== */
+.business-plan-progress {
+  margin: 1rem 0;
+  max-width: 520px;
+}
+
+.business-plan-progress-text {
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 0.4rem;
+}
+
+.business-plan-progress-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.business-plan-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  transition: width 0.3s ease;
+}
+
+.business-plan-questions,
+.business-plan-ai,
+.business-plan-result {
+  margin-bottom: 1.25rem;
+}
+
+.business-plan-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.business-plan-section:last-child {
+  border-bottom: none;
+}
+
+.business-plan-section-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.02rem;
+  color: #1a237e;
+}
+
+.business-plan-result-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-top: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.business-plan-result-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+

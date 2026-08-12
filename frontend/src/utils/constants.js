@@ -53,11 +53,13 @@ export const SIDEBAR_ITEMS = [
   { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['superadmin'] },
   { key: 'alerts', label: 'Alerts', icon: '⚠️', roles: ['admin', 'superadmin'] },
   { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['superadmin'] },
+  { key: 'more-features', label: 'More Features', icon: '🧰', roles: ['guest', 'admin', 'superadmin'] },
 ];
 
-// For PROJECT_USER - only can see their own project
+// For PROJECT_USER - only can see their own project + More Features tools
 export const SIDEBAR_ITEMS_PROJECT_USER = [
   { key: 'my-project', label: 'My Project', icon: '📁', roles: ['project_user'] },
+  { key: 'more-features', label: 'More Features', icon: '🧰', roles: ['project_user'] },
 ];
 
 export const DEFAULT_AI_PROMPT = `Please act as a professional innovation project evaluation consultant. Analyze the following Innovation Idea comprehensively and produce a report suitable for submission to the company's Innovation Committee for approval.

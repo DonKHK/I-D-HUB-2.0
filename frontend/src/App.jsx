@@ -18,6 +18,8 @@ import Alerts from './pages/Alerts';
 import AllProjects from './pages/AllProjects';
 import Settings from './pages/Settings';
 import ReportExport from './pages/ReportExport';
+import MoreFeatures from './pages/MoreFeatures';
+import BusinessPlan from './pages/BusinessPlan';
 
 const ROUTE_MAP = {
   'dashboard': '/dashboard',
@@ -31,6 +33,8 @@ const ROUTE_MAP = {
   'alerts': '/alerts',
   'settings': '/settings',
   'report-export': '/report-export',
+  'more-features': '/more-features',
+  'business-plan': '/more-features/business-plan',
 };
 
 // ProjectFormWrapper to handle edit state
@@ -88,15 +92,17 @@ function AppContent() {
 
   // Guest users: redirect to /all-projects if they try to access restricted pages
   if (isGuest) {
-    const guestRoutes = ['/all-projects', '/funding-schemes', '/idea-submission'];
+    const guestRoutes = ['/all-projects', '/funding-schemes', '/idea-submission', '/more-features', '/more-features/business-plan'];
     if (!guestRoutes.includes(location.pathname)) {
       return <Navigate to="/all-projects" replace />;
     }
   }
 
-  // Project users: only allow access to their own project page
+  // Project users: only allow access to their own project page + More Features tools
   if (isProjectUser) {
-    if (location.pathname !== '/my-project') {
+    const allowedProjectUserRoutes =
+      location.pathname === '/my-project' || location.pathname.startsWith('/more-features');
+    if (!allowedProjectUserRoutes) {
       return <Navigate to="/my-project" replace />;
     }
   }
@@ -136,6 +142,8 @@ function AppContent() {
           <Route path="/alerts" element={<Alerts onNavigate={handleSidebarNavigate} />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/report-export" element={<ReportExport />} />
+          <Route path="/more-features" element={<MoreFeatures />} />
+          <Route path="/more-features/business-plan" element={<BusinessPlan />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
