@@ -20,6 +20,7 @@ import Settings from './pages/Settings';
 import ReportExport from './pages/ReportExport';
 import MoreFeatures from './pages/MoreFeatures';
 import BusinessPlan from './pages/BusinessPlan';
+import CommercializationQuestionnaire from './pages/CommercializationQuestionnaire';
 
 const ROUTE_MAP = {
   'dashboard': '/dashboard',
@@ -35,6 +36,7 @@ const ROUTE_MAP = {
   'report-export': '/report-export',
   'more-features': '/more-features',
   'business-plan': '/more-features/business-plan',
+  'commercialization': '/more-features/commercialization',
 };
 
 // ProjectFormWrapper to handle edit state
@@ -92,8 +94,10 @@ function AppContent() {
 
   // Guest users: redirect to /all-projects if they try to access restricted pages
   if (isGuest) {
-    const guestRoutes = ['/all-projects', '/funding-schemes', '/idea-submission', '/more-features', '/more-features/business-plan'];
-    if (!guestRoutes.includes(location.pathname)) {
+    const guestRoutes = ['/all-projects', '/funding-schemes', '/idea-submission'];
+    const allowedGuestRoute =
+      guestRoutes.includes(location.pathname) || location.pathname.startsWith('/more-features');
+    if (!allowedGuestRoute) {
       return <Navigate to="/all-projects" replace />;
     }
   }
@@ -144,6 +148,7 @@ function AppContent() {
           <Route path="/report-export" element={<ReportExport />} />
           <Route path="/more-features" element={<MoreFeatures />} />
           <Route path="/more-features/business-plan" element={<BusinessPlan />} />
+          <Route path="/more-features/commercialization" element={<CommercializationQuestionnaire />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

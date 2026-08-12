@@ -5758,3 +5758,227 @@ body {
   color: #64748b;
 }
 
+
+/* ===== COMMERCIALIZATION QUESTIONNAIRE ===== */
+.com-stepper {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.com-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.com-step--active {
+  background: #1a237e;
+  color: #fff;
+}
+
+.com-step--done {
+  background: #dcfce7;
+  color: #059669;
+}
+
+.com-step-icon {
+  font-size: 0.95rem;
+}
+
+.com-progress {
+  margin-bottom: 1rem;
+  max-width: 520px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.com-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.com-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  transition: width 0.3s ease;
+}
+
+.com-section-card {
+  padding: 1.5rem;
+}
+
+.com-section-title {
+  margin: 0 0 1.25rem;
+  color: #1a237e;
+  font-size: 1.15rem;
+}
+
+.com-question {
+  margin-bottom: 1.25rem;
+}
+
+.com-question-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.com-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.com-option input {
+  accent-color: #1a237e;
+}
+
+.com-option--checked {
+  border-color: #1a237e;
+  background: #eef2ff;
+  color: #1a237e;
+  font-weight: 600;
+}
+
+.com-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.com-other-input {
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+/* Pricing calculator */
+.com-pricing {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.com-pricing-title {
+  margin: 0 0 0.35rem;
+  color: #1a237e;
+}
+
+.com-pricing-desc {
+  margin: 0 0 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.com-pricing-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.9rem;
+}
+
+.com-pricing-result {
+  margin-top: 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.com-price-step {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 0.92rem;
+}
+
+.com-price-step strong {
+  color: #1a237e;
+  font-size: 1.02rem;
+}
+
+.com-price-step--final {
+  background: #eef2ff;
+  border-bottom: none;
+}
+
+.com-price-step--final strong {
+  font-size: 1.25rem;
+  color: #4f46e5;
+}
+
+.com-price-factor {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  text-align: right;
+}
+
+.com-pricing-hint {
+  color: #94a3b8;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* Navigation */
+.com-nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 1.25rem 0;
+}
+
+/* Summary */
+.com-summary {
+  padding: 1.5rem;
+}
+
+.com-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.com-summary-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.com-summary-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+

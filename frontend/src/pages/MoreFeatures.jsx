@@ -12,6 +12,14 @@ const TOOLS = [
       'Answer a few guided questions and let AI generate a complete, professional business plan for you.',
     route: '/more-features/business-plan',
   },
+  {
+    key: 'commercialization',
+    title: 'Commercialization Plan',
+    icon: '📦',
+    description:
+      'Guided questionnaire for taking a product to market — with a multi-layer recommended selling price calculator.',
+    route: '/more-features/commercialization',
+  },
 ];
 
 export default function MoreFeatures() {
