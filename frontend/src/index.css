@@ -6020,3 +6020,11 @@ body {
   margin-top: 0.6rem;
 }
 
+
+/* Import from Idea (Super Admin) */
+.com-import-card {
+  margin-bottom: 1.25rem;
+  border: 1px solid #fbbf24;
+  background: #fffbeb;
+}
+

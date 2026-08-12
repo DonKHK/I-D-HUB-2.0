@@ -15,6 +15,7 @@ import {
 } from '../utils/commercializationPricing';
 import { callAi } from '../utils/aiCall';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 
 const DRAFT_KEY = 'pmis_commercialization_draft';
 
@@ -63,13 +64,76 @@ function toggleMultiValue(current, option, max) {
   return next;
 }
 
+// Map an existing idea's data onto the questionnaire's answer fields
+// (Super Admin "Import from Idea" feature).
+function buildAnswersFromIdea(idea) {
+  if (!idea) return {};
+  const t = (v) => (v == null ? '' : String(v).trim());
+
+  const title = t(idea.title);
+  const background = t(idea.background);
+  const painPoint = t(idea.painPoint);
+  const projectScope = t(idea.projectScope);
+  const benefits = t(idea.benefits);
+  const deliverables = t(idea.deliverables);
+  const techDirection = t(idea.techDirection);
+  const innovationElement = t(idea.innovationElement);
+  const risks = t(idea.risks);
+  const resources = t(idea.resourceRequirements);
+  const technicalReq = t(idea.technicalRequirements);
+
+  const out = {};
+
+  // Q2 Product description
+  const descParts = [title, background, painPoint, projectScope].filter(Boolean);
+  if (descParts.length) out.productDescription = descParts.join('\n');
+
+  // Q4 Biggest technical advantage
+  const techParts = [techDirection, innovationElement].filter(Boolean);
+  if (techParts.length) out.techAdvantage = techParts.join('\n');
+
+  // Q10 Improved aspects (keyword match on benefits)
+  const improved = [];
+  const lower = benefits.toLowerCase();
+  if (/cheap|cost|慳|省/.test(lower)) improved.push('Cheaper');
+  if (/fast|speed|快/.test(lower)) improved.push('Faster');
+  if (/safe|safety|安全/.test(lower)) improved.push('Safer');
+  if (/manpower|labou?r|staff|人手/.test(lower)) improved.push('Less manpower');
+  if (improved.length) out.improvedAspects = improved;
+
+  // Q22 Top 3 advantages / Q25 Value proposition
+  if (benefits) {
+    out.top3Advantages = benefits;
+    out.valueProposition = benefits;
+  }
+
+  // Q34 Value-added items
+  const valueAdds = [deliverables, benefits].filter(Boolean);
+  if (valueAdds.length) out.valueAdds = valueAdds.join('\n');
+
+  // Q35a Small-batch production resources
+  const resourceParts = [resources, technicalReq].filter(Boolean);
+  if (resourceParts.length) out.smallBatch = resourceParts.join('\n');
+
+  // Q35f Risks
+  if (risks) out.risks = risks;
+
+  // Keep the idea reference for the summary footer
+  out._importedIdeaId = idea.id || '';
+  out._importedIdeaTitle = title || idea.id || '';
+
+  return out;
+}
+
 export default function CommercializationQuestionnaire() {
-  const { settings } = useData();
+  const { settings, ideas } = useData();
+  const { isSuperAdmin } = useAuth();
   const [answers, setAnswers] = useState(loadDraft);
   const [stepIndex, setStepIndex] = useState(0);
   const [stepError, setStepError] = useState('');
   const [showSummary, setShowSummary] = useState(false);
   const [summaryText, setSummaryText] = useState('');
+  const [selectedIdeaId, setSelectedIdeaId] = useState('');
 
   // Pricing calculator state
   const [calcDirection, setCalcDirection] = useState('b2b');
@@ -227,6 +291,18 @@ export default function CommercializationQuestionnaire() {
     const pricingText = buildPricingText();
     setSummaryText(buildCommercializationSummary(finalizeAnswers(answers), pricingText));
     setShowSummary(true);
+  };
+
+  // Super Admin: import an existing idea's data into the plan
+  const handleImportIdea = () => {
+    if (!selectedIdeaId) return;
+    const idea = (ideas || []).find((i) => i.id === selectedIdeaId);
+    if (!idea) return;
+    const ideaAnswers = buildAnswersFromIdea(idea);
+    setAnswers((prev) => ({ ...prev, ...ideaAnswers }));
+    setStepIndex(0);
+    setShowSummary(false);
+    setStepError('');
   };
 
   // ─── AI detailed plan ───
@@ -432,6 +508,34 @@ export default function CommercializationQuestionnaire() {
       <p className="page-subtitle">
         Answer section by section. Your answers are saved automatically in this browser.
       </p>
+
+      {/* Super Admin: import from idea */}
+      {isSuperAdmin && (
+        <div className="card com-import-card">
+          <h3 className="com-section-title" style={{ marginBottom: '0.35rem' }}>👑 Import from Idea</h3>
+          <p className="com-pricing-desc">
+            Super Admin only — pick an existing idea and inject its data into this plan. Mapped fields will be filled automatically.
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <select
+              className="form-input"
+              style={{ maxWidth: '480px', flex: 1 }}
+              value={selectedIdeaId}
+              onChange={(e) => setSelectedIdeaId(e.target.value)}
+            >
+              <option value="">— Select an idea —</option>
+              {(ideas || []).map((idea) => (
+                <option key={idea.id} value={idea.id}>
+                  {idea.title || 'Untitled'} ({idea.id})
+                </option>
+              ))}
+            </select>
+            <button className="btn btn--primary" onClick={handleImportIdea} disabled={!selectedIdeaId}>
+              📥 Import into Plan
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stepper */}
       <div className="com-stepper">
