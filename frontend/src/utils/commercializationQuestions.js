@@ -426,31 +426,32 @@ export function buildCommercializationSummary(answers, pricingText = '') {
 
 export const COMMERCIALIZATION_AI_PROMPT = `You are a senior commercialization / product-launch strategy consultant. Based on the answers from the commercialization questionnaire below, produce a DETAILED, professional commercialization plan.
 
+IMPORTANT OUTPUT RULES:
+- Write ENTIRELY in English.
+- Do NOT output JSON, XML or any structured data format. Do NOT use code fences. Do NOT include reasoning or chain-of-thought (if you are a reasoning model, output only the final report).
+- Write plain prose with clear section headings (e.g. "## 1. Executive Summary").
+- If an answer is missing, never leave a section empty — make a reasonable, clearly-labelled market assumption and mark it as "Assumption — please verify".
+
 Required structure:
 1. Executive Summary
 2. Product & Technology (what it is, core problem it solves, development stage, biggest technical advantage, limitations)
-3. Market & Customers (current alternatives, quantified advantages, target customers, decision process, market size, policies/trends)
-4. Competitive Analysis (top 3 advantages, weaknesses, key purchase factors, value proposition)
-5. Commercialization Strategy (priority directions, why chosen, directions to deprioritize and why)
-6. Pricing & Margin Plan (include the calculated layer-by-layer recommended selling prices and the price range)
-7. Go-to-Market & Sales (channels, first customers, proofs/conditions required, after-sales & maintenance)
-8. Execution Roadmap (small-batch trial production, mass-production bottleneck, certifications, resources needed, next 6 months focus)
-9. Financial & Funding (cost structure, funding requirement, expected revenue)
-10. Risks & Mitigation (top risks and concrete mitigations)
-11. 90-Day Action Plan (specific concrete steps with owners and timeframes)
-
-Rules:
-- Write in the same language as the user's answers (Chinese answers → Traditional Chinese; English answers → English).
-- Be specific and actionable; use the numbers the user provided.
-- If an answer is empty, keep that section brief but still complete.
-- Use clear section headings (e.g. "## 1. Executive Summary").
-- Plain formatted text only — no JSON markup.
+3. Market Analysis (market size, target customers, decision process, policies/trends)
+4. Market Price Comparison (compare our recommended selling price with current prices of similar products / alternatives in the market, and explain our price positioning)
+5. Competitive Analysis (top 3 advantages, weaknesses, key purchase factors, value proposition)
+6. Commercialization Strategy (priority directions, why chosen, directions to deprioritize and why)
+7. Pricing & Margin Plan (include the calculated layer-by-layer recommended selling prices and the price range)
+8. Go-to-Market & Sales (channels, first customers, proofs/conditions required, after-sales & maintenance)
+9. Execution Roadmap (small-batch trial production, mass-production bottleneck, certifications, resources needed, next 6 months focus)
+10. Financial & Funding (cost structure, funding requirement, expected revenue)
+11. Risks & Mitigation (top risks and concrete mitigations)
+12. Next Steps (a concrete 90-day action plan with specific actions, owners and timeframes)
 
 User's questionnaire answers:
 
 `;
 
-export function buildCommercializationAiPrompt(answers, pricingText = '') {
+export function buildCommercializationAiPrompt(answers, pricingText = '', customPrompt = '') {
+  const prompt = (customPrompt && customPrompt.trim()) || COMMERCIALIZATION_AI_PROMPT;
   const lines = COMMERCIALIZATION_QUESTIONS.map((q) => {
     const ans = answers[q.id];
     let text = '';
@@ -465,5 +466,5 @@ export function buildCommercializationAiPrompt(answers, pricingText = '') {
   const pricing = pricingText
     ? `\n\nCalculated recommended selling prices (from the pricing module):\n${pricingText}\n`
     : '';
-  return COMMERCIALIZATION_AI_PROMPT + '\n' + lines.join('\n\n') + pricing + '\n';
+  return prompt + '\n' + lines.join('\n\n') + pricing + '\n';
 }

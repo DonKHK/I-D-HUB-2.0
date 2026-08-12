@@ -43,30 +43,32 @@ export const BUSINESS_PLAN_QUESTIONS = [
 
 export const BUSINESS_PLAN_PROMPT = `You are a professional business plan consultant. Based on the answers below provided by the user, generate a complete, professional business plan.
 
+IMPORTANT OUTPUT RULES:
+- Write ENTIRELY in English.
+- Do NOT output JSON, XML or any structured data format. Do NOT use code fences. Do NOT include reasoning or chain-of-thought — output only the final plan.
+- Write plain prose with clear section headings (e.g. "## 1. Executive Summary").
+- If an answer is missing, never leave a section empty — make a reasonable, clearly-labelled assumption and mark it as "Assumption — please verify".
+
 Required sections:
 1. Executive Summary
 2. Company Description
 3. Product / Service
-4. Market Analysis
+4. Market Analysis (market size, target customers, competition)
 5. Business Model
 6. Marketing & Sales Strategy
 7. Operations & Implementation Plan
 8. Financial Plan
 9. Risks & Mitigation
-
-Rules:
-- Write in the same language as the user's answers (Chinese answers → Traditional Chinese; English answers → English).
-- Keep any missing answer brief but still produce a complete plan.
-- Use clear professional language with section headings (e.g. "## 1. Executive Summary").
-- Plain formatted text only — no JSON markup.
+10. Next Steps (a concrete 90-day action plan with specific actions, owners and timeframes)
 
 User's answers:
 `;
 
-export function buildBusinessPlanPrompt(answers) {
+export function buildBusinessPlanPrompt(answers, customPrompt = '') {
+  const prompt = (customPrompt && customPrompt.trim()) || BUSINESS_PLAN_PROMPT;
   const lines = BUSINESS_PLAN_QUESTIONS.map((q, i) => {
     const ans = (answers[q.id] || '').trim();
     return `${i + 1}. ${q.label}\n${ans || '(No answer)'}`;
   });
-  return BUSINESS_PLAN_PROMPT + '\n' + lines.join('\n\n') + '\n';
+  return prompt + '\n' + lines.join('\n\n') + '\n';
 }

@@ -3,9 +3,8 @@ import {
   BUSINESS_PLAN_QUESTIONS,
   buildBusinessPlanPrompt,
 } from '../utils/businessPlanQuestions';
-
-// Backend API base URL — uses Vite proxy (/api -> localhost:5000) by default
-const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api';
+import { useData } from '../context/DataContext';
+import { callAi } from '../utils/aiCall';
 
 const DRAFT_KEY = 'pmis_business_plan_draft';
 const RESULT_KEY = 'pmis_business_plan_result';
@@ -34,6 +33,7 @@ function loadResult() {
 }
 
 export default function BusinessPlan() {
+  const { settings } = useData();
   const [answers, setAnswers] = useState(loadDraft);
   const [result, setResult] = useState(loadResult);
 
@@ -108,57 +108,19 @@ export default function BusinessPlan() {
     setAiError('');
     setResult('');
 
-    const prompt = buildBusinessPlanPrompt(answers);
-
-    // Where to read the AI response text from
-    const responseContentKey = aiProvider === 'cloudflare'
-      ? 'result.response'
-      : 'choices.0.message.content';
-
-    const cfModel = aiModel && aiModel.startsWith('@cf/') ? aiModel : '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b';
+    const prompt = buildBusinessPlanPrompt(answers, settings?.businessPlanAiPrompt);
 
     try {
-      const response = await fetch(`${API_BASE}/ai/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: aiProvider,
-          apiKey: aiApiKey,
-          endpoint: aiEndpoint,
-          model: aiProvider === 'cloudflare' ? cfModel : aiModel,
-          accountId: aiAccountId,
-          token: aiCloudflareToken,
-          prompt,
-        }),
+      const content = await callAi({
+        provider: aiProvider,
+        apiKey: aiApiKey,
+        endpoint: aiEndpoint,
+        model: aiModel,
+        accountId: aiAccountId,
+        token: aiCloudflareToken,
+        prompt,
       });
-
-      if (!response.ok) {
-        let errMsg = `API error ${response.status}`;
-        try {
-          const errData = await response.json();
-          errMsg = errData.error || errData.message || errMsg;
-        } catch (e) { /* response not JSON */ }
-        throw new Error(errMsg);
-      }
-
-      const data = await response.json();
-
-      // Cloudflare returns { success: false, errors: [...] } on failure
-      if (aiProvider === 'cloudflare' && data.success === false) {
-        const errMsg = data.errors?.[0]?.message || 'Cloudflare API error';
-        throw new Error(errMsg);
-      }
-
-      // Extract the raw text from the provider-specific response shape
-      const content = responseContentKey
-        ? responseContentKey.split('.').reduce((obj, key) => (obj == null ? undefined : obj[key]), data)
-        : null;
-
-      if (!content) {
-        throw new Error('No response content from API.');
-      }
-
-      setResult(String(content).trim());
+      setResult(content);
     } catch (err) {
       if (err?.message === 'Failed to fetch') {
         setAiError('無法連接到 AI 服務。請檢查網絡連線，並確認 backend server (port 5000) 已啟動。');

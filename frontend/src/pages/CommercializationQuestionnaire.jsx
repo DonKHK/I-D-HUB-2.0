@@ -14,6 +14,7 @@ import {
   formatMoney,
 } from '../utils/commercializationPricing';
 import { callAi } from '../utils/aiCall';
+import { useData } from '../context/DataContext';
 
 const DRAFT_KEY = 'pmis_commercialization_draft';
 
@@ -63,6 +64,7 @@ function toggleMultiValue(current, option, max) {
 }
 
 export default function CommercializationQuestionnaire() {
+  const { settings } = useData();
   const [answers, setAnswers] = useState(loadDraft);
   const [stepIndex, setStepIndex] = useState(0);
   const [stepError, setStepError] = useState('');
@@ -254,7 +256,11 @@ export default function CommercializationQuestionnaire() {
     setAiError('');
     setAiPlanResult('');
 
-    const prompt = buildCommercializationAiPrompt(finalizeAnswers(answers), buildPricingText());
+    const prompt = buildCommercializationAiPrompt(
+      finalizeAnswers(answers),
+      buildPricingText(),
+      settings?.commercializationAiPrompt
+    );
 
     try {
       const content = await callAi({

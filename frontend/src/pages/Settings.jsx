@@ -501,6 +501,58 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* AI Plan Prompts */}
+        <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
+          <h2 className="settings-section-title">🤖 AI Plan Prompts</h2>
+          <p className="settings-section-desc">
+            Customize the prompts used by the Business Plan and Commercialization Plan generators. Leave unchanged to use the defaults.
+          </p>
+
+          <div className="form-group">
+            <label className="form-label">
+              Business Plan AI Prompt
+              <span className="form-hint">Controls how the AI writes the Business Plan (More Features).</span>
+            </label>
+            <textarea
+              className="form-input form-input--textarea"
+              rows="10"
+              style={{ fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}
+              value={settings.businessPlanAiPrompt || ''}
+              onChange={(e) => handleChange('businessPlanAiPrompt', e.target.value)}
+              placeholder="Enter your custom Business Plan prompt..."
+            />
+            <button
+              className="btn btn--secondary"
+              style={{ marginTop: '0.5rem' }}
+              onClick={() => handleChange('businessPlanAiPrompt', DEFAULT_SETTINGS.businessPlanAiPrompt)}
+            >
+              ↺ Reset Business Plan Prompt
+            </button>
+          </div>
+
+          <div className="form-group" style={{ marginTop: '1.25rem' }}>
+            <label className="form-label">
+              Commercialization Plan AI Prompt
+              <span className="form-hint">Controls how the AI writes the detailed Commercialization Plan (More Features).</span>
+            </label>
+            <textarea
+              className="form-input form-input--textarea"
+              rows="10"
+              style={{ fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap' }}
+              value={settings.commercializationAiPrompt || ''}
+              onChange={(e) => handleChange('commercializationAiPrompt', e.target.value)}
+              placeholder="Enter your custom Commercialization Plan prompt..."
+            />
+            <button
+              className="btn btn--secondary"
+              style={{ marginTop: '0.5rem' }}
+              onClick={() => handleChange('commercializationAiPrompt', DEFAULT_SETTINGS.commercializationAiPrompt)}
+            >
+              ↺ Reset Commercialization Prompt
+            </button>
+          </div>
+        </div>
+
         {/* Backup & Restore */}
         <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
           <h2 className="settings-section-title">💾 Backup & Restore</h2>

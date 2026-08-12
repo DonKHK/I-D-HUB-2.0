@@ -1,3 +1,6 @@
+import { BUSINESS_PLAN_PROMPT } from './businessPlanQuestions';
+import { COMMERCIALIZATION_AI_PROMPT } from './commercializationQuestions';
+
 export const ROLES = {
   GUEST: 'guest',
   ADMIN: 'admin',
@@ -107,6 +110,8 @@ export const DEFAULT_SETTINGS = {
   emailOnBudgetExceeded: true,
   emailFrequency: 'daily',
   aiPrompt: DEFAULT_AI_PROMPT,
+  businessPlanAiPrompt: BUSINESS_PLAN_PROMPT,
+  commercializationAiPrompt: COMMERCIALIZATION_AI_PROMPT,
   alertCriticalColor: '#ef4444',
   alertWarningColor: '#eab308',
   alertSuccessColor: '#22c55e',
