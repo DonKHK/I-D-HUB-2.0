@@ -3,14 +3,17 @@ import {
   COMMERCIALIZATION_SECTIONS,
   COMMERCIALIZATION_QUESTIONS,
   buildCommercializationSummary,
+  buildCommercializationAiPrompt,
 } from '../utils/commercializationQuestions';
 import {
   DIRECTION_OPTIONS,
   DIRECTION_PRICING,
   calculatePriceLayers,
+  calculatePriceRange,
   calculatePaaS,
   formatMoney,
 } from '../utils/commercializationPricing';
+import { callAi } from '../utils/aiCall';
 
 const DRAFT_KEY = 'pmis_commercialization_draft';
 
@@ -72,6 +75,17 @@ export default function CommercializationQuestionnaire() {
   const [distributorMarkup, setDistributorMarkup] = useState(1.4);
   const [recoveryMonths, setRecoveryMonths] = useState(24);
   const [serviceMarginPct, setServiceMarginPct] = useState(30);
+
+  // AI plan state (Option A — provider + key entered each time)
+  const [aiProvider, setAiProvider] = useState('openai');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiEndpoint, setAiEndpoint] = useState('');
+  const [aiModel, setAiModel] = useState('gpt-3.5-turbo');
+  const [aiAccountId, setAiAccountId] = useState('');
+  const [aiCloudflareToken, setAiCloudflareToken] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [aiPlanResult, setAiPlanResult] = useState('');
 
   // Save draft on every change
   useEffect(() => {
@@ -211,6 +225,79 @@ export default function CommercializationQuestionnaire() {
     const pricingText = buildPricingText();
     setSummaryText(buildCommercializationSummary(finalizeAnswers(answers), pricingText));
     setShowSummary(true);
+  };
+
+  // ─── AI detailed plan ───
+  const runAiPlan = async () => {
+    // Provider-specific validation
+    if (aiProvider === 'cloudflare') {
+      if (!String(aiAccountId || '').trim()) {
+        setAiError('Please enter your Cloudflare Account ID.');
+        return;
+      }
+      if (!String(aiCloudflareToken || '').trim()) {
+        setAiError('Please enter your Cloudflare API Token.');
+        return;
+      }
+    } else {
+      if (!String(aiApiKey || '').trim()) {
+        setAiError('Please enter an API Key.');
+        return;
+      }
+      if (aiProvider === 'custom' && !String(aiEndpoint || '').trim()) {
+        setAiError('Please enter an API endpoint URL.');
+        return;
+      }
+    }
+
+    setAiLoading(true);
+    setAiError('');
+    setAiPlanResult('');
+
+    const prompt = buildCommercializationAiPrompt(finalizeAnswers(answers), buildPricingText());
+
+    try {
+      const content = await callAi({
+        provider: aiProvider,
+        apiKey: aiApiKey,
+        endpoint: aiEndpoint,
+        model: aiModel,
+        accountId: aiAccountId,
+        token: aiCloudflareToken,
+        prompt,
+      });
+      setAiPlanResult(content);
+      setShowSummary(false);
+    } catch (err) {
+      if (err?.message === 'Failed to fetch') {
+        setAiError('無法連接到 AI 服務。請檢查網絡連線，並確認 backend server (port 5000) 已啟動。');
+      } else {
+        setAiError(err.message || 'AI generation failed. Please check your API settings and try again.');
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const copyAiPlan = async () => {
+    if (!aiPlanResult) return;
+    try {
+      await navigator.clipboard.writeText(aiPlanResult);
+      alert('AI commercialization plan copied to clipboard!');
+    } catch (e) {
+      alert('Copy failed — please select the text manually.');
+    }
+  };
+
+  const downloadAiPlan = () => {
+    if (!aiPlanResult) return;
+    const blob = new Blob([aiPlanResult], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `commercialization-plan-ai-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // ─── Question rendering ───
@@ -461,6 +548,15 @@ export default function CommercializationQuestionnaire() {
                   <strong>≈ {formatMoney(pricingResult.finalPrice)}</strong>
                 </div>
                 <div className="com-price-factor">≈ cost × {pricingResult.factor.toFixed(2)}</div>
+                {(() => {
+                  const range = calculatePriceRange(answers.unitCost, calcDirection);
+                  return range ? (
+                    <div className="com-price-range">
+                      Suggested range ≈ {formatMoney(range.low)} – {formatMoney(range.high)}
+                      <span className="com-price-range-note">(cost × {range.lowFactor.toFixed(1)}–{range.highFactor.toFixed(1)})</span>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             ) : (
               <p className="com-pricing-hint">Enter a unit cost above to see the price calculation.</p>
@@ -484,6 +580,89 @@ export default function CommercializationQuestionnaire() {
           ⚡ Summary
         </button>
       </div>
+
+      {/* AI Detailed Plan (on last section) */}
+      {stepIndex === COMMERCIALIZATION_SECTIONS.length - 1 && (
+        <div className="card com-ai-panel">
+          <h3 className="com-section-title" style={{ marginBottom: '0.35rem' }}>🤖 AI Detailed Commercialization Plan</h3>
+          <p className="com-pricing-desc">
+            Generate a detailed, professional commercialization plan with AI using all your answers and the calculated prices.
+          </p>
+
+          <div className="ai-provider-tabs">
+            {[
+              { key: 'openai', label: 'OpenAI' },
+              { key: 'custom', label: 'Custom' },
+              { key: 'cloudflare', label: 'Cloudflare' },
+            ].map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                className={`ai-provider-tab ${aiProvider === p.key ? 'active' : ''}`}
+                onClick={() => setAiProvider(p.key)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {aiProvider === 'cloudflare' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">Cloudflare Account ID</label>
+                <input type="text" className="form-input" placeholder="Your Cloudflare Account ID" value={aiAccountId} onChange={(e) => setAiAccountId(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Cloudflare API Token</label>
+                <input type="password" className="form-input" placeholder="Your Cloudflare API Token" value={aiCloudflareToken} onChange={(e) => setAiCloudflareToken(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Model</label>
+                <input type="text" className="form-input" placeholder="@cf/deepseek-ai/deepseek-r1-distill-qwen-32b" value={aiModel} onChange={(e) => setAiModel(e.target.value)} />
+              </div>
+            </>
+          )}
+          {aiProvider !== 'cloudflare' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">API Key</label>
+                <input type="password" className="form-input" placeholder={aiProvider === 'openai' ? 'sk-...' : 'Enter your API key (leave empty if not required)'} value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} />
+              </div>
+              {aiProvider === 'custom' && (
+                <div className="form-group">
+                  <label className="form-label">API Endpoint URL</label>
+                  <input type="text" className="form-input" placeholder="https://your-api.com/v1/chat/completions" value={aiEndpoint} onChange={(e) => setAiEndpoint(e.target.value)} />
+                </div>
+              )}
+              <div className="form-group">
+                <label className="form-label">Model Name</label>
+                <input type="text" className="form-input" placeholder={aiProvider === 'openai' ? 'gpt-3.5-turbo' : 'e.g. gpt-3.5-turbo, llama3, mistral'} value={aiModel} onChange={(e) => setAiModel(e.target.value)} />
+              </div>
+            </>
+          )}
+
+          {aiError && <div className="alert alert--warning">{aiError}</div>}
+
+          <button className="btn btn--primary" onClick={runAiPlan} disabled={aiLoading}>
+            {aiLoading ? 'Generating...' : '🤖 Generate Detailed AI Plan'}
+          </button>
+
+          {aiPlanResult && (
+            <div className="com-ai-result">
+              <div className="com-summary-header">
+                <h4 style={{ margin: 0, color: '#1a237e' }}>📄 AI Commercialization Plan</h4>
+                <div className="com-summary-actions">
+                  <button className="btn btn--secondary" onClick={copyAiPlan}>📋 Copy</button>
+                  <button className="btn btn--secondary" onClick={downloadAiPlan}>⬇️ Download .txt</button>
+                  <button className="btn btn--secondary" onClick={() => window.print()}>🖨️ Print</button>
+                </div>
+              </div>
+              <textarea className="form-input com-ai-result-text" rows={30} value={aiPlanResult} onChange={(e) => setAiPlanResult(e.target.value)} />
+              <p className="com-pricing-desc">💡 The text above is editable — tweak it, then copy / download / print.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Summary result */}
       {showSummary && summaryText && (

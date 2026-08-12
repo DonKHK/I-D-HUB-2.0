@@ -5982,3 +5982,41 @@ body {
   white-space: pre-wrap;
 }
 
+
+/* Price range */
+.com-price-range {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4f46e5;
+  background: #eef2ff;
+  border-top: 1px solid #e0e7ff;
+}
+
+.com-price-range-note {
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 0.4rem;
+}
+
+/* AI plan panel */
+.com-ai-panel {
+  padding: 1.5rem;
+  margin-top: 1.25rem;
+  border: 1px solid #c7d2fe;
+}
+
+.com-ai-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.com-ai-result-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin-top: 0.6rem;
+}
+
