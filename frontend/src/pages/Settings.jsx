@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import { DEFAULT_SETTINGS } from '../utils/constants';
+import * as XLSX from 'xlsx';
 
 // Row component for managing a single project's login credentials (PM + Owner)
 // Each credential block (PM / Owner) has its own Generate + Save buttons.
@@ -199,6 +200,29 @@ export default function Settings() {
     if (!file) return;
     setRestoreFile(file);
     setRestoreConfirm(true);
+  };
+
+  // Export all projects' login credentials (PM + Owner) to a single Excel file
+  const handleExportCredentials = () => {
+    const data = projects.map((p) => ({
+      'Project ID': p.id,
+      'Project Name': p.name || 'Untitled',
+      'Status': p.status || 'Planning',
+      'PM Login ID': `${p.id}pm`,
+      'PM Password': p.pmPassword || '',
+      'Owner Login ID': `${p.id}owner`,
+      'Owner Password': p.ownerPassword || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 40 }, { wch: 15 },
+      { wch: 15 }, { wch: 20 },
+      { wch: 18 }, { wch: 20 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Project Credentials');
+    XLSX.writeFile(wb, `Project_Credentials_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const handleRestore = async () => {
@@ -618,13 +642,26 @@ export default function Settings() {
 
         {/* Project Credentials (Super Admin only) */}
         <div className="settings-section card" style={{ gridColumn: '1 / -1' }}>
-          <h2 className="settings-section-title">🔑 Project Credentials</h2>
-          <p className="settings-section-desc">
-            Generate and manage login credentials for project users. Each project has two logins — PM and Owner —
-            both access the same project but are identified separately in the activity log.
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <h2 className="settings-section-title" style={{ marginBottom: '0.25rem' }}>🔑 Project Credentials</h2>
+              <p className="settings-section-desc" style={{ marginBottom: 0 }}>
+                Generate and manage login credentials for project users. Each project has two logins — PM and Owner —
+                both access the same project but are identified separately in the activity log.
+              </p>
+            </div>
+            <button
+              className="btn btn--primary"
+              style={{ flexShrink: 0 }}
+              onClick={handleExportCredentials}
+              disabled={projects.length === 0}
+              title="Export all project credentials (PM + Owner login IDs and passwords) to an Excel file"
+            >
+              📥 Export Credentials to Excel
+            </button>
+          </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
             <table className="data-table" style={{ minWidth: '1150px' }}>
               <thead>
                 <tr>

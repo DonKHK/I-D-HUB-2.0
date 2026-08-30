@@ -202,7 +202,7 @@ export default function IdeaSubmission({ onBack }) {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Phone 電話</label>
+                  <label>Contact Number 聯絡電話 *</label>
                   <input value={form.projectManagerPhone} onChange={(e) => handleChange('projectManagerPhone', e.target.value)} />
                 </div>
                 <div className="form-group">
