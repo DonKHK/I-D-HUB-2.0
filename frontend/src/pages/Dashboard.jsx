@@ -1,10 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { calculateHealth, formatCurrency, daysUntil, calculateIdeaHealth } from '../utils/helpers';
 import Chart from 'chart.js/auto';
+import AIAssistant from './AIAssistant';
 
 export default function Dashboard() {
   const { projects, ideas, settings } = useData();
+  const { isAdmin, isSuperAdmin } = useAuth();
   const [showAllIdeas, setShowAllIdeas] = useState(false);
   const healthChartRef = useRef(null);
   const chartInstance = useRef(null);
@@ -160,6 +163,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* AI Assistant (admin / superadmin only) */}
+      {(isAdmin || isSuperAdmin) && <AIAssistant />}
 
       {/* Recent Ideas */}
       <div className="dashboard-card-ref">

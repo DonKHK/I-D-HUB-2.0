@@ -5718,12 +5718,16 @@ body {
 
 /* ===== AI ASSISTANT ===== */
 .ai-chat-config {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
   margin-bottom: 1rem;
 }
 .ai-chat {
   display: flex;
   flex-direction: column;
-  min-height: 420px;
+  min-height: 300px;
   max-height: 70vh;
 }
 .ai-chat-messages {

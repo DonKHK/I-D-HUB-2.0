@@ -162,9 +162,9 @@ IMPORTANT OUTPUT RULES:
   };
 
   return (
-    <div className="page">
-      <div className="page-header-row">
-        <h1 className="page-title">🤖 AI Assistant</h1>
+    <div className="card ai-chat-card">
+      <div className="card-header-row">
+        <h3 className="dashboard-card-ref-title">🤖 AI Assistant</h3>
         <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
           <button className="btn btn--outline" onClick={() => setConfigOpen(!configOpen)}>
             {configOpen ? '▾ Hide AI Settings' : '▸ AI Settings'}
@@ -174,13 +174,10 @@ IMPORTANT OUTPUT RULES:
           </button>
         </div>
       </div>
-      <p className="page-subtitle">
-        Ask questions about your projects and ideas — the assistant knows your live system data and can hold a multi-turn conversation.
-      </p>
 
       {/* AI Settings panel */}
       {configOpen && (
-        <div className="card ai-chat-config">
+        <div className="ai-chat-config">
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Provider</label>
@@ -240,7 +237,7 @@ IMPORTANT OUTPUT RULES:
       )}
 
       {/* Chat messages */}
-      <div className="card ai-chat">
+      <div className="ai-chat">
         <div className="ai-chat-messages">
           {messages.length === 0 && (
             <div className="ai-chat-empty">
