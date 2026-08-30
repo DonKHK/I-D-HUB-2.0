@@ -21,6 +21,7 @@ import ReportExport from './pages/ReportExport';
 import MoreFeatures from './pages/MoreFeatures';
 import BusinessPlan from './pages/BusinessPlan';
 import CommercializationQuestionnaire from './pages/CommercializationQuestionnaire';
+import AIAssistant from './pages/AIAssistant';
 
 const ROUTE_MAP = {
   'dashboard': '/dashboard',
@@ -34,6 +35,7 @@ const ROUTE_MAP = {
   'alerts': '/alerts',
   'settings': '/settings',
   'report-export': '/report-export',
+  'assistant': '/assistant',
   'more-features': '/more-features',
   'business-plan': '/more-features/business-plan',
   'commercialization': '/more-features/commercialization',
@@ -149,6 +151,7 @@ function AppContent() {
           <Route path="/more-features" element={<MoreFeatures />} />
           <Route path="/more-features/business-plan" element={<BusinessPlan />} />
           <Route path="/more-features/commercialization" element={<CommercializationQuestionnaire />} />
+          <Route path="/assistant" element={<AIAssistant />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

@@ -56,6 +56,7 @@ export const SIDEBAR_ITEMS = [
   { key: 'settings', label: 'Settings', icon: '⚙️', roles: ['superadmin'] },
   { key: 'alerts', label: 'Alerts', icon: '⚠️', roles: ['admin', 'superadmin'] },
   { key: 'report-export', label: 'Report Export', icon: '📄', roles: ['superadmin'] },
+  { key: 'assistant', label: 'AI Assistant', icon: '🤖', roles: ['admin', 'superadmin'] },
   { key: 'more-features', label: 'More Features', icon: '🧰', roles: ['guest', 'admin', 'superadmin'] },
 ];
 
