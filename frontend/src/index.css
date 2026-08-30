@@ -5696,6 +5696,11 @@ body {
   line-height: 1.5;
 }
 
+/* Push the Open button to the bottom of each tool card */
+.tool-card .btn {
+  margin-top: auto;
+}
+
 /* ===== BUSINESS PLAN ===== */
 .business-plan-progress {
   margin: 1rem 0;
