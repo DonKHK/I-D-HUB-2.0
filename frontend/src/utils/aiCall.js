@@ -18,7 +18,20 @@ function flattenJsonToText(obj) {
       return;
     }
     if (Array.isArray(node)) {
-      node.forEach((item, i) => walk(item, `${prefix}${i + 1}. `));
+      // Array of objects: render each item as ONE compact line (id | name | ...) so the
+      // output stays readable instead of "1. id:", "1. name:", "1. status:" repeated per field.
+      node.forEach((item, i) => {
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          const parts = Object.entries(item).map(([k, v]) => {
+            if (v == null) return `${k}: -`;
+            if (typeof v === 'object') return `${k}: ${JSON.stringify(v)}`;
+            return `${k}: ${v}`;
+          });
+          lines.push(`${prefix}${i + 1}. ${parts.join(' | ')}`);
+        } else {
+          walk(item, `${prefix}${i + 1}. `);
+        }
+      });
       return;
     }
     if (typeof node === 'object') {
@@ -74,6 +87,7 @@ export async function callAi({
   model = 'gpt-3.5-turbo',
   accountId = '',
   token = '',
+  jsonMode = false,
   prompt = '',
 }) {
   if (!prompt) throw new Error('Missing prompt');
@@ -95,6 +109,7 @@ export async function callAi({
       model: provider === 'cloudflare' ? cfModel : model,
       accountId,
       token,
+      jsonMode,
       prompt,
     }),
   });

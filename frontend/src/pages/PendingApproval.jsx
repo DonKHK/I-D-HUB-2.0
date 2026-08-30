@@ -369,6 +369,7 @@ After completing the analysis above, output a STRICT JSON object (no markdown, n
           accountId: aiAccountId,
           token: aiCloudflareToken,
           prompt,
+          jsonMode: true,
         }),
       });
 

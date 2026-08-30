@@ -131,7 +131,11 @@ ${historyBlock}
 ## LATEST USER QUESTION
 ${text}
 
-Please answer helpfully and professionally. Be concise but specific, reference actual project/idea names and IDs where relevant. Respond in the same language the user used (English or 中文).`;
+IMPORTANT OUTPUT RULES:
+- Respond in plain, natural language (paragraphs or short sentences). Do NOT output JSON, do NOT output a numbered list of every project, and do NOT just repeat the raw data back.
+- Start with a direct one-sentence answer to the question, then briefly explain using only the 1-3 most relevant projects/ideas, then give a short practical suggestion if useful.
+- When the user writes in Chinese, reply in the same Chinese using simple everyday language. Otherwise reply in English.
+- Be concise and professional. Reference actual project/idea names (not IDs) where relevant.`;
 
       const reply = await callAi({
         provider,

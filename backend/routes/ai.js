@@ -10,6 +10,7 @@ router.post('/analyze', async (req, res) => {
     model = 'gpt-3.5-turbo',
     accountId = '',
     token = '',
+    jsonMode = false,
     prompt = '',
   } = req.body || {};
 
@@ -25,9 +26,12 @@ router.post('/analyze', async (req, res) => {
     if (!token) return res.status(400).json({ error: 'Missing Cloudflare API Token' });
     url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${cfModel}`;
     headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const systemPrompt = jsonMode
+      ? 'You are a helpful project evaluation assistant. Always respond with valid JSON only.'
+      : 'You are a helpful, concise assistant. Respond in natural language.';
     body = {
       messages: [
-        { role: 'system', content: 'You are a helpful project evaluation assistant. Always respond with valid JSON only.' },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
       max_tokens: 4096,

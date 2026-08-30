@@ -19,6 +19,7 @@ module.exports = async function handler(req, res) {
     model = 'gpt-3.5-turbo',
     accountId = '',
     token = '',
+    jsonMode = false,
     prompt = '',
   } = body;
 
@@ -35,9 +36,12 @@ module.exports = async function handler(req, res) {
     // Note: model is NOT URL-encoded so the / in @cf/meta/... stays intact
     url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${cfModel}`;
     headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const systemPrompt = jsonMode
+      ? 'You are a helpful project evaluation assistant. Always respond with valid JSON only.'
+      : 'You are a helpful, concise assistant. Respond in natural language.';
     payload = {
       messages: [
-        { role: 'system', content: 'You are a helpful project evaluation assistant. Always respond with valid JSON only.' },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
       max_tokens: 4096,
