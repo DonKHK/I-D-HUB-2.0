@@ -2703,6 +2703,21 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-height: 232px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+/* Slim scrollbar for the upcoming list */
+.upcoming-list-ref::-webkit-scrollbar {
+  width: 6px;
+}
+.upcoming-list-ref::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.upcoming-list-ref::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .upcoming-item-ref {

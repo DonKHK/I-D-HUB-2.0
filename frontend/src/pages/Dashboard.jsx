@@ -49,7 +49,7 @@ export default function Dashboard() {
       }
     });
     items.sort((a, b) => a.days - b.days);
-    return items.slice(0, 6);
+    return items;
   }, [projects]);
 
   // === Recent Ideas ===
