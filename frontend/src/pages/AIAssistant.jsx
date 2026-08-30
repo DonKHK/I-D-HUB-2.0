@@ -73,7 +73,7 @@ export default function AIAssistant() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const bottomRef = useRef(null);
+  const messagesRef = useRef(null);
   const inputRef = useRef(null);
 
   // Persist AI settings whenever they change
@@ -83,10 +83,13 @@ export default function AIAssistant() {
     } catch (e) { /* storage may be unavailable — ignore */ }
   }, [provider, apiKey, endpoint, model, accountId, cfToken]);
 
-  // Auto-scroll chat to the latest message
+  // Auto-scroll the chat message area to the latest message.
+  // Scrolls ONLY the message container (never the page), so loading the
+  // Dashboard doesn't jump down to the assistant widget.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -238,7 +241,7 @@ IMPORTANT OUTPUT RULES:
 
       {/* Chat messages */}
       <div className="ai-chat">
-        <div className="ai-chat-messages">
+        <div ref={messagesRef} className="ai-chat-messages">
           {messages.length === 0 && (
             <div className="ai-chat-empty">
               <div className="ai-chat-empty-icon">🤖</div>
@@ -263,8 +266,6 @@ IMPORTANT OUTPUT RULES:
               <div className="ai-chat-msg-bubble ai-chat-loading">Thinking…</div>
             </div>
           )}
-
-          <div ref={bottomRef} />
         </div>
 
         {error && <div className="alert alert--warning" style={{ marginBottom: '0.75rem' }}>{error}</div>}
