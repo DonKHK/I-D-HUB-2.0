@@ -160,6 +160,13 @@ export default function IdeaSubmission({ onBack }) {
   };
   const prevStep = () => { if (step > 0) setStep(step - 1); };
 
+  // Open the user's email client pre-filled to send Business Proposal / other documents
+  const handleSendEmail = () => {
+    const subject = 'I&DD Idea Submission Attachment';
+    const body = form.title ? `Idea: ${form.title}` : '';
+    window.location.href = `mailto:don.kwan@asiaalliedgroup.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
   const renderStep = () => {
     switch (step) {
       case 0:
@@ -492,17 +499,14 @@ export default function IdeaSubmission({ onBack }) {
               <label>Any Other Comments 其他補充備註</label>
               <textarea rows="3" value={form.remarks} onChange={(e) => handleChange('remarks', e.target.value)} />
             </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Business Proposal 商業計劃書</label>
-                <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleChange('businessProposalFile', e.target.files[0]?.name || '')} />
-                <span className="file-hint">Accepted: PDF, DOC, DOCX</span>
-              </div>
-              <div className="form-group">
-                <label>Other Supporting Documents 其他文件上傳</label>
-                <input type="file" accept=".pdf,.doc,.docx,.xlsx,.pptx" onChange={(e) => handleChange('otherDocFile', e.target.files[0]?.name || '')} />
-                <span className="file-hint">Accepted: PDF, DOC, XLSX, PPTX</span>
-              </div>
+            <div className="form-group">
+              <label>Send Documents via Email 電郵發送文件</label>
+              <button type="button" className="btn btn--primary" onClick={handleSendEmail}>
+                📧 發送 Business Proposal 商業計劃書 及 其他文件
+              </button>
+              <span className="file-hint">
+                One click opens your email with the recipient, subject &amp; idea name pre-filled — please attach your files and send. 一按會開啟 Email（預填收件人、標題及 Idea 名稱），請自行附上文件後送出。
+              </span>
             </div>
           </div>
         );
