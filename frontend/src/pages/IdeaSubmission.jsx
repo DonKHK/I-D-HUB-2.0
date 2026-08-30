@@ -202,12 +202,12 @@ export default function IdeaSubmission({ onBack }) {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Email 電郵</label>
-                  <input type="email" value={form.projectManagerEmail} onChange={(e) => handleChange('projectManagerEmail', e.target.value)} />
-                </div>
-                <div className="form-group">
                   <label>Phone 電話</label>
                   <input value={form.projectManagerPhone} onChange={(e) => handleChange('projectManagerPhone', e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Email 電郵</label>
+                  <input type="email" value={form.projectManagerEmail} onChange={(e) => handleChange('projectManagerEmail', e.target.value)} />
                 </div>
               </div>
             </div>
