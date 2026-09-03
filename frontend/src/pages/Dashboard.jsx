@@ -109,7 +109,7 @@ export default function Dashboard() {
       <header className="dashboard-header">
         <div className="dashboard-header-left">
           <h1 className="dashboard-title">I&D Project Management Hub</h1>
-          <p className="dashboard-subtitle">Innovation & Development · v1.0</p>
+          <p className="dashboard-subtitle">Innovation & Development · v2.0</p>
         </div>
       </header>
 
