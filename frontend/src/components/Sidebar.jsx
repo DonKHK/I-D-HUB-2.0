@@ -67,8 +67,8 @@ export default function Sidebar({ activePage, onNavigate }) {
         )}
         {!collapsed && (
           <div className="sidebar__footer-info">
-            <div className="sidebar__dev-text">© {new Date().getFullYear()} I.D.E.A.S. HUB V{APP_VERSION}</div>
-            <div className="sidebar__dev-text">Powered by I.T. Department</div>
+            <div className="sidebar__dev-text">© {new Date().getFullYear()} I&D Hub V{APP_VERSION}</div>
+            <div className="sidebar__dev-text">Powered by I&D Department</div>
           </div>
         )}
       </div>
