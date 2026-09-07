@@ -6211,5 +6211,16 @@ button.myprojects-id-tag {
   border-radius: 4px;
   margin: 0.25rem 0 0.5rem;
 }
+.funding-ai-key-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
 
 

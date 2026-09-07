@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 
 // Backend API base URL - uses Vite proxy (/api -> localhost:5000) by default
 const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api';
+
+// AI credentials are remembered ONLY on the user's own browser (localStorage).
+// They are never uploaded to Firestore or the backend.
+const STORAGE_KEY = 'pmis_funding_ai_config';
+
+const readSavedConfig = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {};
+  } catch (e) {
+    return {};
+  }
+};
 
 /**
  * Robustly parse the AI response into an array of funding-scheme objects.
@@ -71,14 +83,25 @@ export default function FundingAiFinder() {
   const { isSuperAdmin } = useAuth();
 
   const [open, setOpen] = useState(false);
-  const [provider, setProvider] = useState('openai');
-  const [apiKey, setApiKey] = useState('');
-  const [endpoint, setEndpoint] = useState('');
-  const [model, setModel] = useState(DEFAULT_MODEL.openai);
-  const [accountId, setAccountId] = useState('');
-  const [token, setToken] = useState('');
+  const [provider, setProvider] = useState(() => readSavedConfig().provider || 'openai');
+  const [apiKey, setApiKey] = useState(() => readSavedConfig().apiKey || '');
+  const [endpoint, setEndpoint] = useState(() => readSavedConfig().endpoint || '');
+  const [model, setModel] = useState(() => {
+    const saved = readSavedConfig();
+    return saved.model || DEFAULT_MODEL[saved.provider || 'openai'] || DEFAULT_MODEL.openai;
+  });
+  const [accountId, setAccountId] = useState(() => readSavedConfig().accountId || '');
+  const [token, setToken] = useState(() => readSavedConfig().token || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetDone, setResetDone] = useState(false);
+
+  // Persist credentials on the user's OWN browser so they only have to enter them once.
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ provider, apiKey, endpoint, model, accountId, token }));
+    } catch (e) { /* storage may be unavailable — ignore */ }
+  }, [provider, apiKey, endpoint, model, accountId, token]);
 
   const [candidates, setCandidates] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -88,15 +111,17 @@ export default function FundingAiFinder() {
   if (!isSuperAdmin) return null;
 
   const openModal = () => {
+    const saved = readSavedConfig();
     setOpen(true);
-    setProvider('openai');
-    setApiKey('');
-    setEndpoint('');
-    setModel(DEFAULT_MODEL.openai);
-    setAccountId('');
-    setToken('');
+    setProvider(saved.provider || 'openai');
+    setApiKey(saved.apiKey || '');
+    setEndpoint(saved.endpoint || '');
+    setModel(saved.model || DEFAULT_MODEL[saved.provider || 'openai'] || DEFAULT_MODEL.openai);
+    setAccountId(saved.accountId || '');
+    setToken(saved.token || '');
     setLoading(false);
     setError('');
+    setResetDone(false);
     setCandidates([]);
     setSelected([]);
   };
@@ -114,6 +139,18 @@ export default function FundingAiFinder() {
     } else {
       setModel(DEFAULT_MODEL[p] || DEFAULT_MODEL.openai);
     }
+  };
+
+  const resetSavedKey = () => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+    setProvider('openai');
+    setApiKey('');
+    setEndpoint('');
+    setModel(DEFAULT_MODEL.openai);
+    setAccountId('');
+    setToken('');
+    setResetDone(true);
+    window.setTimeout(() => setResetDone(false), 2500);
   };
 
   const buildPrompt = () => {
@@ -285,7 +322,8 @@ Only output the JSON array - no extra text. Facts that cannot be confirmed shoul
           <>
             <p style={{ marginBottom: '1rem', color: '#475569', fontSize: '0.9rem' }}>
               AI 會根據 Hub 入面嘅 Projects & Ideas 幫你搵合適嘅政府 Funding。
-              揀 AI provider 同輸入憑證後按「搵 Funding」;API key 只會用喺今次 request,唔會儲存。
+              揀 AI provider 同輸入憑證後按「搵 Funding」。💾 API Key / Account ID 會儲存喺你部機嘅瀏覽器(localStorage),
+              下次唔使再輸入,亦唔會上傳去 Firebase。
             </p>
 
             <div className="form-group">
@@ -347,6 +385,18 @@ Only output the JSON array - no extra text. Facts that cannot be confirmed shoul
                   </div>
                 )}
               </>
+            )}
+
+            <div className="funding-ai-key-actions">
+              <span className="form-hint" style={{ margin: 0 }}>
+                💾 API Key / Account ID 已儲存喺你部機嘅瀏覽器。
+              </span>
+              <button type="button" className="btn btn--small btn--outline-danger" onClick={resetSavedKey}>
+                🗑 Reset Saved Key
+              </button>
+            </div>
+            {resetDone && (
+              <p className="form-hint" style={{ color: '#059669' }}>已清除本機儲存嘅 API Key / Account ID。</p>
             )}
 
             {error && <p className="form-error">{error}</p>}
