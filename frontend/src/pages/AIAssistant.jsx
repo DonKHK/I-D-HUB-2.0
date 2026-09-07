@@ -14,9 +14,42 @@ function loadSavedConfig() {
   }
 }
 
-// Build a compact text summary of all projects + ideas for the AI context.
-function buildContext(projects, ideas) {
+// Shorten long text fields so the AI context stays within token limits.
+const snip = (s, n = 100) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+// Static guide so the assistant can answer "how to use the app" / permission questions.
+const APP_GUIDE = `I&D Hub (Asia Allied Group) module guide:
+- Dashboard: KPI cards, Project Health doughnut, upcoming/overdue projects, recent ideas, AI Assistant.
+- All Projects: browse all projects.
+- My Projects (Admin / Superadmin): manage projects - open detail, edit, delete; a project may link back to its original idea.
+- My Project (Project User PM/Owner): the user's own single project page to update stages/budget.
+- Pending Approval: review pending ideas; AI analysis available for Admin; only Superadmin can approve / reject / delete / restore / re-analyse.
+- Approved Projects: list of approved ideas that are becoming projects.
+- Submit Idea: 8-step idea application wizard (applicant / project manager / project owner / budget / tech / IP etc).
+- Funding Schemes: database of Hong Kong government funding schemes; Superadmin can add/edit/delete and use AI Funding Finder.
+- Alerts: health alerts (overdue / budget overrun etc).
+- Settings (Superadmin only): overdue/budget thresholds, alert colors, AI prompts, credentials.
+- Report Export (Superadmin only): export Projects / Ideas / Funding Schemes to Excel.
+- More Features: AI Business Plan and AI Commercialization Plan tools.
+
+Login levels:
+- Guest: browse All Projects & Funding Schemes, submit ideas, use More Features tools.
+- Admin: most pages incl. AI analysis of ideas; CANNOT approve/reject/delete ideas, edit/delete projects, access Settings, or export reports.
+- Superadmin: everything (approve/reject/delete/restore ideas, edit/delete projects, Settings, Report Export, manage Funding Schemes, AI Funding Finder, re-run AI).
+- Project User (PM or Owner): only their own My Project page + More Features tools.`;
+
+// Build a compact text summary of all projects, ideas and funding schemes for the AI context.
+function buildContext(projects, ideas, fundingSchemes) {
   const now = new Date();
+
+  const countBy = (arr, key) => {
+    const counts = {};
+    (arr || []).forEach((x) => {
+      const k = x[key] || 'Other';
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return Object.entries(counts).map(([k, v]) => `${k}:${v}`).join(', ') || 'none';
+  };
 
   const projectLines = (projects || []).map((p) => {
     const health = calculateHealth(p);
@@ -36,7 +69,7 @@ function buildContext(projects, ideas) {
       `- [${p.id}] "${p.name || 'Untitled'}" | status: ${p.status || 'Planning'} | health: ${health.label} ` +
       `| budget: ${budget} (${usedPct === null ? 'N/A' : usedPct + '%'} used) | start: ${p.startDate || '-'} | end: ${p.endDate || '-'} ` +
       `| daysLeft: ${daysLeft === null ? '-' : daysLeft} | manager: ${p.manager || p.projectManagerName || '-'} ` +
-      `| holder: ${p.holder || p.applicantName || '-'} | stages: ${stages}`
+      `| holder: ${p.holder || p.applicantName || '-'} | type: ${snip(p.projectType || '-', 40)} | stages: ${stages}`
     );
   });
 
@@ -44,18 +77,28 @@ function buildContext(projects, ideas) {
     const budget = Number(i.totalBudget) || 0;
     return (
       `- [${i.id}] "${i.title || i.projectTitle || 'Untitled'}" | status: ${i.status || '-'} | applicant: ${i.applicantName || '-'} ` +
-      `| budget: ${budget} | type: ${i.projectType || '-'}`
+      `| budget: ${budget} | type: ${snip(i.projectType || i.ideaType || '-', 40)} | ${snip(i.oneLineDesc || i.background || '', 80)}`
     );
   });
 
+  const fundingLines = (fundingSchemes || []).map((f) => (
+    `- "${f.name || 'Untitled'}" | provider: ${snip(f.provider, 60) || '-'} | status: ${f.status || '-'} | deadline: ${f.deadline || '-'} ` +
+    `| total: HK$${Number(f.totalAmount || 0).toLocaleString()} | eligibility: ${snip(f.eligibility, 90) || '-'} | description: ${snip(f.description, 120) || '-'}`
+  ));
+
   return (
+    `OVERVIEW:\n` +
+    `- Projects: ${(projects || []).length} (${countBy(projects, 'status')})\n` +
+    `- Ideas: ${(ideas || []).length} (${countBy(ideas, 'status')})\n` +
+    `- Funding schemes: ${(fundingSchemes || []).length}\n\n` +
     `PROJECTS (${(projects || []).length}):\n${projectLines.join('\n') || 'None'}\n\n` +
-    `IDEAS (${(ideas || []).length}):\n${ideaLines.join('\n') || 'None'}`
+    `IDEAS (${(ideas || []).length}):\n${ideaLines.join('\n') || 'None'}\n\n` +
+    `FUNDING SCHEMES (${(fundingSchemes || []).length}):\n${fundingLines.join('\n') || 'None'}`
   );
 }
 
 export default function AIAssistant() {
-  const { projects, ideas } = useData();
+  const { projects, ideas, fundingSchemes } = useData();
 
   // AI settings (persisted to localStorage)
   const saved = useMemo(loadSavedConfig, []);
@@ -113,7 +156,7 @@ export default function AIAssistant() {
     setLoading(true);
 
     try {
-      const context = buildContext(projects, ideas);
+      const context = buildContext(projects, ideas, fundingSchemes);
 
       // Keep the conversation compact — only the latest 6 turns.
       const historyBlock = history
@@ -121,9 +164,12 @@ export default function AIAssistant() {
         .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
         .join('\n');
 
-      const prompt = `You are the AI assistant of the "I&D Hub" project management system (Asia Allied Group). You help staff understand the projects and ideas in the system.
+      const prompt = `You are the AI assistant of the "I&D Hub" project management system (Asia Allied Group). You help staff understand the projects, ideas, funding schemes and features in the system.
 
-Below is the current system data. Use ONLY this data to answer questions — never invent projects, numbers or statuses that are not listed. If the data does not contain the answer, say so.
+## APP GUIDE (pages & login levels - use this for "how to use the app" / permission questions)
+${APP_GUIDE}
+
+Below is the CURRENT LIVE DATA (projects, ideas, funding schemes). Use ONLY this data for questions about records, numbers, statuses or budgets — never invent projects, numbers, statuses or funding schemes that are not listed. If the data does not contain the answer, say so.
 
 ## SYSTEM DATA
 ${context}
@@ -136,9 +182,9 @@ ${text}
 
 IMPORTANT OUTPUT RULES:
 - Respond in plain, natural language (paragraphs or short sentences). Do NOT output JSON, do NOT output a numbered list of every project, and do NOT just repeat the raw data back.
-- Start with a direct one-sentence answer to the question, then briefly explain using only the 1-3 most relevant projects/ideas, then give a short practical suggestion if useful.
+- Start with a direct one-sentence answer to the question, then briefly explain using only the 1-3 most relevant projects/ideas/funding schemes, then give a short practical suggestion if useful.
 - When the user writes in Chinese, reply in the same Chinese using simple everyday language. Otherwise reply in English.
-- Be concise and professional. Reference actual project/idea names (not IDs) where relevant.`;
+- Be concise and professional. Reference actual project/idea/scheme names (not IDs) where relevant.`;
 
       const reply = await callAi({
         provider,
@@ -245,11 +291,13 @@ IMPORTANT OUTPUT RULES:
           {messages.length === 0 && (
             <div className="ai-chat-empty">
               <div className="ai-chat-empty-icon">🤖</div>
-              <p>I can see your live projects and ideas. Try asking:</p>
+              <p>I can see your live projects, ideas and funding schemes. Try asking:</p>
               <ul>
                 <li>「邊個 project 最危險？」</li>
                 <li>「幫我總結所有進行緊嘅 project」</li>
                 <li>「Which idea is pending approval?」</li>
+                <li>「而家有幾多個 funding scheme？」</li>
+                <li>「邊啲 funding scheme 而家係 Open？」</li>
                 <li>「AI Chatbot 個 project 用咗幾多 budget？」</li>
               </ul>
             </div>
@@ -283,7 +331,7 @@ IMPORTANT OUTPUT RULES:
                 handleSend();
               }
             }}
-            placeholder="問我關於你啲 project / idea 嘅問題… (Enter 送出，Shift+Enter 換行)"
+            placeholder="問我關於 projects / ideas / funding 嘅問題… (Enter 送出，Shift+Enter 換行)"
             disabled={loading}
           />
           <button className="btn btn--primary" onClick={handleSend} disabled={loading || !input.trim()}>
