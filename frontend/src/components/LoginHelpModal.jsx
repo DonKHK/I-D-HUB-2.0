@@ -6,7 +6,10 @@ export default function LoginHelpModal({ open, onClose }) {
     <Modal isOpen={open} onClose={onClose} title="📖 功能說明">
       <div className="help-modal-body">
         <p className="help-intro">
-          I&D Hub(Innovation & Development Hub)係 AAI 集團嘅創新意念同項目管理平台：同事可以提交創新意念、管理員審批並自動建立項目、追蹤進度同預算，仲有 AI 助手協助分析同撰寫計劃書。
+          <strong>Innovation &amp; Development Department (InDD)</strong> 是亞洲聯合基建控股有限公司集團的創新引擎，專責推動創新策略、統籌跨部門項目，引入前沿科技與政府資助，促進知識共享與協作，為各子公司及部門創造價值，助力集團邁向智慧建造與可持續發展。
+        </p>
+        <p className="help-intro">
+          I&amp;D Hub 為一站式創新平台，負責項目收集、進度追蹤與資源管理，協助同事配對政府資助、共用資源與經驗，並為項目持有人連結跨部門用家，加速落地、減少重複投入，為各部門增值並傳遞最新科技資訊。
         </p>
 
         <h4>📊 系統功能總覽</h4>
