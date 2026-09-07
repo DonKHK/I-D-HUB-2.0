@@ -3,6 +3,7 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/helpers';
 import Modal from '../components/Modal';
+import FundingAiFinder from '../components/FundingAiFinder';
 
 export default function FundingSchemes() {
   const { fundingSchemes, addFundingScheme, updateFundingScheme, deleteFundingScheme } = useData();
@@ -68,9 +69,12 @@ export default function FundingSchemes() {
       <div className="page-header-row">
         <h1 className="page-title">Funding Schemes</h1>
         {isSuperAdmin && (
-          <button className="btn btn--primary" onClick={() => { resetForm(); setEditScheme(null); setShowForm(true); }}>
-            + Add Scheme
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <FundingAiFinder />
+            <button className="btn btn--primary" onClick={() => { resetForm(); setEditScheme(null); setShowForm(true); }}>
+              + Add Scheme
+            </button>
+          </div>
         )}
       </div>
 
