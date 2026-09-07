@@ -360,10 +360,10 @@ export default function ProjectForm({ editProject, onBack }) {
         {/* ===== Project Team ===== */}
         <div className="form-section">
           <h3>Project Team 項目團隊</h3>
-          <h4 style={{ marginTop: '0.5rem', marginBottom: '0.5rem', color: '#555' }}>Holder 持有人</h4>
+          <h4 style={{ marginTop: '0.5rem', marginBottom: '0.5rem', color: '#555' }}>Project Owner 項目持有者</h4>
           <div className="form-row">
             <div className="form-group">
-              <label>Owner Name (Holder) 持有人</label>
+              <label>Project Owner 項目持有者</label>
               <input value={form.holder} onChange={(e) => handleChange('holder', e.target.value)} />
             </div>
             <div className="form-group">

@@ -9,7 +9,7 @@ export default function ReportExport() {
       'Name': p.name,
       'Description': p.description,
       'Manager': p.manager,
-      'Holder': p.holder,
+      'Project Owner': p.holder,
       'Status': p.status,
       'Budget (HKD)': p.budget,
       'Budget Used (HKD)': p.budgetUsed,

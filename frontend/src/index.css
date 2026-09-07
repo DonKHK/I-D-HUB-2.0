@@ -6129,3 +6129,38 @@ body {
   background: #fffbeb;
 }
 
+
+/* ===== My Projects: clickable ID / Idea tags ===== */
+.myprojects-tag-btn {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: inherit;
+  display: inline-flex;
+  align-items: center;
+  transition: filter 0.15s ease;
+}
+button.myprojects-id-tag {
+  font-family: monospace;
+}
+.myprojects-tag-btn:hover {
+  filter: brightness(0.9);
+  text-decoration: underline;
+}
+.myprojects-tag-btn:focus-visible {
+  outline: 2px solid #165dff;
+  outline-offset: 2px;
+}
+
+/* ===== Original Idea anchor: scroll target + flash highlight ===== */
+.idea-source-anchor {
+  scroll-margin-top: 16px;
+}
+.idea-source-anchor--flash .detail-collapsible {
+  box-shadow: 0 0 0 3px #c4b5fd;
+  border-radius: 10px;
+}
+.idea-source-anchor--flash .detail-collapsible-header {
+  background: #f5f3ff;
+}
+

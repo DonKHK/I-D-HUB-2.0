@@ -37,8 +37,9 @@ export default function MyProjects({ onNavigate }) {
         name: idea.title || idea.projectTitle || 'Untitled',
         description: idea.oneLineDesc || idea.shortDescription || '',
         detailContent: idea.projectScope || idea.detailContent || '',
-        manager: idea.projectManagerName || idea.ownerName || '',
-        holder: idea.applicantName || idea.applicant || '',
+        manager: idea.projectManagerName || idea.manager || '',
+        holder: idea.ownerName || idea.holder || '',
+        applicantName: idea.applicantName || idea.applicant || '',
         technicalSupport: idea.techSupportDept || idea.governmentGrant || '',
         governmentGrant: idea.governmentGrant || '',
         budget: idea.totalBudget || idea.budget || 0,
@@ -57,6 +58,18 @@ export default function MyProjects({ onNavigate }) {
   const [viewProject, setViewProject] = useState(() => {
     return null; // will be resolved in the filtered useMemo below
   });
+  // When true, the opened detail will auto-scroll to the Original Idea section
+  const [viewIdeaSource, setViewIdeaSource] = useState(false);
+
+  const openProject = (p, focusIdea = false) => {
+    setViewProject(p);
+    setViewIdeaSource(focusIdea);
+  };
+
+  const closeProject = () => {
+    setViewProject(null);
+    setViewIdeaSource(false);
+  };
 
   const filtered = useMemo(() => {
     let list = [...combinedItems];
@@ -97,14 +110,15 @@ export default function MyProjects({ onNavigate }) {
   if (viewProject) {
     return (
       <div className="page">
-        <button className="btn btn--text" onClick={() => setViewProject(null)}>
+        <button className="btn btn--text" onClick={closeProject}>
           ← Back to Projects
         </button>
         <ProjectDetail
           project={viewProject}
-          onBack={() => setViewProject(null)}
+          onBack={closeProject}
           onNavigate={onNavigate}
           onEdit={() => onNavigate && onNavigate('project-form', viewProject)}
+          highlightIdeaSection={viewIdeaSource}
         />
       </div>
     );
@@ -169,9 +183,23 @@ export default function MyProjects({ onNavigate }) {
                   <span className="myprojects-health-label">{health.label}</span>
                 </div>
                 <div className="myprojects-card-id-status">
-                  <span className="myprojects-id-tag">ID: {project.id}</span>
+                  <button
+                    type="button"
+                    className="myprojects-id-tag myprojects-tag-btn"
+                    title="Open project detail"
+                    onClick={() => openProject(project, false)}
+                  >
+                    ID: {project.id}
+                  </button>
                   {project.originalIdeaId && (
-                    <span className="myprojects-idea-id-tag">Idea: {project.originalIdeaId}</span>
+                    <button
+                      type="button"
+                      className="myprojects-idea-id-tag myprojects-tag-btn"
+                      title="Jump to original idea submission"
+                      onClick={() => openProject(project, true)}
+                    >
+                      Idea: {project.originalIdeaId}
+                    </button>
                   )}
                   <span className={`myprojects-status-badge ${statusClass(project.status)}`}>
                     {project.status || 'Planning'}
@@ -252,7 +280,7 @@ export default function MyProjects({ onNavigate }) {
               <div className="myprojects-card-actions">
                 <button
                   className="myprojects-btn-primary"
-                  onClick={() => setViewProject(project)}
+                  onClick={() => openProject(project, false)}
                 >
                   Detail
                 </button>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
@@ -186,7 +186,7 @@ function IdeaDetailSection({ idea }) {
 }
 
 /* ───── Main Project Detail Component ───── */
-export default function ProjectDetail({ project, onBack, onNavigate, isProjectUser = false, editMode, onEdit, onSave, onCancel, editForm, onEditFormChange, canEdit = true }) {
+export default function ProjectDetail({ project, onBack, onNavigate, isProjectUser = false, editMode, onEdit, onSave, onCancel, editForm, onEditFormChange, canEdit = true, highlightIdeaSection = false }) {
   const navigate = useNavigate();
   const { projects, ideas, updateProject, deleteProject, settings } = useData();
   const { user, isSuperAdmin } = useAuth();
@@ -207,6 +207,26 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
     if (!project.originalIdeaId) return null;
     return ideas.find((i) => i.id === project.originalIdeaId) || null;
   }, [project.originalIdeaId, ideas]);
+
+  // Anchor + brief flash for the "Original Idea Submission" section so that
+  // arriving from a project card's "Idea" tag auto-scrolls to the original
+  // application content.
+  const ideaSectionRef = useRef(null);
+  const [ideaFlash, setIdeaFlash] = useState(false);
+
+  useEffect(() => {
+    if (!highlightIdeaSection || !linkedIdea) return;
+    let flashTimer;
+    const scrollTimer = setTimeout(() => {
+      ideaSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setIdeaFlash(true);
+      flashTimer = setTimeout(() => setIdeaFlash(false), 1800);
+    }, 200);
+    return () => {
+      clearTimeout(scrollTimer);
+      if (flashTimer) clearTimeout(flashTimer);
+    };
+  }, [highlightIdeaSection, linkedIdea]);
 
   const [showStageForm, setShowStageForm] = useState(false);
   const [editingStage, setEditingStage] = useState(null);
@@ -424,7 +444,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
       <CollapsibleSection title="Team 項目團隊" defaultOpen={true}>
         <div className="detail-grid-2col">
           <div className="detail-field">
-            <label>Holder 持有人</label>
+            <label>Project Owner 項目持有者</label>
             {editMode ? (
               <input className="form-input" type="text" value={editForm?.holder || ''} onChange={(e) => onEditFormChange?.('holder', e.target.value)} />
             ) : (
@@ -495,9 +515,14 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
 
       {/* ===== IDEA SOURCE DATA ===== */}
       {linkedIdea && (
-        <CollapsibleSection title={`Original Idea Submission 原始意念提交 (${linkedIdea.id})`} defaultOpen={true}>
-          <IdeaDetailSection idea={linkedIdea} />
-        </CollapsibleSection>
+        <div
+          ref={ideaSectionRef}
+          className={`idea-source-anchor ${ideaFlash ? 'idea-source-anchor--flash' : ''}`}
+        >
+          <CollapsibleSection title={`Original Idea Submission 原始意念提交 (${linkedIdea.id})`} defaultOpen={true}>
+            <IdeaDetailSection idea={linkedIdea} />
+          </CollapsibleSection>
+        </div>
       )}
 
       {/* ===== STAGES ===== */}

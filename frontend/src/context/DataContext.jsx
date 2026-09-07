@@ -518,6 +518,7 @@ export function DataProvider({ children }) {
   const offlineModeRef = useRef(false);
   const migrationRunningRef = useRef(false);
   const projectMigrationDoneRef = useRef(false);
+  const holderRepairRunningRef = useRef(false);
 
   // Seed ideas directly into state (Firestore fallback mode)
   // Preserves any existing cached data so approved/rejected statuses don't get lost on reload
@@ -691,6 +692,50 @@ export function DataProvider({ children }) {
     return Array.from(byId.values());
   }, []);
 
+  // Repair: older idea-converted projects stored holder = the applicant's name
+  // instead of the real Project Owner. The true owner is kept in the ownerName
+  // field, so backfill holder from ownerName where holder was empty or merely
+  // duplicated the applicant. Idempotent — becomes a no-op once all docs are fixed.
+  const repairProjectHolders = useCallback(async (list) => {
+    if (!uid || holderRepairRunningRef.current) return;
+    if (!Array.isArray(list) || list.length === 0) return;
+    holderRepairRunningRef.current = true;
+
+    const toFix = list.filter((p) => {
+      if (!p || !p.originalIdeaId) return false; // only idea-converted projects
+      const owner = (p.ownerName || '').trim();
+      if (!owner) return false; // nothing reliable to backfill with
+      const holder = (p.holder || '').trim();
+      if (!holder) return true; // empty holder → fill in the owner
+      const applicant = (p.applicantName || p.applicant || '').trim();
+      return !!applicant && holder === applicant; // holder wrongly set to applicant
+    });
+    if (toFix.length === 0) {
+      holderRepairRunningRef.current = false;
+      return;
+    }
+
+    console.log(`[PMIS] Repairing Project Owner (holder) on ${toFix.length} idea-converted project(s)…`);
+    for (const p of toFix) {
+      try {
+        const repairedAt = new Date().toISOString();
+        await setDoc(doc(db, COLLECTIONS.PROJECTS, p.id), {
+          holder: p.ownerName,
+          _holderRepairedAt: repairedAt,
+        }, { merge: true });
+        setProjects((prev) => {
+          const newList = prev.map((x) => (x.id === p.id ? { ...x, holder: p.ownerName, _holderRepairedAt: repairedAt } : x));
+          try { localStorage.setItem('pmis_projects', JSON.stringify(newList)); } catch (e) { /* ignore */ }
+          return newList;
+        });
+        console.log(`[PMIS] Repaired holder of project ${p.id} → ${p.ownerName}`);
+      } catch (err) {
+        console.error(`[PMIS] Holder repair failed for project ${p.id}:`, err.message || err);
+      }
+    }
+    holderRepairRunningRef.current = false;
+  }, [uid]);
+
   // Fetch data when user is authenticated
   useEffect(() => {
     if (!uid) {
@@ -724,6 +769,10 @@ export function DataProvider({ children }) {
         if (oldProjects.length > 0) {
           migrateOldProjects(oldProjects);
         }
+
+        // One-time repair: older idea-converted projects may have holder set to
+        // the applicant instead of the real Project Owner (ownerName).
+        repairProjectHolders(list);
       },
       (err) => {
         console.error('Projects snapshot error:', err);
@@ -836,7 +885,7 @@ export function DataProvider({ children }) {
       unsubSchemes();
       unsubSettings();
     };
-  }, [uid, seedIdeasToState, migrateOldProjects, healMisplacedIdeas, dedupeIdeas]);
+  }, [uid, seedIdeasToState, migrateOldProjects, healMisplacedIdeas, dedupeIdeas, repairProjectHolders]);
 
   // Seed default funding schemes if Firestore is empty
   const seedDefaultSchemes = useCallback(async () => {
@@ -1126,8 +1175,8 @@ export function DataProvider({ children }) {
       otherDocFile: idea.otherDocFile || '',
       governmentGrant: idea.governmentGrant || null,
       technicalSupport: idea.technicalSupport || idea.techSupportDept || '',
-      manager: idea.manager || idea.projectManagerName || idea.ownerName || '',
-      holder: idea.holder || idea.applicant || idea.applicantName || '',
+      manager: idea.manager || idea.projectManagerName || '',
+      holder: idea.ownerName || idea.holder || '',
       startDate: idea.startDate || idea.expectedStartDate || '',
       endDate: idea.endDate || idea.expectedEndDate || idea.targetCompletionDate || '',
       budget: idea.totalBudget || idea.budget || 0,
@@ -1200,8 +1249,8 @@ export function DataProvider({ children }) {
       otherDocFile: idea.otherDocFile || '',
       governmentGrant: idea.governmentGrant || null,
       technicalSupport: idea.technicalSupport || idea.techSupportDept || '',
-      manager: idea.manager || idea.projectManagerName || idea.ownerName || '',
-      holder: idea.holder || idea.applicant || idea.applicantName || '',
+      manager: idea.manager || idea.projectManagerName || '',
+      holder: idea.ownerName || idea.holder || '',
       startDate: idea.startDate || idea.expectedStartDate || '',
       endDate: idea.endDate || idea.expectedEndDate || idea.targetCompletionDate || '',
       budget: idea.totalBudget || idea.budget || 0,
