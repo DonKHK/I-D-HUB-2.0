@@ -17,43 +17,17 @@ export default function MyProjects({ onNavigate }) {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { projects, ideas, deleteProject, settings } = useData();
+  const { projects, deleteProject, settings } = useData();
   const { isSuperAdmin } = useAuth();
   const [filter, setFilter] = useState('all');
   const [sortBy, setSortBy] = useState('created-desc');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Build combined list: projects + approved ideas that don't already have a project
-  const combinedItems = useMemo(() => {
-    // Collect originalIdeaIds that already have a project
-    const projectIdeaIds = new Set(
-      projects.filter((p) => p.originalIdeaId).map((p) => p.originalIdeaId)
-    );
-    // Map approved ideas (without an existing project) into project-compatible shape
-    const approvedIdeaProjects = ideas
-      .filter((i) => i.status === 'approved' && !projectIdeaIds.has(i.id))
-      .map((idea) => ({
-        id: idea.id,
-        name: idea.title || idea.projectTitle || 'Untitled',
-        description: idea.oneLineDesc || idea.shortDescription || '',
-        detailContent: idea.projectScope || idea.detailContent || '',
-        manager: idea.projectManagerName || idea.manager || '',
-        holder: idea.ownerName || idea.holder || '',
-        applicantName: idea.applicantName || idea.applicant || '',
-        technicalSupport: idea.techSupportDept || idea.governmentGrant || '',
-        governmentGrant: idea.governmentGrant || '',
-        budget: idea.totalBudget || idea.budget || 0,
-        budgetUsed: 0,
-        startDate: idea.expectedStartDate || idea.startDate || '',
-        endDate: idea.targetCompletionDate || idea.expectedEndDate || '',
-        status: 'Planning',
-        stages: [],
-        createdAt: idea.approvedAt || idea.createdAt,
-        originalIdeaId: idea.id,
-        _isApprovedIdea: true,   // flag to show a label on the card
-      }));
-    return [...projects, ...approvedIdeaProjects];
-  }, [projects, ideas]);
+  // My Projects shows only real project records. Approved ideas that do not yet
+  // have a project are managed on the "Approved Projects" page instead — this
+  // also means deleting a converted project will NOT make its source idea card
+  // reappear on this page.
+  const combinedItems = useMemo(() => [...projects], [projects]);
 
   const [viewProject, setViewProject] = useState(() => {
     return null; // will be resolved in the filtered useMemo below
@@ -171,8 +145,7 @@ export default function MyProjects({ onNavigate }) {
         {filtered.map((project) => {
           const health = calculateHealth(project, settings);
           return (
-            <div key={project.id} className={`myprojects-card ${project._isApprovedIdea ? 'myprojects-card--idea' : ''}`}>
-              {project._isApprovedIdea && <div className="myprojects-idea-badge">✅ Approved Idea</div>}
+            <div key={project.id} className="myprojects-card">
               {/* Top row: health dot + label + ID + status + delete */}
               <div className="myprojects-card-top">
                 <div className="myprojects-card-health">
