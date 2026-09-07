@@ -63,35 +63,65 @@ export default function Dashboard() {
   }, [ideas, showAllIdeas]);
 
   // === Chart.js Doughnut ===
+  // Create the chart ONCE on mount. Later data changes only update the existing
+  // chart in place (animation disabled) so it never flickers / looks like it is
+  // re-loading.
+  const chartDataKeyRef = useRef('');
+
   useEffect(() => {
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
-    }
-    if (healthChartRef.current) {
-      chartInstance.current = new Chart(healthChartRef.current, {
-        type: 'doughnut',
-        data: {
-          labels: ['Completed', 'Healthy', 'Warning', 'Critical'],
-          datasets: [{
-            data: [healthDistribution.completed, healthDistribution.healthy, healthDistribution.warning, healthDistribution.critical],
-            backgroundColor: [settings.alertCompletedColor || '#3b82f6', settings.alertSuccessColor || '#22c55e', settings.alertWarningColor || '#eab308', settings.alertCriticalColor || '#ef4444'],
-            borderWidth: 6,
-            borderColor: '#fff',
-          }],
+    if (!healthChartRef.current) return;
+    chartInstance.current = new Chart(healthChartRef.current, {
+      type: 'doughnut',
+      data: {
+        labels: ['Completed', 'Healthy', 'Warning', 'Critical'],
+        datasets: [{
+          data: [0, 0, 0, 0],
+          backgroundColor: ['#3b82f6', '#22c55e', '#eab308', '#ef4444'],
+          borderWidth: 6,
+          borderColor: '#fff',
+        }],
+      },
+      options: {
+        cutout: '55%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } },
         },
-        options: {
-          cutout: '55%',
-          plugins: {
-            legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } },
-          },
-          responsive: true,
-          maintainAspectRatio: false,
-        },
-      });
-    }
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+      },
+    });
     return () => {
-      if (chartInstance.current) chartInstance.current.destroy();
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+        chartInstance.current = null;
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync live data into the chart in place — never destroy/recreate.
+  useEffect(() => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+    const counts = [
+      healthDistribution.completed,
+      healthDistribution.healthy,
+      healthDistribution.warning,
+      healthDistribution.critical,
+    ];
+    const colors = [
+      settings.alertCompletedColor || '#3b82f6',
+      settings.alertSuccessColor || '#22c55e',
+      settings.alertWarningColor || '#eab308',
+      settings.alertCriticalColor || '#ef4444',
+    ];
+    const key = `${counts.join(',')}|${colors.join(',')}`;
+    if (key === chartDataKeyRef.current) return; // nothing changed → skip redraw
+    chartDataKeyRef.current = key;
+    chart.data.datasets[0].data = counts;
+    chart.data.datasets[0].backgroundColor = colors;
+    chart.update('none');
   }, [healthDistribution, settings]);
 
   const kpiData = [
