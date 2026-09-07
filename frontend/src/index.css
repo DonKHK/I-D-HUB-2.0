@@ -6222,5 +6222,84 @@ button.myprojects-id-tag {
   border-top: 1px dashed #cbd5e1;
 }
 
+/* ===== Login page: fixed-height card + help ===== */
+.login-card {
+  min-height: 680px;
+}
+
+.login-help-btn {
+  margin-top: 0.75rem;
+  background: none;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.login-help-btn:hover {
+  border-color: #165dff;
+  color: #165dff;
+  background: #eff6ff;
+}
+
+/* ===== 功能說明 modal ===== */
+.help-modal-body {
+  max-height: 62vh;
+  overflow-y: auto;
+  padding: 0 0.25rem 0.25rem 0;
+}
+.help-intro {
+  color: #475569;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.help-modal-body h4 {
+  margin: 1.1rem 0 0.5rem;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+.help-list {
+  margin: 0 0 0.25rem 1.1rem;
+  padding: 0;
+}
+.help-list li {
+  margin-bottom: 0.4rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #334155;
+}
+.help-role {
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #165dff;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.6rem;
+}
+.help-role h5 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+.help-role p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+}
+.help-developer {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #cbd5e1;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+.help-developer p {
+  margin: 0.15rem 0;
+}
+
+
 
 

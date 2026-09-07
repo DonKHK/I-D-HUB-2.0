@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { APP_VERSION } from '../utils/constants';
 import { auth, signInWithEmailAndPassword, sendPasswordResetEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from '../firebase';
+import LoginHelpModal from '../components/LoginHelpModal';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function Login() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
@@ -174,6 +176,13 @@ export default function Login() {
           <p className="login-version" style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.25rem' }}>
             Version {APP_VERSION}
           </p>
+          <button
+            type="button"
+            className="login-help-btn"
+            onClick={() => setShowHelp(true)}
+          >
+            📖 功能說明
+          </button>
         </div>
 
         {/* Tab switcher (hidden in forgot/change modes) */}
@@ -192,6 +201,13 @@ export default function Login() {
               onClick={() => switchMode('project')}
             >
               Project Login
+            </button>
+            <button
+              type="button"
+              className="login-tab login-tab--guest"
+              onClick={guestLogin}
+            >
+              Guest Login
             </button>
           </div>
         )}
@@ -244,12 +260,6 @@ export default function Login() {
                 </button>
                 <button type="button" className="login-btn login-btn--link" onClick={() => switchMode('change-password')}>
                   Change Password
-                </button>
-              </div>
-
-              <div className="login-secondary-btns">
-                <button type="button" className="login-btn login-btn--guest" onClick={guestLogin}>
-                  Guest
                 </button>
               </div>
             </>
@@ -394,6 +404,8 @@ export default function Login() {
             </>
           )}
         </form>
+
+        <LoginHelpModal open={showHelp} onClose={() => setShowHelp(false)} />
       </div>
     </div>
   );
