@@ -5440,14 +5440,15 @@ body {
 
 .login-tab {
   flex: 1;
-  padding: 0.65rem 0.5rem;
+  padding: 0.6rem 0.2rem;
   border: none;
   background: transparent;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: #64748b;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s;
 }
 
