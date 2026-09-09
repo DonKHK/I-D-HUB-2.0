@@ -24,6 +24,8 @@ export default defineConfig({
         main: resolve(rootDir, 'index.html'),
         // Standalone, no-login Commercialization Plan questionnaire page
         commercialization: resolve(rootDir, 'commercialization.html'),
+        // Standalone, no-login Business Plan generator page
+        businessPlan: resolve(rootDir, 'business-plan.html'),
       },
     },
   },

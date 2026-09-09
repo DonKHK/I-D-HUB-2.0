@@ -9,6 +9,10 @@
       "destination": "/commercialization.html"
     },
     {
+      "source": "/business-plan",
+      "destination": "/business-plan.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
