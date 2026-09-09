@@ -32,7 +32,16 @@ const keyToLabel = (key) => {
 function loadDraft() {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const out = { ...parsed };
+    // Defensive: fields the code below assumes are arrays may be a plain
+    // string in drafts saved by older versions — normalise to an array.
+    if (out.directions != null && !Array.isArray(out.directions)) {
+      out.directions = String(out.directions).trim() ? [String(out.directions).trim()] : [];
+    }
+    return out;
   } catch (e) {
     return {};
   }
@@ -175,7 +184,7 @@ export default function CommercializationQuestionnaire() {
 
   // Sync calculator direction with the first priority direction chosen in Q14
   useEffect(() => {
-    const dirs = answers.directions || [];
+    const dirs = Array.isArray(answers.directions) ? answers.directions : [];
     if (dirs.length > 0) {
       const firstKey = labelToKey(dirs[0]);
       if (firstKey) setCalcDirection(firstKey);
@@ -225,7 +234,7 @@ export default function CommercializationQuestionnaire() {
   const effectiveDistributorMarkup = distributorMarkup || distributorMarkupFromAnswer || 1.4;
 
   const buildPricingText = () => {
-    const dirs = answers.directions || [];
+    const dirs = Array.isArray(answers.directions) ? answers.directions : [];
     if (dirs.length === 0) return '';
     const lines = [];
     dirs.forEach((label) => {
@@ -639,13 +648,17 @@ export default function CommercializationQuestionnaire() {
               )}
             </div>
 
-            {isPaas && pricingResult && pricingResult.feeMonthly ? (
-              <div className="com-pricing-result">
-                <div className="com-price-step"><span>Monthly fee</span><strong>{formatMoney(pricingResult.feeMonthly)}</strong></div>
-                <div className="com-price-step"><span>Yearly fee</span><strong>{formatMoney(pricingResult.feeYearly)}</strong></div>
-                <div className="com-price-factor">= cost recovery over {pricingResult.recoveryMonths} months + {pricingResult.serviceMargin}% service margin</div>
-              </div>
-            ) : pricingResult ? (
+            {isPaas ? (
+              pricingResult && pricingResult.feeMonthly ? (
+                <div className="com-pricing-result">
+                  <div className="com-price-step"><span>Monthly fee</span><strong>{formatMoney(pricingResult.feeMonthly)}</strong></div>
+                  <div className="com-price-step"><span>Yearly fee</span><strong>{formatMoney(pricingResult.feeYearly)}</strong></div>
+                  <div className="com-price-factor">= cost recovery over {pricingResult.recoveryMonths} months + {pricingResult.serviceMargin}% service margin</div>
+                </div>
+              ) : (
+                <p className="com-pricing-hint">Enter a unit cost above to see the monthly / yearly fee calculation.</p>
+              )
+            ) : pricingResult && Array.isArray(pricingResult.steps) && pricingResult.steps.length ? (
               <div className="com-pricing-result">
                 {pricingResult.steps.map((st, i) => (
                   <div key={i} className="com-price-step">

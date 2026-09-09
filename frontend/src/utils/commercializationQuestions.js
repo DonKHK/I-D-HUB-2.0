@@ -13,7 +13,7 @@ export const COMMERCIALIZATION_SECTIONS = [
 
 // True when a channel-type direction was selected in Q14
 const hasChannelDirection = (a) => {
-  const dirs = a.directions || [];
+  const dirs = Array.isArray(a?.directions) ? a.directions : [];
   return dirs.some((d) => ['channel', 'b2b2c', 'b2b2g'].includes(d));
 };
 
