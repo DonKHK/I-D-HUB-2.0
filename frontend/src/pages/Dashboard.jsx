@@ -7,6 +7,60 @@ import AIAssistant from './AIAssistant';
 
 import { readField } from '../utils/fields';
 
+/**
+ * Chart.js inline plugin — prints the count of every slice just outside the
+ * doughnut, with a short leader line in the slice colour. Counts only (no %),
+ * zero-value slices are skipped, and the text is aligned to the left/right half
+ * of the ring so neighbouring labels never overlap.
+ */
+const doughnutCountLabels = {
+  id: 'doughnutCountLabels',
+  afterDatasetsDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    const dataset = chart.data?.datasets?.[0];
+    if (!meta || !dataset) return;
+
+    const values = (dataset.data || []).map((v) => Number(v) || 0);
+    if (values.every((v) => v === 0)) return;
+
+    const colors = dataset.backgroundColor || [];
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = '700 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.textBaseline = 'middle';
+
+    meta.data.forEach((arc, i) => {
+      const value = values[i];
+      if (!value) return;
+
+      const { startAngle, endAngle, outerRadius, x: cx, y: cy } = arc;
+      // Slices hidden via the legend collapse to a zero span — skip those too
+      if (Math.abs(endAngle - startAngle) < 0.01) return;
+
+      const mid = (startAngle + endAngle) / 2;
+      const isRightHalf = Math.cos(mid) >= 0;
+      const color = (Array.isArray(colors) ? colors[i] : colors) || '#94a3b8';
+
+      // Leader line from the ring edge outwards
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(mid) * (outerRadius + 2), cy + Math.sin(mid) * (outerRadius + 2));
+      ctx.lineTo(cx + Math.cos(mid) * (outerRadius + 12), cy + Math.sin(mid) * (outerRadius + 12));
+      ctx.stroke();
+
+      // The count itself
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#334155';
+      ctx.textAlign = isRightHalf ? 'left' : 'right';
+      ctx.fillText(String(value), cx + Math.cos(mid) * (outerRadius + 15), cy + Math.sin(mid) * (outerRadius + 15));
+    });
+
+    ctx.restore();
+  },
+};
+
 export default function Dashboard() {
   const { projects, ideas, settings } = useData();
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -75,6 +129,7 @@ export default function Dashboard() {
     if (!healthChartRef.current) return;
     chartInstance.current = new Chart(healthChartRef.current, {
       type: 'doughnut',
+      plugins: [doughnutCountLabels],
       data: {
         labels: ['Completed', 'Healthy', 'Warning', 'Critical'],
         datasets: [{
@@ -86,8 +141,37 @@ export default function Dashboard() {
       },
       options: {
         cutout: '55%',
+        // Leaves room on all sides for the counts drawn outside the ring
+        layout: { padding: { top: 12, right: 18, bottom: 4, left: 18 } },
         plugins: {
-          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } },
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 16,
+              usePointStyle: true,
+              boxWidth: 10,
+              // Legend items carry the count too, e.g. "Healthy (12)"
+              generateLabels: (chart) => {
+                const labels = chart.data?.labels || [];
+                const dataset = chart.data?.datasets?.[0] || {};
+                const values = dataset.data || [];
+                const fill = dataset.backgroundColor;
+                const meta = chart.getDatasetMeta(0);
+                return labels.map((label, i) => {
+                  const color = Array.isArray(fill) ? fill[i] : fill;
+                  return {
+                    text: `${label} (${Number(values[i]) || 0})`,
+                    fillStyle: color,
+                    strokeStyle: color,
+                    lineWidth: 0,
+                    pointStyle: 'circle',
+                    hidden: meta?.data?.[i] ? !meta.data[i].visible : false,
+                    index: i,
+                  };
+                });
+              },
+            },
+          },
         },
         responsive: true,
         maintainAspectRatio: false,

@@ -2693,9 +2693,9 @@ body {
 
 /* Chart Container */
 .chart-container {
-  max-width: 280px;
+  max-width: 300px;
   margin: 0 auto;
-  height: 240px;
+  height: 260px;
 }
 
 /* Upcoming List */
