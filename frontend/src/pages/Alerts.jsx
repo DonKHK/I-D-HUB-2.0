@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { calculateHealth, daysUntil, formatDate } from '../utils/helpers';
+import { readField } from '../utils/fields';
 
 export default function Alerts({ onNavigate }) {
   const { projects } = useData();
@@ -12,7 +13,10 @@ export default function Alerts({ onNavigate }) {
 
     projects.forEach((project) => {
       const health = calculateHealth(project);
-      const daysLeft = project.endDate ? daysUntil(project.endDate) : null;
+      const title = readField(project, 'title');
+      const endDate = readField(project, 'targetCompletionDate');
+      const budget = readField(project, 'totalBudget') || 0;
+      const daysLeft = endDate ? daysUntil(endDate) : null;
 
       // Overdue
       if (daysLeft !== null && daysLeft < 0) {
@@ -21,8 +25,8 @@ export default function Alerts({ onNavigate }) {
           projectId: project.id,
           type: 'overdue',
           severity: 'critical',
-          message: `Project "${project.name}" is overdue by ${Math.abs(daysLeft)} day(s)`,
-          date: project.endDate,
+          message: `Project "${title}" is overdue by ${Math.abs(daysLeft)} day(s)`,
+          date: endDate,
         });
       }
 
@@ -33,28 +37,28 @@ export default function Alerts({ onNavigate }) {
           projectId: project.id,
           type: 'due_soon',
           severity: 'warning',
-          message: `Project "${project.name}" is due in ${daysLeft} day(s)`,
-          date: project.endDate,
+          message: `Project "${title}" is due in ${daysLeft} day(s)`,
+          date: endDate,
         });
       }
 
       // Budget overspent
-      if (project.budget > 0 && project.budgetUsed > project.budget) {
+      if (budget > 0 && project.budgetUsed > budget) {
         result.push({
           id: `budget-${project.id}`,
           projectId: project.id,
           type: 'budget',
           severity: 'critical',
-          message: `Project "${project.name}" has exceeded its budget (${Math.round((project.budgetUsed / project.budget) * 100)}% used)`,
+          message: `Project "${title}" has exceeded its budget (${Math.round((project.budgetUsed / budget) * 100)}% used)`,
           date: null,
         });
-      } else if (project.budget > 0 && project.budgetUsed > project.budget * 0.9) {
+      } else if (budget > 0 && project.budgetUsed > budget * 0.9) {
         result.push({
           id: `budget-warn-${project.id}`,
           projectId: project.id,
           type: 'budget',
           severity: 'warning',
-          message: `Project "${project.name}" is using ${Math.round((project.budgetUsed / project.budget) * 100)}% of its budget`,
+          message: `Project "${title}" is using ${Math.round((project.budgetUsed / budget) * 100)}% of its budget`,
           date: null,
         });
       }
@@ -66,7 +70,7 @@ export default function Alerts({ onNavigate }) {
           projectId: project.id,
           type: 'health',
           severity: 'warning',
-          message: `Project "${project.name}" has low health score (${health.label})`,
+          message: `Project "${title}" has low health score (${health.label})`,
           date: null,
         });
       }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { formatDate, formatDateTime, formatCurrency } from '../utils/helpers';
+import { fieldLabel } from '../utils/fields';
 import Modal from '../components/Modal';
 
 export default function ApprovedProjects() {
@@ -33,7 +34,7 @@ export default function ApprovedProjects() {
         (i) =>
           String(i.title || '').toLowerCase().includes(q) ||
           String(i.id || '').toLowerCase().includes(q) ||
-          String(i.applicant || i.applicantName || '').toLowerCase().includes(q)
+          String(i.applicantName || '').toLowerCase().includes(q)
       );
     }
     return list;
@@ -91,7 +92,7 @@ export default function ApprovedProjects() {
               </div>
               <div className="project-card__body">
                 <h3 className="project-card__title">{idea.title}</h3>
-                <p className="project-card__desc">{idea.oneLineDesc}</p>
+                <p className="project-card__desc">{idea.projectScope || idea.background}</p>
 
                   <div className="project-card__details">
                     <div className="project-card__detail">
@@ -127,12 +128,12 @@ export default function ApprovedProjects() {
                       </span>
                     </div>
                     <div className="project-card__detail">
-                      <label>Budget</label>
+                      <label>{fieldLabel('totalBudget')}</label>
                       <span>{formatCurrency(idea.totalBudget)}</span>
                     </div>
                     <div className="project-card__detail">
-                      <label>Score</label>
-                      <span>{idea.innovativeScore}/10</span>
+                      <label>AI Score</label>
+                      <span>{idea.aiAnalysis?.overallScore != null ? `${idea.aiAnalysis.overallScore}/10` : '—'}</span>
                     </div>
                     <div className="project-card__detail">
                       <label>Submitted</label>
@@ -145,8 +146,8 @@ export default function ApprovedProjects() {
                   </div>
 
                 <div className="project-card__team" style={{ marginTop: '0.5rem' }}>
-                  <span>👤 {idea.applicant}</span>
-                  <span>🏷️ {idea.ideaType}</span>
+                  <span>👤 {idea.applicantName || '—'}</span>
+                  <span>🏷️ {idea.projectType || '—'}</span>
                 </div>
               </div>
             </div>

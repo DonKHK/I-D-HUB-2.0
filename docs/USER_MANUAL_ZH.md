@@ -16,6 +16,7 @@
 7. [Guest 使用手冊](#7-guest-使用手冊)
 8. [常見問題及排除](#8-常見問題及排除)
 9. [技術支援](#9-技術支援)
+10. [欄位對照表（Canonical Field Reference）](#10-欄位對照表canonical-field-reference)
 
 ---
 
@@ -140,6 +141,8 @@ I&D Hub 係**創新及發展項目管理系統**，提供一站式平台：提�
 8. 知識產權及附件（IP、地區、備註）
 撳 Next/Previous 移動，最後 Submit。
 
+> **欄位名稱：** 呢 8 步嘅欄位名、標籤、值域就係全 app 嘅 **master schema**，集中定義喺 `frontend/src/utils/fields.js`。IDEA Detail、My Projects、Detail Project、Edit Project 一律跟同一套名，詳見 [第 10 節 欄位對照表](#10-欄位對照表canonical-field-reference)。
+
 ### 4.7 Funding Schemes（資助計劃）
 - 搜尋欄過濾 / 卡片顯示（名稱、狀態、提供者、金額、資格、截止日）。
 - **+ Add Scheme**：名稱*、提供者*、金額、描述、資格、截止日、狀態。
@@ -160,8 +163,8 @@ I&D Hub 係**創新及發展項目管理系統**，提供一站式平台：提�
 - 資訊（藍）：一般更新。撳卡片跳轉項目。
 
 ### 4.10 Report Export（報表匯出）
-- 匯出項目（12 欄）/ 意念（11 欄）/ 資助計劃（8 欄）/ 全部（3 sheets）。
-- *目前用示範數據集。*
+- 匯出 [目前真實資料]（項目 23 欄 / 意念 15 欄 / 資助計劃 8 欄）/ 全部（3 sheets）。
+- 欄名同 Submit Idea 一致（例如 `Project Title 項目名稱`、`Total Estimated Budget 總預算估算（單位：港幣）`、`Project Manager — Name 姓名`）。
 
 ---
 
@@ -188,9 +191,10 @@ I&D Hub 係**創新及發展項目管理系統**，提供一站式平台：提�
 Project Login 分頁 → Project ID + 密碼。
 
 ### 6.2 My Project 頁面
-- 項目總覽（ID、名稱、狀態、健康、經理/持有人、預算）。
-- 詳細區塊（背景、痛點、效益、里程碑、預算使用、階段進度、活動記錄）。
-- **Edit** → 更新基本欄位（名稱、描述、狀態、日期、預算、經理、持有人、背景、痛點、效益、交付）→ **Save**（記錄喺活動記錄）。
+- 項目總覽（Project ID、Project Title 項目名稱、Project Status 項目狀態、健康狀態、Project Manager 項目經理、Project Owner 項目持有者、Total Estimated Budget 總預算估算）。
+- 詳細區塊：**Project Information**、**Team 項目團隊**（PM / Owner / Technical Support 嘅 Name、Department / Company、Contact Number、Email — 同 Submit Idea 同一套欄位名）、**Dates**、**Budget & Funding**、**Original Idea Submission**、**Project Stages**、**Activity Log**。
+- **現時為唯讀：** Project User（PM / Owner）頁面唔會出現 Edit 按鈕。
+- **要修改：** 請 Superadmin 喺 My Projects 開項目 → **✏️ Edit Project**（ProjectForm），可改嘅欄位同 Submit Idea 完全一樣。
 
 ### 6.3 未分配項目
 顯示 "No project found for your account." — 聯絡技術支援。
@@ -249,3 +253,122 @@ Dashboard / My Projects / Pending Approval / Settings / Alerts / Report Export�
 ---
 
 *© Asia Allied Group – I&D Hub v2.0*
+---
+
+## 10. 欄位對照表（Canonical Field Reference）
+
+> 全 app 共用嘅欄位名、標籤、值域集中定義喺 `frontend/src/utils/fields.js`。**Submit Idea 係 master** — 「Submit Idea → IDEA Detail → My Projects → Detail Project → Edit Project」五個畫面，同一個欄位一定係同一個名、對應同一份資料。
+>
+> 新增或修改欄位只需改 `fields.js`，所有表格 / 詳情頁 / 匯出會自動跟隨。
+
+### 10.1 Canonical schema（master = Submit Idea）
+
+| # | Canonical key | Label（顯示名） | 類型 | 必填 | 值域 |
+|---|---|---|---|---|---|
+| 1 | `applicantName` | Applicant Name 申請人姓名 | text | ✔ | — |
+| 2 | `department` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 3 | `contactNumber` | Contact Number 聯絡電話 | text | ✔ | — |
+| 4 | `email` | Email 電郵 | email | ✔ | — |
+| 5 | `projectManagerName` | Name 姓名 | text | ✔ | — |
+| 6 | `projectManagerDept` | Department / Company 所屬部門或公司 | text |  | — |
+| 7 | `projectManagerPhone` | Contact Number 聯絡電話 | text | ✔ | — |
+| 8 | `projectManagerEmail` | Email 電郵 | email |  | — |
+| 9 | `ownerName` | Name 姓名 | text | ✔ | — |
+| 10 | `ownerDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 11 | `ownerContact` | Contact Number 聯絡電話 | text | ✔ | — |
+| 12 | `ownerEmail` | Email 電郵 | email | ✔ | — |
+| 13 | `techSupportName` | Name 姓名 | text | ✔ | — |
+| 14 | `techSupportDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 15 | `techSupportContact` | Contact Number 聯絡電話 | text | ✔ | — |
+| 16 | `techSupportEmail` | Email 電郵 | email | ✔ | — |
+| 17 | `projectType` | Project Type 項目類型 | select | ✔ | Business Transformation / Development / Process Improvement / Cost Saving / Customer Experience / Technology Development / Others |
+| 18 | `title` | Project Title 項目名稱 | text | ✔ | — |
+| 19 | `background` | Project Background & Objective 項目背景信息及目標 | textarea | ✔ | — |
+| 20 | `painPoint` | Pain Points 痛點描述 | textarea | ✔ | — |
+| 21 | `currentWorkarounds` | Current Workarounds 現有臨時處理方法 | textarea |  | — |
+| 22 | `projectScope` | Project Scope 項目範圍 | textarea | ✔ | — |
+| 23 | `deliverables` | Expected Deliverables 預期交付成果 | textarea | ✔ | — |
+| 24 | `benefits` | Expected Benefits 預期效益 | textarea | ✔ | — |
+| 25 | `projectPhases` | Project Phases 項目實施階段 | textarea |  | — |
+| 26 | `risks` | Risks & Challenges 潛在風險及實施困難 | textarea |  | — |
+| 27 | `expectedStartDate` | Expected Start Date 預計開始日期 | date | ✔ | — |
+| 28 | `targetCompletionDate` | Target Completion Date 預計完成日期 | date | ✔ | — |
+| 29 | `terminationCondition1` | Termination Condition (1) 終止觸發條件(一) | textarea |  | — |
+| 30 | `terminationCondition2` | Termination Condition (2) 終止觸發條件(二) | textarea |  | — |
+| 31 | `terminationCondition3` | Termination Condition (3) 終止觸發條件(三) | textarea |  | — |
+| 32 | `totalBudget` | Total Estimated Budget 總預算估算（單位：港幣） | number | ✔ | — |
+| 33 | `fundSource` | Source of Project Fund 項目預算來源 | select | ✔ | Department Budget / Company Central Fund / Government Grant / External Sponsorship / Other |
+| 34 | `budgetBreakdown` | Budget Breakdown 預算細分 | textarea |  | — |
+| 35 | `targetGovFund` | Target Gov. Fund 目標政府支助（如有） | number |  | — |
+| 36 | `targetGovFundDetails` | Target Gov. Fund Details 目標資金詳情（如有） | textarea |  | — |
+| 37 | `resourceRequirements` | Resource Requirements 其他所需資源（非資金類） | textarea |  | — |
+| 38 | `crossDeptAssistance` | Cross-Departmental Assistance Required 預計需要公司哪些內部部門協助？ | textarea |  | — |
+| 39 | `techDirection` | Proposed Technology Direction 建議技術方向 | textarea |  | — |
+| 40 | `innovationElement` | Innovation Element 項目創新亮點 | textarea |  | — |
+| 41 | `technicalRequirements` | Technical Requirements 具體技術需求 | textarea |  | — |
+| 42 | `currentStage` | Current Stage 現時階段 | select | ✔ | Idea / R&D / Feasibility / POC / Demo / Pilot / Commercialization / Production / Wrap up & Handover / Others |
+| 43 | `stageStartDate` | Stage Start Date 階段開始日期 | date | ✔ | — |
+| 44 | `stageEndDate` | Stage End Date 預計完成日期 | date | ✔ | — |
+| 45 | `stageStatus` | Stage Status 階段狀態 | select | ✔ | Planning / In Progress / Completed / On Hold |
+| 46 | `stageDescription` | Stage Description 主要描述 | textarea |  | — |
+| 47 | `requireIP` | Require IP 是否需要申請專利 | radio |  | 是 / 否 / 待定 |
+| 48 | `ipRegion` | IP Region 專利申請國家 | select |  | Hong Kong / China / United States / European Union / Other |
+| 49 | `remarks` | Any Other Comments 其他補充備註 | textarea |  | — |
+| 50 | `businessProposalFile` | Business Proposal 商業計劃書 | file |  | — |
+| 51 | `otherDocFile` | Other Documents 其他文件 | file |  | — |
+| 52 | `description` | Description 簡短描述 | textarea |  | — |
+| 53 | `status` | Project Status 項目狀態 | select | ✔ | Planning / In Progress / Completed / On Hold / Cancelled |
+| 54 | `budgetUsed` | Budget Used 已使用（單位：港幣） | number |  | — |
+| 55 | `governmentGrant` | Government Grant 政府資助 | text |  | — |
+
+**欄位總數：** 55
+
+### 10.2 聯絡人區塊（4 個角色，欄位次序完全一致）
+
+次序：Name 姓名 → Department / Company 所屬部門或公司 → Contact Number 聯絡電話 → Email 電郵
+
+| 區塊 | 標題 | 姓名 | 部門 | 聯絡 | 電郵 |
+|---|---|---|---|---|---|
+| applicant | Applicant Information 申請人資料 | `applicantName` | `department` | `contactNumber` | `email` |
+| projectManager | Project Manager 項目經理 | `projectManagerName` | `projectManagerDept` | `projectManagerPhone` | `projectManagerEmail` |
+| owner | Project Owner 項目持有者 | `ownerName` | `ownerDept` | `ownerContact` | `ownerEmail` |
+| techSupport | Technical Support 技術支援 | `techSupportName` | `techSupportDept` | `techSupportContact` | `techSupportEmail` |
+
+### 10.3 8 步精靈（步驟名 = 區塊標題，同一個字串）
+
+1. **Applicant Info** 申請人資料
+2. **Project Details** 項目 / 意念詳情
+3. **Timeline & Termination** 時間表及終止條件
+4. **Budget & Funding** 預算及資金
+5. **Resources & Support** 資源及協助
+6. **Technical & Innovation** 技術及創新
+7. **Current Stage** 現時階段
+8. **IP & Attachments** 知識產權及附件
+
+### 10.4 Legacy → Canonical 對照（一次性 migration，`_fieldsNormalised` 標記後唔會重跑）
+
+| 舊 key | 新 key |
+|---|---|
+| `name` | `title` |
+| `manager` | `projectManagerName` |
+| `holder` | `ownerName` |
+| `budget` | `totalBudget` |
+| `startDate` | `expectedStartDate` |
+| `endDate` | `targetCompletionDate` |
+| `detailContent` | `projectScope`（只在目標為空時搬，否則保留舊值） |
+| `technicalSupport` | `techSupportDept`（只在目標為空時搬，否則保留舊值） |
+| `stages[].budget` | `stages[].totalBudget` |
+| `stages[].startDate` | `stages[].stageStartDate` |
+| `stages[].endDate` | `stages[].stageEndDate` |
+| `stages[].status` | `stages[].stageStatus` |
+| `stages[].description` | `stages[].stageDescription` |
+| 階段狀態 `Not Started` | `Planning` |
+| idea `applicant` | `applicantName` |
+| idea `projectTitle` | `title` |
+| idea `manager` | `projectManagerName` |
+| idea `holder` | `ownerName` |
+| idea `budget` | `totalBudget` |
+| idea `expectedEndDate` | `targetCompletionDate` |
+| idea `detail` | `projectScope` |
+| idea `ideaType` | `projectType` |
+**永遠刪除嘅 legacy key（project + idea 共用）：** `owner`、`detail`、`firstContactName`、`firstContactDept`、`firstContactEmail`、`firstContactPhone`、`secondContactName`、`secondContactDept`、`secondContactEmail`、`secondContactPhone`

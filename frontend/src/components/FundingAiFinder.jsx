@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { readField } from '../utils/fields';
 import Modal from './Modal';
 
 // Backend API base URL - uses Vite proxy (/api -> localhost:5000) by default
@@ -156,12 +157,12 @@ export default function FundingAiFinder() {
   const buildPrompt = () => {
     const projectLines = projects
       .slice(0, 30)
-      .map((p) => `- ${p.id} | ${short(p.name, 120)} | status=${p.status || 'Planning'} | budget=${money(p.budget)} | currentFund=${short(p.governmentGrant || p.fundSource || 'N/A', 100)} | ${short(p.description || '')}`)
+      .map((p) => `- ${p.id} | ${short(readField(p, 'title'), 120)} | status=${p.status || 'Planning'} | budget=${money(readField(p, 'totalBudget'))} | currentFund=${short(p.governmentGrant || p.fundSource || 'N/A', 100)} | ${short(p.description || '', 120)}`)
       .join('\n');
     const ideaLines = ideas
       .filter((i) => i.status !== 'deleted')
       .slice(0, 30)
-      .map((i) => `- ${i.id} | ${short(i.title || i.projectTitle || 'Untitled', 120)} | type=${short(i.projectType || i.ideaType || 'N/A', 60)} | budget=${money(i.totalBudget)} | fundSource=${short(i.fundSource || 'N/A', 100)} | ${short(i.oneLineDesc || i.background || '')}`)
+      .map((i) => `- ${i.id} | ${short(i.title || 'Untitled', 120)} | type=${short(i.projectType || 'N/A', 60)} | budget=${money(i.totalBudget)} | fundSource=${short(i.fundSource || 'N/A', 100)} | ${short(i.projectScope || i.background || '')}`)
       .join('\n');
     const existingNames = fundingSchemes.map((s) => String(s.name || '').trim()).filter(Boolean).join('\n');
 
@@ -434,11 +435,11 @@ Only output the JSON array - no extra text. Facts that cannot be confirmed shoul
                   {c.matchReason && <p className="funding-ai-match"><strong>點解啱：</strong>{c.matchReason}</p>}
                   <div className="scheme-details">
                     <div className="scheme-detail">
-                      <label>Total Amount</label>
+                      <label>Total Amount (HKD)</label>
                       <span>{c.totalAmount > 0 ? money(c.totalAmount) : '不確定 / 0'}</span>
                     </div>
                     <div className="scheme-detail">
-                      <label>Eligibility</label>
+                      <label>Eligibility Criteria</label>
                       <span>{c.eligibility || '—'}</span>
                     </div>
                     <div className="scheme-detail">

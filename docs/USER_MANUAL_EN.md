@@ -16,6 +16,7 @@
 7. [Guest Manual](#7-guest-manual)
 8. [Troubleshooting & FAQ](#8-troubleshooting--faq)
 9. [Support](#9-support)
+10. [Field Reference (Canonical Schema)](#10-field-reference-canonical-schema)
 
 ---
 
@@ -323,14 +324,14 @@ System-generated alerts for project health:
 
 ### 4.10 Report Export
 
-Export data to Excel (.xlsx):
+Export live data to Excel (.xlsx) — the column names are exactly the Submit Idea field names:
 
-- **📥 Export Projects** — 12 columns (ID, name, manager, holder, status, budget, budget used, dates, grant, support).
-- **📥 Export Ideas** — 11 columns.
+- **📥 Export Projects** — 23 columns (Project Title, Project Status, Project Type, Project Manager / Project Owner / Technical Support contact details, Total Estimated Budget, Fund Source, Government Grant, Expected Start Date, Target Completion Date, Description, Project Scope).
+- **📥 Export Ideas** — 15 columns (title, applicant, contact details, type, status, budget, fund source, dates, scope, AI score, created date).
 - **📥 Export Funding Schemes** — 8 columns.
 - **📦 Export All** — one workbook with 3 sheets (Projects / Ideas / Funding Schemes).
 
-*Note: current export uses sample/demo dataset.*
+See [Section 10](#10-field-reference-canonical-schema) for the full field reference.
 
 ---
 
@@ -391,13 +392,18 @@ Same as Superadmin, **except** Funding Schemes is browse-only (no Add/Edit/Delet
 
 ### 6.2 My Project page
 
-This is the only page available. It shows your project with:
+This is the only page available. It shows your project with the same field names as Submit Idea:
 
 **Project Overview**
 
-- Project ID, name, status badge, health indicator.
-- Manager / Holder details.
-- Budget information.
+- Project ID, Project Title 項目名稱, Project Status 項目狀態, health indicator.
+- Project Manager 項目經理 / Project Owner 項目持有者.
+- Total Estimated Budget 總預算估算.
+
+**Team 項目團隊** — Name, Department / Company, Contact Number and Email for the Project Manager, Project Owner and Technical Support.
+
+> **Read-only:** Project Users (PM / Owner) currently cannot edit — the Edit button is not shown.
+> Ask a Superadmin to open the project in **My Projects → ✏️ Edit Project** (ProjectForm), which exposes the same canonical fields as Submit Idea.
 
 **Detailed Sections**
 
@@ -503,3 +509,123 @@ If you encounter any issues, have questions, or need a Project ID / password, pl
 ---
 
 *© Asia Allied Group – I&D Hub v2.0*
+---
+
+## 10. Field Reference (Canonical Schema)
+
+> Every shared field name, label and value domain is defined in ONE place: `frontend/src/utils/fields.js`. **Submit Idea is the master** — the same field always has the same name and the same data across Submit Idea → IDEA Detail → My Projects → Detail Project → Edit Project.
+>
+> Add or change a field in `fields.js` only; every form, detail page and export follows automatically.
+
+### 10.1 Canonical schema (master = Submit Idea)
+
+| # | Canonical key | Label | Type | Required | Value domain |
+|---|---|---|---|---|---|
+| 1 | `applicantName` | Applicant Name 申請人姓名 | text | ✔ | — |
+| 2 | `department` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 3 | `contactNumber` | Contact Number 聯絡電話 | text | ✔ | — |
+| 4 | `email` | Email 電郵 | email | ✔ | — |
+| 5 | `projectManagerName` | Name 姓名 | text | ✔ | — |
+| 6 | `projectManagerDept` | Department / Company 所屬部門或公司 | text |  | — |
+| 7 | `projectManagerPhone` | Contact Number 聯絡電話 | text | ✔ | — |
+| 8 | `projectManagerEmail` | Email 電郵 | email |  | — |
+| 9 | `ownerName` | Name 姓名 | text | ✔ | — |
+| 10 | `ownerDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 11 | `ownerContact` | Contact Number 聯絡電話 | text | ✔ | — |
+| 12 | `ownerEmail` | Email 電郵 | email | ✔ | — |
+| 13 | `techSupportName` | Name 姓名 | text | ✔ | — |
+| 14 | `techSupportDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
+| 15 | `techSupportContact` | Contact Number 聯絡電話 | text | ✔ | — |
+| 16 | `techSupportEmail` | Email 電郵 | email | ✔ | — |
+| 17 | `projectType` | Project Type 項目類型 | select | ✔ | Business Transformation / Development / Process Improvement / Cost Saving / Customer Experience / Technology Development / Others |
+| 18 | `title` | Project Title 項目名稱 | text | ✔ | — |
+| 19 | `background` | Project Background & Objective 項目背景信息及目標 | textarea | ✔ | — |
+| 20 | `painPoint` | Pain Points 痛點描述 | textarea | ✔ | — |
+| 21 | `currentWorkarounds` | Current Workarounds 現有臨時處理方法 | textarea |  | — |
+| 22 | `projectScope` | Project Scope 項目範圍 | textarea | ✔ | — |
+| 23 | `deliverables` | Expected Deliverables 預期交付成果 | textarea | ✔ | — |
+| 24 | `benefits` | Expected Benefits 預期效益 | textarea | ✔ | — |
+| 25 | `projectPhases` | Project Phases 項目實施階段 | textarea |  | — |
+| 26 | `risks` | Risks & Challenges 潛在風險及實施困難 | textarea |  | — |
+| 27 | `expectedStartDate` | Expected Start Date 預計開始日期 | date | ✔ | — |
+| 28 | `targetCompletionDate` | Target Completion Date 預計完成日期 | date | ✔ | — |
+| 29 | `terminationCondition1` | Termination Condition (1) 終止觸發條件(一) | textarea |  | — |
+| 30 | `terminationCondition2` | Termination Condition (2) 終止觸發條件(二) | textarea |  | — |
+| 31 | `terminationCondition3` | Termination Condition (3) 終止觸發條件(三) | textarea |  | — |
+| 32 | `totalBudget` | Total Estimated Budget 總預算估算（單位：港幣） | number | ✔ | — |
+| 33 | `fundSource` | Source of Project Fund 項目預算來源 | select | ✔ | Department Budget / Company Central Fund / Government Grant / External Sponsorship / Other |
+| 34 | `budgetBreakdown` | Budget Breakdown 預算細分 | textarea |  | — |
+| 35 | `targetGovFund` | Target Gov. Fund 目標政府支助（如有） | number |  | — |
+| 36 | `targetGovFundDetails` | Target Gov. Fund Details 目標資金詳情（如有） | textarea |  | — |
+| 37 | `resourceRequirements` | Resource Requirements 其他所需資源（非資金類） | textarea |  | — |
+| 38 | `crossDeptAssistance` | Cross-Departmental Assistance Required 預計需要公司哪些內部部門協助？ | textarea |  | — |
+| 39 | `techDirection` | Proposed Technology Direction 建議技術方向 | textarea |  | — |
+| 40 | `innovationElement` | Innovation Element 項目創新亮點 | textarea |  | — |
+| 41 | `technicalRequirements` | Technical Requirements 具體技術需求 | textarea |  | — |
+| 42 | `currentStage` | Current Stage 現時階段 | select | ✔ | Idea / R&D / Feasibility / POC / Demo / Pilot / Commercialization / Production / Wrap up & Handover / Others |
+| 43 | `stageStartDate` | Stage Start Date 階段開始日期 | date | ✔ | — |
+| 44 | `stageEndDate` | Stage End Date 預計完成日期 | date | ✔ | — |
+| 45 | `stageStatus` | Stage Status 階段狀態 | select | ✔ | Planning / In Progress / Completed / On Hold |
+| 46 | `stageDescription` | Stage Description 主要描述 | textarea |  | — |
+| 47 | `requireIP` | Require IP 是否需要申請專利 | radio |  | 是 / 否 / 待定 |
+| 48 | `ipRegion` | IP Region 專利申請國家 | select |  | Hong Kong / China / United States / European Union / Other |
+| 49 | `remarks` | Any Other Comments 其他補充備註 | textarea |  | — |
+| 50 | `businessProposalFile` | Business Proposal 商業計劃書 | file |  | — |
+| 51 | `otherDocFile` | Other Documents 其他文件 | file |  | — |
+| 52 | `description` | Description 簡短描述 | textarea |  | — |
+| 53 | `status` | Project Status 項目狀態 | select | ✔ | Planning / In Progress / Completed / On Hold / Cancelled |
+| 54 | `budgetUsed` | Budget Used 已使用（單位：港幣） | number |  | — |
+| 55 | `governmentGrant` | Government Grant 政府資助 | text |  | — |
+
+**Total fields:** 55
+
+### 10.2 Contact blocks (4 roles, identical field order)
+
+Order: Name 姓名 → Department / Company 所屬部門或公司 → Contact Number 聯絡電話 → Email 電郵
+
+| Block | Title | Name | Department | Contact | Email |
+|---|---|---|---|---|---|
+| applicant | Applicant Information 申請人資料 | `applicantName` | `department` | `contactNumber` | `email` |
+| projectManager | Project Manager 項目經理 | `projectManagerName` | `projectManagerDept` | `projectManagerPhone` | `projectManagerEmail` |
+| owner | Project Owner 項目持有者 | `ownerName` | `ownerDept` | `ownerContact` | `ownerEmail` |
+| techSupport | Technical Support 技術支援 | `techSupportName` | `techSupportDept` | `techSupportContact` | `techSupportEmail` |
+
+### 10.3 The 8 wizard steps (step name = section title, one single string)
+
+1. **Applicant Info** 申請人資料
+2. **Project Details** 項目 / 意念詳情
+3. **Timeline & Termination** 時間表及終止條件
+4. **Budget & Funding** 預算及資金
+5. **Resources & Support** 資源及協助
+6. **Technical & Innovation** 技術及創新
+7. **Current Stage** 現時階段
+8. **IP & Attachments** 知識產權及附件
+
+### 10.4 Legacy → Canonical mapping (one-time migration, skipped once `_fieldsNormalised` is set)
+
+| Legacy key | Canonical key |
+|---|---|
+| `name` | `title` |
+| `manager` | `projectManagerName` |
+| `holder` | `ownerName` |
+| `budget` | `totalBudget` |
+| `startDate` | `expectedStartDate` |
+| `endDate` | `targetCompletionDate` |
+| `detailContent` | `projectScope` (moved only when the target is empty, otherwise kept) |
+| `technicalSupport` | `techSupportDept` (moved only when the target is empty, otherwise kept) |
+| `stages[].budget` | `stages[].totalBudget` |
+| `stages[].startDate` | `stages[].stageStartDate` |
+| `stages[].endDate` | `stages[].stageEndDate` |
+| `stages[].status` | `stages[].stageStatus` |
+| `stages[].description` | `stages[].stageDescription` |
+| stage status `Not Started` → | `Planning` |
+| idea `applicant` | `applicantName` |
+| idea `projectTitle` | `title` |
+| idea `manager` | `projectManagerName` |
+| idea `holder` | `ownerName` |
+| idea `budget` | `totalBudget` |
+| idea `expectedEndDate` | `targetCompletionDate` |
+| idea `detail` | `projectScope` |
+| idea `ideaType` | `projectType` |
+
+**Legacy keys that are always deleted (project + idea):** `owner`, `detail`, `firstContactName`, `firstContactDept`, `firstContactEmail`, `firstContactPhone`, `secondContactName`, `secondContactDept`, `secondContactEmail`, `secondContactPhone`

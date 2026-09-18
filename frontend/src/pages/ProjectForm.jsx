@@ -2,60 +2,72 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { generateProjectId, formatDate, formatCurrency, addProjectLog } from '../utils/helpers';
+import {
+  SECTION_LABELS,
+  STAGE_STEPS,
+  PROJECT_TYPES,
+  FUND_SOURCES,
+  STAGE_TYPES,
+  STAGE_STATUSES,
+  IP_REGIONS,
+  REQUIRE_IP_OPTIONS,
+  PROJECT_STATUSES,
+  CONTACT_GROUPS,
+  CONTACT_FIELD_ORDER,
+  APPLICANT_GROUP,
+  DEFAULT_PROJECT_TYPE,
+  DEFAULT_PROJECT_STATUS,
+  DEFAULT_STAGE_TYPE,
+  DEFAULT_STAGE_STATUS,
+  DEFAULT_REQUIRE_IP,
+  DEFAULT_IP_REGION,
+  fieldLabel,
+  isFieldRequired,
+  readField,
+  readStageField,
+  buildStage,
+  stageToForm,
+} from '../utils/fields';
 import Modal from '../components/Modal';
 
-const STAGE_TYPES = ['Idea / R&D', 'Feasibility', 'POC', 'Demo', 'Pilot', 'Commercialization', 'Production'];
-const STAGE_STATUSES = ['Not Started', 'In Progress', 'Completed', 'On Hold'];
+// Labels / value domains / field keys come from utils/fields.js (canonical master).
 
 const emptyStageForm = {
-  type: 'Feasibility',
-  startDate: '',
-  endDate: '',
-  budget: '',
+  type: DEFAULT_STAGE_TYPE,
+  stageStartDate: '',
+  stageEndDate: '',
+  totalBudget: '',
   budgetUsed: '',
-  status: 'Not Started',
-  description: '',
+  stageStatus: DEFAULT_STAGE_STATUS,
+  stageDescription: '',
 };
 
 const emptyForm = {
   // Basic
-  name: '',
+  title: '',
   description: '',
-  detailContent: '',
-  status: 'Planning',
-  // Team & Dates (original)
-  holder: '',
-  manager: '',
-  startDate: '',
-  endDate: '',
-  // Funding & Support (original)
-  governmentGrant: '',
-  technicalSupport: '',
-  budget: '',
-  budgetUsed: '',
-  // Applicant Info
+  projectScope: '',
+  status: DEFAULT_PROJECT_STATUS,
+  projectType: DEFAULT_PROJECT_TYPE,
+  // Applicant
   applicantName: '',
   department: '',
   contactNumber: '',
   email: '',
-  // Project Manager details
+  // Project Manager / Owner / Technical Support (canonical keys)
   projectManagerName: '',
   projectManagerDept: '',
-  projectManagerEmail: '',
   projectManagerPhone: '',
-  // Owner details
+  projectManagerEmail: '',
   ownerName: '',
   ownerDept: '',
   ownerContact: '',
   ownerEmail: '',
-  // Tech Support contacts
   techSupportName: '',
   techSupportDept: '',
   techSupportContact: '',
   techSupportEmail: '',
-  // Project Type
-  projectType: '',
-  // Project Details (full)
+  // Project details
   background: '',
   painPoint: '',
   currentWorkarounds: '',
@@ -63,26 +75,30 @@ const emptyForm = {
   benefits: '',
   projectPhases: '',
   risks: '',
-  // Timeline & Termination
+  // Timeline & termination
+  expectedStartDate: '',
+  targetCompletionDate: '',
   terminationCondition1: '',
   terminationCondition2: '',
   terminationCondition3: '',
-  // Budget Breakdown
+  // Budget & funding
   totalBudget: '',
-  fundSource: '',
+  budgetUsed: '',
+  fundSource: FUND_SOURCES[0],
+  governmentGrant: '',
   budgetBreakdown: '',
   targetGovFund: '',
   targetGovFundDetails: '',
   // Resources
   resourceRequirements: '',
   crossDeptAssistance: '',
-  // Tech & Innovation
+  // Tech & innovation
   techDirection: '',
   innovationElement: '',
   technicalRequirements: '',
-  // IP & Attachments
-  requireIP: 'No',
-  ipRegion: '',
+  // IP & attachments
+  requireIP: DEFAULT_REQUIRE_IP,
+  ipRegion: DEFAULT_IP_REGION,
   remarks: '',
 };
 
@@ -105,35 +121,27 @@ export default function ProjectForm({ editProject, onBack }) {
   useEffect(() => {
     if (editProject) {
       setForm({
-        name: editProject.name || '',
+        title: readField(editProject, 'title') || '',
         description: editProject.description || '',
-        detailContent: editProject.detailContent || '',
-        status: editProject.status || 'Planning',
-        holder: editProject.holder || '',
-        manager: editProject.manager || '',
-        startDate: editProject.startDate || '',
-        endDate: editProject.endDate || '',
-        governmentGrant: editProject.governmentGrant || '',
-        technicalSupport: editProject.technicalSupport || '',
-        budget: editProject.budget || '',
-        budgetUsed: editProject.budgetUsed || '',
+        projectScope: readField(editProject, 'projectScope') || '',
+        status: editProject.status || DEFAULT_PROJECT_STATUS,
+        projectType: editProject.projectType || DEFAULT_PROJECT_TYPE,
         applicantName: editProject.applicantName || '',
         department: editProject.department || '',
         contactNumber: editProject.contactNumber || '',
         email: editProject.email || '',
-        projectManagerName: editProject.projectManagerName || '',
+        projectManagerName: readField(editProject, 'projectManagerName') || '',
         projectManagerDept: editProject.projectManagerDept || '',
-        projectManagerEmail: editProject.projectManagerEmail || '',
         projectManagerPhone: editProject.projectManagerPhone || '',
-        ownerName: editProject.ownerName || '',
+        projectManagerEmail: editProject.projectManagerEmail || '',
+        ownerName: readField(editProject, 'ownerName') || '',
         ownerDept: editProject.ownerDept || '',
         ownerContact: editProject.ownerContact || '',
         ownerEmail: editProject.ownerEmail || '',
         techSupportName: editProject.techSupportName || '',
-        techSupportDept: editProject.techSupportDept || '',
+        techSupportDept: readField(editProject, 'techSupportDept') || '',
         techSupportContact: editProject.techSupportContact || '',
         techSupportEmail: editProject.techSupportEmail || '',
-        projectType: editProject.projectType || '',
         background: editProject.background || '',
         painPoint: editProject.painPoint || '',
         currentWorkarounds: editProject.currentWorkarounds || '',
@@ -141,11 +149,15 @@ export default function ProjectForm({ editProject, onBack }) {
         benefits: editProject.benefits || '',
         projectPhases: editProject.projectPhases || '',
         risks: editProject.risks || '',
+        expectedStartDate: readField(editProject, 'expectedStartDate') || '',
+        targetCompletionDate: readField(editProject, 'targetCompletionDate') || '',
         terminationCondition1: editProject.terminationCondition1 || '',
         terminationCondition2: editProject.terminationCondition2 || '',
         terminationCondition3: editProject.terminationCondition3 || '',
-        totalBudget: editProject.totalBudget || '',
-        fundSource: editProject.fundSource || '',
+        totalBudget: readField(editProject, 'totalBudget') || '',
+        budgetUsed: editProject.budgetUsed || '',
+        fundSource: editProject.fundSource || FUND_SOURCES[0],
+        governmentGrant: editProject.governmentGrant || '',
         budgetBreakdown: editProject.budgetBreakdown || '',
         targetGovFund: editProject.targetGovFund || '',
         targetGovFundDetails: editProject.targetGovFundDetails || '',
@@ -154,8 +166,8 @@ export default function ProjectForm({ editProject, onBack }) {
         techDirection: editProject.techDirection || '',
         innovationElement: editProject.innovationElement || '',
         technicalRequirements: editProject.technicalRequirements || '',
-        requireIP: editProject.requireIP || 'No',
-        ipRegion: editProject.ipRegion || '',
+        requireIP: editProject.requireIP || DEFAULT_REQUIRE_IP,
+        ipRegion: editProject.ipRegion || DEFAULT_IP_REGION,
         remarks: editProject.remarks || '',
       });
       setStages(editProject.stages ? [...editProject.stages] : []);
@@ -174,7 +186,7 @@ export default function ProjectForm({ editProject, onBack }) {
   };
 
   const openEditStage = (stage) => {
-    setStageForm({ ...stage });
+    setStageForm(stageToForm(stage));
     setEditingStageId(stage.id);
     setShowStageModal(true);
   };
@@ -198,19 +210,14 @@ export default function ProjectForm({ editProject, onBack }) {
   };
 
   const handleSaveStage = () => {
-    const parsed = {
-      ...stageForm,
-      budget: parseFloat(stageForm.budget) || 0,
-      budgetUsed: parseFloat(stageForm.budgetUsed) || 0,
-    };
+    const parsed = buildStage(stageForm);
 
     if (editingStageId) {
       setStages((prev) =>
-        prev.map((s) => (s.id === editingStageId ? { ...s, ...parsed } : s))
+        prev.map((s) => (s.id === editingStageId ? { ...parsed, id: editingStageId } : s))
       );
     } else {
-      const newStage = { ...parsed, id: 's' + Date.now() };
-      setStages((prev) => [...prev, newStage]);
+      setStages((prev) => [...prev, { ...parsed, id: 's' + Date.now() }]);
     }
 
     setShowStageModal(false);
@@ -224,9 +231,8 @@ export default function ProjectForm({ editProject, onBack }) {
     setTimeout(() => {
       const projectData = {
         ...form,
-        budget: parseFloat(form.budget) || 0,
-        budgetUsed: parseFloat(form.budgetUsed) || 0,
         totalBudget: parseFloat(form.totalBudget) || 0,
+        budgetUsed: parseFloat(form.budgetUsed) || 0,
         targetGovFund: parseFloat(form.targetGovFund) || 0,
         stages: stages,
       };
@@ -234,13 +240,13 @@ export default function ProjectForm({ editProject, onBack }) {
       if (isEditing) {
         const oldProject = editProject;
         const changes = [];
-        if (oldProject.name !== form.name) changes.push(`name: "${oldProject.name}" → "${form.name}"`);
+        if (readField(oldProject, 'title') !== form.title) changes.push(`title: "${readField(oldProject, 'title')}" → "${form.title}"`);
         if (oldProject.status !== form.status) changes.push(`status: ${oldProject.status} → ${form.status}`);
-        if (Number(oldProject.budget) !== Number(form.budget)) changes.push(`budget: ${formatCurrency(oldProject.budget)} → ${formatCurrency(form.budget)}`);
-        if (oldProject.startDate !== form.startDate) changes.push(`startDate: ${oldProject.startDate} → ${form.startDate}`);
-        if (oldProject.endDate !== form.endDate) changes.push(`endDate: ${oldProject.endDate} → ${form.endDate}`);
-        if (oldProject.holder !== form.holder) changes.push(`holder: "${oldProject.holder}" → "${form.holder}"`);
-        if (oldProject.manager !== form.manager) changes.push(`manager: "${oldProject.manager}" → "${form.manager}"`);
+        if (Number(readField(oldProject, 'totalBudget')) !== Number(form.totalBudget)) changes.push(`totalBudget: ${formatCurrency(readField(oldProject, 'totalBudget'))} → ${formatCurrency(form.totalBudget)}`);
+        if (readField(oldProject, 'expectedStartDate') !== form.expectedStartDate) changes.push(`expectedStartDate: ${readField(oldProject, 'expectedStartDate')} → ${form.expectedStartDate}`);
+        if (readField(oldProject, 'targetCompletionDate') !== form.targetCompletionDate) changes.push(`targetCompletionDate: ${readField(oldProject, 'targetCompletionDate')} → ${form.targetCompletionDate}`);
+        if (readField(oldProject, 'ownerName') !== form.ownerName) changes.push(`ownerName: "${readField(oldProject, 'ownerName')}" → "${form.ownerName}"`);
+        if (readField(oldProject, 'projectManagerName') !== form.projectManagerName) changes.push(`projectManagerName: "${readField(oldProject, 'projectManagerName')}" → "${form.projectManagerName}"`);
 
         // Compare stages to detect add / delete / edit
         const oldStages = oldProject.stages || [];
@@ -249,25 +255,25 @@ export default function ProjectForm({ editProject, onBack }) {
 
         // Added stages
         const addedStages = stages.filter((s) => !oldStageIds.has(s.id));
-        addedStages.forEach((s) => changes.push(`added stage: "${s.type || s.name || s.stage || 'Untitled'}"`));
+        addedStages.forEach((s) => changes.push(`added stage: "${s.type || 'Untitled'}"`));
 
         // Deleted stages
         const deletedStages = oldStages.filter((s) => !newStageIds.has(s.id));
-        deletedStages.forEach((s) => changes.push(`deleted stage: "${s.type || s.name || s.stage || 'Untitled'}"`));
+        deletedStages.forEach((s) => changes.push(`deleted stage: "${readStageField(s, 'type') || 'Untitled'}"`));
 
         // Edited stages (same id, changed fields)
         stages.forEach((s) => {
           const old = oldStages.find((os) => os.id === s.id);
           if (!old) return;
           const changed = [];
-          if ((old.type || '') !== (s.type || '')) changed.push('type');
-          if ((old.status || '') !== (s.status || '')) changed.push('status');
-          if ((old.startDate || '') !== (s.startDate || '')) changed.push('startDate');
-          if ((old.endDate || '') !== (s.endDate || '')) changed.push('endDate');
-          if (Number(old.budget || 0) !== Number(s.budget || 0)) changed.push('budget');
-          if ((old.description || '') !== (s.description || '')) changed.push('description');
+          if ((readStageField(old, 'type') || '') !== (s.type || '')) changed.push('type');
+          if ((readStageField(old, 'stageStatus') || '') !== (s.stageStatus || '')) changed.push('stageStatus');
+          if ((readStageField(old, 'stageStartDate') || '') !== (s.stageStartDate || '')) changed.push('stageStartDate');
+          if ((readStageField(old, 'stageEndDate') || '') !== (s.stageEndDate || '')) changed.push('stageEndDate');
+          if (Number(readStageField(old, 'totalBudget') || 0) !== Number(s.totalBudget || 0)) changed.push('totalBudget');
+          if ((readStageField(old, 'stageDescription') || '') !== (s.stageDescription || '')) changed.push('stageDescription');
           if (changed.length > 0) {
-            changes.push(`edited stage "${s.type || s.name || s.stage || 'Untitled'}": ${changed.join(', ')}`);
+            changes.push(`edited stage "${s.type || 'Untitled'}": ${changed.join(', ')}`);
           }
         });
 
@@ -295,7 +301,7 @@ export default function ProjectForm({ editProject, onBack }) {
             id: 'log-' + Date.now(),
             timestamp: new Date().toISOString(),
             action: 'Project Created',
-            details: `Created project "${newProject.name}" with budget ${formatCurrency(newProject.budget)}, start: ${newProject.startDate || 'TBD'}, end: ${newProject.endDate || 'TBD'}`,
+            details: `Created project "${readField(newProject, 'title')}" with budget ${formatCurrency(readField(newProject, 'totalBudget'))}, start: ${readField(newProject, 'expectedStartDate') || 'TBD'}, end: ${readField(newProject, 'targetCompletionDate') || 'TBD'}`,
             user: user?.displayName || user?.email || 'Unknown',
           };
           updateProject(newProject.id, { logs: [logEntry] });
@@ -315,165 +321,124 @@ export default function ProjectForm({ editProject, onBack }) {
         <div className="form-section">
           <h3>Basic Information 基本資料</h3>
           <div className="form-group">
-            <label>Project Name 項目名稱 *</label>
-            <input required value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Enter project name" />
+            <label>{fieldLabel('title', { withRequired: true })}</label>
+            <input required value={form.title} onChange={(e) => handleChange('title', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Description 簡短描述</label>
-            <textarea rows="2" value={form.description} onChange={(e) => handleChange('description', e.target.value)} placeholder="Short description" />
+            <label>{fieldLabel('description')}</label>
+            <textarea rows="2" value={form.description} onChange={(e) => handleChange('description', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Detail Content 詳細內容</label>
-            <textarea rows="3" value={form.detailContent} onChange={(e) => handleChange('detailContent', e.target.value)} placeholder="Detailed description of the project" />
+            <label>{fieldLabel('projectScope', { withRequired: true })}</label>
+            <textarea rows="3" value={form.projectScope} onChange={(e) => handleChange('projectScope', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Project Type 項目類型</label>
-            <input value={form.projectType} onChange={(e) => handleChange('projectType', e.target.value)} placeholder="e.g. R&D, Construction, IT" />
+            <label>{fieldLabel('projectType', { withRequired: true })}</label>
+            <select value={form.projectType} onChange={(e) => handleChange('projectType', e.target.value)}>
+              {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
           </div>
         </div>
 
         {/* ===== Applicant Information ===== */}
         <div className="form-section">
-          <h3>Applicant Information 申請人資料</h3>
+          <h3>{APPLICANT_GROUP.title}</h3>
           <div className="form-row">
             <div className="form-group">
-              <label>Applicant Name 申請人</label>
-              <input value={form.applicantName} onChange={(e) => handleChange('applicantName', e.target.value)} />
+              <label>{fieldLabel(APPLICANT_GROUP.name, { withRequired: true })}</label>
+              <input required={isFieldRequired(APPLICANT_GROUP.name)} value={form[APPLICANT_GROUP.name]} onChange={(e) => handleChange(APPLICANT_GROUP.name, e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Department 部門</label>
-              <input value={form.department} onChange={(e) => handleChange('department', e.target.value)} />
+              <label>{fieldLabel(APPLICANT_GROUP.dept, { withRequired: true })}</label>
+              <input required={isFieldRequired(APPLICANT_GROUP.dept)} value={form[APPLICANT_GROUP.dept]} onChange={(e) => handleChange(APPLICANT_GROUP.dept, e.target.value)} />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Contact Number 聯絡電話</label>
-              <input value={form.contactNumber} onChange={(e) => handleChange('contactNumber', e.target.value)} />
+              <label>{fieldLabel(APPLICANT_GROUP.contact, { withRequired: true })}</label>
+              <input required={isFieldRequired(APPLICANT_GROUP.contact)} value={form[APPLICANT_GROUP.contact]} onChange={(e) => handleChange(APPLICANT_GROUP.contact, e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Email 電郵</label>
-              <input value={form.email} onChange={(e) => handleChange('email', e.target.value)} />
-            </div>
-          </div>
-        </div>
-
-        {/* ===== Project Team ===== */}
-        <div className="form-section">
-          <h3>Project Team 項目團隊</h3>
-          <h4 style={{ marginTop: '0.5rem', marginBottom: '0.5rem', color: '#555' }}>Project Owner 項目持有者</h4>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Project Owner 項目持有者</label>
-              <input value={form.holder} onChange={(e) => handleChange('holder', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Owner Dept 部門</label>
-              <input value={form.ownerDept} onChange={(e) => handleChange('ownerDept', e.target.value)} />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Owner Contact 聯絡電話</label>
-              <input value={form.ownerContact} onChange={(e) => handleChange('ownerContact', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Owner Email 電郵</label>
-              <input value={form.ownerEmail} onChange={(e) => handleChange('ownerEmail', e.target.value)} />
-            </div>
-          </div>
-
-          <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem', color: '#555' }}>Project Manager 項目經理</h4>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Manager Name</label>
-              <input value={form.manager} onChange={(e) => handleChange('manager', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Manager Dept 部門</label>
-              <input value={form.projectManagerDept} onChange={(e) => handleChange('projectManagerDept', e.target.value)} />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Manager Email</label>
-              <input value={form.projectManagerEmail} onChange={(e) => handleChange('projectManagerEmail', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Manager Phone</label>
-              <input value={form.projectManagerPhone} onChange={(e) => handleChange('projectManagerPhone', e.target.value)} />
+              <label>{fieldLabel(APPLICANT_GROUP.email, { withRequired: true })}</label>
+              <input required={isFieldRequired(APPLICANT_GROUP.email)} type="email" value={form[APPLICANT_GROUP.email]} onChange={(e) => handleChange(APPLICANT_GROUP.email, e.target.value)} />
             </div>
           </div>
         </div>
 
-        {/* ===== Tech Support Contacts ===== */}
+        {/* ===== Project Team (Project Manager / Project Owner / Technical Support) ===== */}
         <div className="form-section">
-          <h3>Technical Support 技術支援</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Support Name</label>
-              <input value={form.techSupportName} onChange={(e) => handleChange('techSupportName', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Support Dept 部門</label>
-              <input value={form.techSupportDept} onChange={(e) => handleChange('techSupportDept', e.target.value)} />
-            </div>
-          </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Support Contact</label>
-              <input value={form.techSupportContact} onChange={(e) => handleChange('techSupportContact', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Support Email</label>
-              <input value={form.techSupportEmail} onChange={(e) => handleChange('techSupportEmail', e.target.value)} />
-            </div>
-          </div>
+          <h3>{SECTION_LABELS.team}</h3>
+          {CONTACT_GROUPS.map((group) => (
+            <React.Fragment key={group.id}>
+              <h4 style={{ marginTop: '0.5rem', marginBottom: '0.5rem', color: '#555' }}>{group.title}</h4>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{fieldLabel(group.name, { withRequired: true })}</label>
+                  <input required={isFieldRequired(group.name)} value={form[group.name]} onChange={(e) => handleChange(group.name, e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>{fieldLabel(group.dept, { withRequired: true })}</label>
+                  <input required={isFieldRequired(group.dept)} value={form[group.dept]} onChange={(e) => handleChange(group.dept, e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>{fieldLabel(group.contact, { withRequired: true })}</label>
+                  <input required={isFieldRequired(group.contact)} value={form[group.contact]} onChange={(e) => handleChange(group.contact, e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>{fieldLabel(group.email, { withRequired: true })}</label>
+                  <input required={isFieldRequired(group.email)} type="email" value={form[group.email]} onChange={(e) => handleChange(group.email, e.target.value)} />
+                </div>
+              </div>
+            </React.Fragment>
+          ))}
         </div>
 
         {/* ===== Project Details (Full) ===== */}
         <div className="form-section">
           <h3>Project Details 項目詳情</h3>
           <div className="form-group">
-            <label>Background 背景</label>
+            <label>{fieldLabel('background', { withRequired: true })}</label>
             <textarea rows="2" value={form.background} onChange={(e) => handleChange('background', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Pain Points 痛點</label>
+            <label>{fieldLabel('painPoint', { withRequired: true })}</label>
             <textarea rows="2" value={form.painPoint} onChange={(e) => handleChange('painPoint', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Current Workarounds 現有替代方案</label>
+            <label>{fieldLabel('currentWorkarounds')}</label>
             <textarea rows="2" value={form.currentWorkarounds} onChange={(e) => handleChange('currentWorkarounds', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Deliverables 交付成果</label>
+            <label>{fieldLabel('deliverables', { withRequired: true })}</label>
             <textarea rows="2" value={form.deliverables} onChange={(e) => handleChange('deliverables', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Benefits 預期效益</label>
+            <label>{fieldLabel('benefits', { withRequired: true })}</label>
             <textarea rows="2" value={form.benefits} onChange={(e) => handleChange('benefits', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Project Phases 項目階段</label>
+            <label>{fieldLabel('projectPhases')}</label>
             <textarea rows="2" value={form.projectPhases} onChange={(e) => handleChange('projectPhases', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Risks 風險</label>
+            <label>{fieldLabel('risks')}</label>
             <textarea rows="2" value={form.risks} onChange={(e) => handleChange('risks', e.target.value)} />
           </div>
         </div>
 
         {/* ===== Dates ===== */}
         <div className="form-section">
-          <h3>Dates 日期範圍</h3>
+          <h3>{SECTION_LABELS.dates}</h3>
           <div className="form-row">
             <div className="form-group">
-              <label>Start Date 開始日期</label>
-              <input type="date" value={form.startDate} onChange={(e) => handleChange('startDate', e.target.value)} />
+              <label>{fieldLabel('expectedStartDate', { withRequired: true })}</label>
+              <input type="date" value={form.expectedStartDate} onChange={(e) => handleChange('expectedStartDate', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>End Date 結束日期</label>
-              <input type="date" value={form.endDate} onChange={(e) => handleChange('endDate', e.target.value)} />
+              <label>{fieldLabel('targetCompletionDate', { withRequired: true })}</label>
+              <input type="date" value={form.targetCompletionDate} onChange={(e) => handleChange('targetCompletionDate', e.target.value)} />
             </div>
           </div>
         </div>
@@ -482,123 +447,122 @@ export default function ProjectForm({ editProject, onBack }) {
         <div className="form-section">
           <h3>Termination Conditions 終止條件</h3>
           <div className="form-group">
-            <label>Termination Condition 1</label>
+            <label>{fieldLabel('terminationCondition1')}</label>
             <textarea rows="1" value={form.terminationCondition1} onChange={(e) => handleChange('terminationCondition1', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Termination Condition 2</label>
+            <label>{fieldLabel('terminationCondition2')}</label>
             <textarea rows="1" value={form.terminationCondition2} onChange={(e) => handleChange('terminationCondition2', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Termination Condition 3</label>
+            <label>{fieldLabel('terminationCondition3')}</label>
             <textarea rows="1" value={form.terminationCondition3} onChange={(e) => handleChange('terminationCondition3', e.target.value)} />
           </div>
         </div>
 
         {/* ===== Budget & Funding ===== */}
         <div className="form-section">
-          <h3>Budget & Funding 預算及資金</h3>
+          <h3>{SECTION_LABELS.budget}</h3>
           <div className="form-row">
             <div className="form-group">
-              <label>Total Budget 總預算 (HKD)</label>
-              <input type="number" min="0" value={form.budget} onChange={(e) => handleChange('budget', e.target.value)} />
+              <label>{fieldLabel('totalBudget', { withRequired: true })}</label>
+              <input type="number" min="0" value={form.totalBudget} onChange={(e) => handleChange('totalBudget', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Budget Used 已使用 (HKD)</label>
+              <label>{fieldLabel('budgetUsed')}</label>
               <input type="number" min="0" value={form.budgetUsed} onChange={(e) => handleChange('budgetUsed', e.target.value)} />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Fund Source 資金來源</label>
-              <input value={form.fundSource} onChange={(e) => handleChange('fundSource', e.target.value)} />
+              <label>{fieldLabel('fundSource', { withRequired: true })}</label>
+              <select value={form.fundSource} onChange={(e) => handleChange('fundSource', e.target.value)}>
+                {FUND_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
             </div>
             <div className="form-group">
-              <label>Government Grant 政府資助</label>
+              <label>{fieldLabel('governmentGrant')}</label>
               <input value={form.governmentGrant} onChange={(e) => handleChange('governmentGrant', e.target.value)} />
             </div>
           </div>
           <div className="form-group">
-            <label>Budget Breakdown 預算細項</label>
+            <label>{fieldLabel('budgetBreakdown')}</label>
             <textarea rows="2" value={form.budgetBreakdown} onChange={(e) => handleChange('budgetBreakdown', e.target.value)} />
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Target Gov. Fund 目標政府資助 (HKD)</label>
-              <input type="number" min="0" value={form.targetGovFund} onChange={(e) => handleChange('targetGovFund', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Technical Support 技術支援</label>
-              <input value={form.technicalSupport} onChange={(e) => handleChange('technicalSupport', e.target.value)} />
-            </div>
+          <div className="form-group">
+            <label>{fieldLabel('targetGovFund')}</label>
+            <input type="number" min="0" value={form.targetGovFund} onChange={(e) => handleChange('targetGovFund', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Gov. Fund Details 資助詳情</label>
+            <label>{fieldLabel('targetGovFundDetails')}</label>
             <textarea rows="2" value={form.targetGovFundDetails} onChange={(e) => handleChange('targetGovFundDetails', e.target.value)} />
           </div>
         </div>
 
         {/* ===== Resources ===== */}
         <div className="form-section">
-          <h3>Resources & Support 資源及協助</h3>
+          <h3>{SECTION_LABELS.resources}</h3>
           <div className="form-group">
-            <label>Resource Requirements 資源需求</label>
+            <label>{fieldLabel('resourceRequirements')}</label>
             <textarea rows="2" value={form.resourceRequirements} onChange={(e) => handleChange('resourceRequirements', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Cross-dept Assistance 跨部門協助</label>
+            <label>{fieldLabel('crossDeptAssistance')}</label>
             <textarea rows="2" value={form.crossDeptAssistance} onChange={(e) => handleChange('crossDeptAssistance', e.target.value)} />
           </div>
         </div>
 
         {/* ===== Technical & Innovation ===== */}
         <div className="form-section">
-          <h3>Technical & Innovation 技術及創新</h3>
+          <h3>{SECTION_LABELS.tech}</h3>
           <div className="form-group">
-            <label>Tech Direction 技術方向</label>
+            <label>{fieldLabel('techDirection')}</label>
             <textarea rows="2" value={form.techDirection} onChange={(e) => handleChange('techDirection', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Innovation Element 創新元素</label>
+            <label>{fieldLabel('innovationElement')}</label>
             <textarea rows="2" value={form.innovationElement} onChange={(e) => handleChange('innovationElement', e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Technical Requirements 技術要求</label>
+            <label>{fieldLabel('technicalRequirements')}</label>
             <textarea rows="2" value={form.technicalRequirements} onChange={(e) => handleChange('technicalRequirements', e.target.value)} />
           </div>
         </div>
 
         {/* ===== IP & Attachments ===== */}
         <div className="form-section">
-          <h3>IP & Attachments 知識產權及附件</h3>
+          <h3>{SECTION_LABELS.ip}</h3>
           <div className="form-row">
             <div className="form-group">
-              <label>Require IP 需要知識產權</label>
+              <label>{fieldLabel('requireIP')}</label>
               <select value={form.requireIP} onChange={(e) => handleChange('requireIP', e.target.value)}>
-                <option value="No">No 否</option>
-                <option value="是">Yes 是</option>
+                {REQUIRE_IP_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
               </select>
             </div>
             {form.requireIP === '是' && (
               <div className="form-group">
-                <label>IP Region 知識產權地區</label>
-                <input value={form.ipRegion} onChange={(e) => handleChange('ipRegion', e.target.value)} />
+                <label>{fieldLabel('ipRegion')}</label>
+                <select value={form.ipRegion} onChange={(e) => handleChange('ipRegion', e.target.value)}>
+                  {IP_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
               </div>
             )}
           </div>
           <div className="form-group">
-            <label>Remarks 備註</label>
+            <label>{fieldLabel('remarks')}</label>
             <textarea rows="2" value={form.remarks} onChange={(e) => handleChange('remarks', e.target.value)} />
           </div>
         </div>
 
         {/* ===== Status ===== */}
         <div className="form-section">
-          <h3>Status 狀態</h3>
+          <h3>{fieldLabel('status')}</h3>
           <div className="form-group">
-            <label>Project Status</label>
+            <label>{fieldLabel('status', { withRequired: true })}</label>
             <select value={form.status} onChange={(e) => handleChange('status', e.target.value)}>
-              {['Planning', 'In Progress', 'Completed', 'On Hold', 'Cancelled'].map((s) => (
+              {PROJECT_STATUSES.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
@@ -609,7 +573,7 @@ export default function ProjectForm({ editProject, onBack }) {
         {isEditing && (
           <div className="form-section">
             <div className="card-header-row">
-              <h3>Project Stages 項目階段 ({stages.length})</h3>
+              <h3>{SECTION_LABELS.stages} ({stages.length})</h3>
               <button type="button" className="btn btn--small" onClick={openAddStage}>
                 + Add Stage
               </button>
@@ -621,22 +585,22 @@ export default function ProjectForm({ editProject, onBack }) {
               {stages.map((stage) => (
                 <div key={stage.id} className="stage-card">
                   <div className="stage-header">
-                    <span className="stage-type">{stage.type}</span>
+                    <span className="stage-type">{readStageField(stage, 'type')}</span>
                     <span className={`status-badge status-badge--small status-badge--${
-                      stage.status === 'Completed' ? 'completed' :
-                      stage.status === 'In Progress' ? 'progress' :
-                      stage.status === 'On Hold' ? 'hold' : 'pending'
+                      readStageField(stage, 'stageStatus') === 'Completed' ? 'completed' :
+                      readStageField(stage, 'stageStatus') === 'In Progress' ? 'progress' :
+                      readStageField(stage, 'stageStatus') === 'On Hold' ? 'hold' : 'pending'
                     }`}>
-                      {stage.status}
+                      {readStageField(stage, 'stageStatus')}
                     </span>
                   </div>
-                  <p className="stage-desc">{stage.description || '—'}</p>
+                  <p className="stage-desc">{readStageField(stage, 'stageDescription') || '—'}</p>
                   <div className="stage-dates">
-                    <span>📅 {formatDate(stage.startDate)} - {formatDate(stage.endDate)}</span>
+                    <span>📅 {formatDate(readStageField(stage, 'stageStartDate'))} - {formatDate(readStageField(stage, 'stageEndDate'))}</span>
                   </div>
                   <div className="stage-budget">
-                    <span>💰 {formatCurrency(stage.budget)}</span>
-                    <span className={stage.budgetUsed > stage.budget * 0.9 ? 'text-danger' : ''}>
+                    <span>💰 {formatCurrency(readStageField(stage, 'totalBudget'))}</span>
+                    <span className={stage.budgetUsed > readStageField(stage, 'totalBudget') * 0.9 ? 'text-danger' : ''}>
                       Used: {formatCurrency(stage.budgetUsed)}
                     </span>
                   </div>
@@ -657,7 +621,7 @@ export default function ProjectForm({ editProject, onBack }) {
         {/* ===== Form Actions ===== */}
         <div className="form-actions">
           <button type="button" className="btn btn--outline" onClick={onBack}>Cancel</button>
-          <button type="submit" className="btn btn--primary" disabled={saving || !form.name.trim()}>
+          <button type="submit" className="btn btn--primary" disabled={saving || !form.title.trim()}>
             {saving ? 'Saving...' : isEditing ? 'Update Project' : 'Create Project'}
           </button>
         </div>
@@ -671,7 +635,7 @@ export default function ProjectForm({ editProject, onBack }) {
       >
         <div className="form">
           <div className="form-group">
-            <label>Type</label>
+            <label>{fieldLabel('currentStage')}</label>
             <select value={stageForm.type} onChange={(e) => setStageForm({ ...stageForm, type: e.target.value })}>
               {STAGE_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -680,35 +644,35 @@ export default function ProjectForm({ editProject, onBack }) {
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Start Date</label>
-              <input type="date" value={stageForm.startDate} onChange={(e) => setStageForm({ ...stageForm, startDate: e.target.value })} />
+              <label>{fieldLabel('stageStartDate')}</label>
+              <input type="date" value={stageForm.stageStartDate} onChange={(e) => setStageForm({ ...stageForm, stageStartDate: e.target.value })} />
             </div>
             <div className="form-group">
-              <label>End Date</label>
-              <input type="date" value={stageForm.endDate} onChange={(e) => setStageForm({ ...stageForm, endDate: e.target.value })} />
+              <label>{fieldLabel('stageEndDate')}</label>
+              <input type="date" value={stageForm.stageEndDate} onChange={(e) => setStageForm({ ...stageForm, stageEndDate: e.target.value })} />
             </div>
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label>Budget (HKD)</label>
-              <input type="number" min="0" value={stageForm.budget} onChange={(e) => setStageForm({ ...stageForm, budget: e.target.value })} />
+              <label>{fieldLabel('totalBudget')}</label>
+              <input type="number" min="0" value={stageForm.totalBudget} onChange={(e) => setStageForm({ ...stageForm, totalBudget: e.target.value })} />
             </div>
             <div className="form-group">
-              <label>Used Amount</label>
+              <label>{fieldLabel('budgetUsed')}</label>
               <input type="number" min="0" value={stageForm.budgetUsed} onChange={(e) => setStageForm({ ...stageForm, budgetUsed: e.target.value })} />
             </div>
           </div>
           <div className="form-group">
-            <label>Status</label>
-            <select value={stageForm.status} onChange={(e) => setStageForm({ ...stageForm, status: e.target.value })}>
+            <label>{fieldLabel('stageStatus')}</label>
+            <select value={stageForm.stageStatus} onChange={(e) => setStageForm({ ...stageForm, stageStatus: e.target.value })}>
               {STAGE_STATUSES.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
           <div className="form-group">
-            <label>Description</label>
-            <textarea rows="2" value={stageForm.description} onChange={(e) => setStageForm({ ...stageForm, description: e.target.value })} />
+            <label>{fieldLabel('stageDescription')}</label>
+            <textarea rows="2" value={stageForm.stageDescription} onChange={(e) => setStageForm({ ...stageForm, stageDescription: e.target.value })} />
           </div>
           <div className="modal-actions">
             <button type="button" className="btn btn--outline" onClick={() => { setShowStageModal(false); setEditingStageId(null); }}>
@@ -729,7 +693,7 @@ export default function ProjectForm({ editProject, onBack }) {
       >
         <div className="form">
           <p style={{ marginBottom: '1.25rem', lineHeight: 1.6 }}>
-            Are you sure you want to delete the stage <strong>"{stageToDelete?.type}"</strong>?<br />
+            Are you sure you want to delete the stage <strong>"{readStageField(stageToDelete, 'type')}"</strong>?<br />
             This action cannot be undone.
           </p>
           <div className="modal-actions">

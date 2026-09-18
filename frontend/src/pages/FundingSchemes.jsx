@@ -102,11 +102,11 @@ export default function FundingSchemes() {
             <p className="scheme-desc">{scheme.description}</p>
             <div className="scheme-details">
               <div className="scheme-detail">
-                <label>Total Amount</label>
+                <label>Total Amount (HKD)</label>
                 <span>{formatCurrency(scheme.totalAmount)}</span>
               </div>
               <div className="scheme-detail">
-                <label>Eligibility</label>
+                <label>Eligibility Criteria</label>
                 <span>{scheme.eligibility}</span>
               </div>
               <div className="scheme-detail">
@@ -128,11 +128,11 @@ export default function FundingSchemes() {
       <Modal isOpen={showForm} onClose={() => { setShowForm(false); setEditScheme(null); }} title={editScheme ? 'Edit Scheme' : 'Add Scheme'}>
         <div className="form">
           <div className="form-group">
-            <label>Scheme Name *</label>
+            <label>Scheme Name</label>
             <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div className="form-group">
-            <label>Provider *</label>
+            <label>Provider</label>
             <input required value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value })} />
           </div>
           <div className="form-group">

@@ -5,6 +5,8 @@ import { calculateHealth, formatCurrency, daysUntil, calculateIdeaHealth } from 
 import Chart from 'chart.js/auto';
 import AIAssistant from './AIAssistant';
 
+import { readField } from '../utils/fields';
+
 export default function Dashboard() {
   const { projects, ideas, settings } = useData();
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -38,12 +40,13 @@ export default function Dashboard() {
   const upcomingItems = useMemo(() => {
     const items = [];
     projects.forEach((p) => {
-      if (p.endDate && p.status !== 'Completed') {
-        const days = daysUntil(p.endDate);
+      const endDate = readField(p, 'targetCompletionDate');
+      if (endDate && p.status !== 'Completed') {
+        const days = daysUntil(endDate);
         if (days !== null) {
           items.push({
             id: p.id,
-            name: p.name,
+            name: readField(p, 'title'),
             days,
             status: days < 0 ? 'Overdue' : days <= 14 ? 'Due Soon' : 'On Track',
             color: days < 0 ? '#ef4444' : days <= 14 ? '#FF7D00' : '#00B42A',
@@ -221,7 +224,7 @@ export default function Dashboard() {
                 <span className="idea-card-ref-date">{new Date(idea.createdAt).toLocaleDateString('en-US')}</span>
                 </div>
                 <h4 className="idea-card-ref-title">{idea.title || 'Untitled Idea'}</h4>
-                <p className="idea-card-ref-desc">{idea.oneLineDesc || idea.background || 'No description'}</p>
+                <p className="idea-card-ref-desc">{idea.projectScope || idea.background || 'No description'}</p>
                 <div className="idea-card-ref-footer">
                   <span className="health-dot-ref" style={{ backgroundColor: health.color }} />
                   <span className="idea-card-ref-status">{health.label}</span>

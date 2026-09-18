@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import { DEFAULT_SETTINGS } from '../utils/constants';
+import { readField } from '../utils/fields';
 import * as XLSX from 'xlsx';
 
 // Row component for managing a single project's login credentials (PM + Owner)
@@ -142,7 +143,7 @@ function ProjectCredentialRow({ project, generateProjectCredentials, updateProje
   return (
     <tr>
       <td><code>{project.id}</code></td>
-      <td>{project.name || 'Untitled'}</td>
+      <td>{readField(project, 'title') || 'Untitled'}</td>
       <td>
         <span className={`status-badge status--${(project.status || 'Planning').toLowerCase().replace(/\s+/g, '-')}`}>
           {project.status || 'Planning'}
@@ -206,7 +207,7 @@ export default function Settings() {
   const handleExportCredentials = () => {
     const data = projects.map((p) => ({
       'Project ID': p.id,
-      'Project Name': p.name || 'Untitled',
+      'Project Name': readField(p, 'title') || 'Untitled',
       'Status': p.status || 'Planning',
       'PM Login ID': `${p.id}pm`,
       'PM Password': p.pmPassword || '',

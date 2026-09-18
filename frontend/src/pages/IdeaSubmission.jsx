@@ -1,62 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { generateIdeaId } from '../utils/helpers';
+import {
+  STAGE_STEPS,
+  STAGE_STEP_LABELS,
+  PROJECT_TYPES,
+  FUND_SOURCES,
+  STAGE_TYPES,
+  STAGE_STATUSES,
+  IP_REGIONS,
+  REQUIRE_IP_OPTIONS,
+  CONTACT_GROUPS,
+  APPLICANT_GROUP,
+  DEFAULT_PROJECT_TYPE,
+  DEFAULT_FUND_SOURCE,
+  DEFAULT_IP_REGION,
+  DEFAULT_REQUIRE_IP,
+  fieldLabel,
+  isFieldRequired,
+} from '../utils/fields';
 import Modal from '../components/Modal';
 
-const STAGES = [
-  'Applicant Info',
-  'Project Details',
-  'Timeline & Termination',
-  'Budget & Funding',
-  'Resources & Support',
-  'Technical & Innovation',
-  'Current Stage',
-  'IP & Attachments'
-];
-
-const PROJECT_TYPES = [
-  'Business Transformation / Development',
-  'Process Improvement',
-  'Cost Saving',
-  'Customer Experience',
-  'Technology Development',
-  'Others'
-];
-
-const FUND_SOURCES = [
-  'Department Budget',
-  'Company Central Fund',
-  'Government Grant',
-  'External Sponsorship',
-  'Other'
-];
-
-const CURRENT_STAGES = [
-  'Idea / R&D',
-  'Feasibility',
-  'POC',
-  'Demo',
-  'Pilot',
-  'Commercialization',
-  'Production',
-  'Wrap up & Handover',
-  'Others'
-];
-
-const STAGE_STATUSES = [
-  'Planning',
-  'In Progress',
-  'Completed'
-];
-
-const IP_REGIONS = [
-  'Hong Kong',
-  'China',
-  'United States',
-  'European Union',
-  'Other'
-];
+// Value domains + labels live in utils/fields.js (canonical master). Do not redefine.
 
 const initialForm = {
   // Applicant Info
@@ -78,7 +44,7 @@ const initialForm = {
   techSupportEmail: '',
 
   // Project Type
-  projectType: 'Business Transformation / Development',
+  projectType: DEFAULT_PROJECT_TYPE,
 
   // Project Details
   title: '',
@@ -100,7 +66,7 @@ const initialForm = {
 
   // Budget & Funding
   totalBudget: '',
-  fundSource: 'Department Budget',
+  fundSource: DEFAULT_FUND_SOURCE,
   budgetBreakdown: '',
   targetGovFund: '',
   targetGovFundDetails: '',
@@ -122,8 +88,8 @@ const initialForm = {
   stageDescription: '',
 
   // IP & Attachments
-  requireIP: '待定',
-  ipRegion: 'Hong Kong',
+  requireIP: DEFAULT_REQUIRE_IP,
+  ipRegion: DEFAULT_IP_REGION,
   remarks: '',
   businessProposalFile: '',
   otherDocFile: '',
@@ -155,7 +121,7 @@ export default function IdeaSubmission({ onBack }) {
   };
 
   const nextStep = () => {
-    if (step < STAGES.length - 1) setStep(step + 1);
+    if (step < STAGE_STEP_LABELS.length - 1) setStep(step + 1);
     else handleSubmit();
   };
   const prevStep = () => { if (step > 0) setStep(step - 1); };
@@ -172,103 +138,62 @@ export default function IdeaSubmission({ onBack }) {
       case 0:
         return (
           <div className="form-section">
-            <h3>Applicant Information</h3>
-            <p className="form-section-desc">申請人資料</p>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Applicant Name 申請人姓名 *</label>
-                <input required value={form.applicantName} onChange={(e) => handleChange('applicantName', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Department / Team 所屬部門及團隊 *</label>
-                <input value={form.department} onChange={(e) => handleChange('department', e.target.value)} />
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Contact Number 聯絡電話 *</label>
-                <input required value={form.contactNumber} onChange={(e) => handleChange('contactNumber', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label>Email 電郵 *</label>
-                <input required type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} />
-              </div>
-            </div>
-
-            <h4 style={{ marginTop: 20, marginBottom: 8 }}>Project Manager 項目經理</h4>
+            <h3>{STAGE_STEPS[0].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[0].desc}</p>
+            <h4 style={{ marginTop: 4, marginBottom: 8 }}>{APPLICANT_GROUP.title}</h4>
             <div className="contact-group">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Name 姓名</label>
-                  <input value={form.projectManagerName} onChange={(e) => handleChange('projectManagerName', e.target.value)} />
+                  <label>{fieldLabel(APPLICANT_GROUP.name, { withRequired: true })}</label>
+                  <input required={isFieldRequired(APPLICANT_GROUP.name)} value={form[APPLICANT_GROUP.name]} onChange={(e) => handleChange(APPLICANT_GROUP.name, e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label>Department 部門</label>
-                  <input value={form.projectManagerDept} onChange={(e) => handleChange('projectManagerDept', e.target.value)} />
+                  <label>{fieldLabel(APPLICANT_GROUP.dept, { withRequired: true })}</label>
+                  <input required={isFieldRequired(APPLICANT_GROUP.dept)} value={form[APPLICANT_GROUP.dept]} onChange={(e) => handleChange(APPLICANT_GROUP.dept, e.target.value)} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Contact Number 聯絡電話 *</label>
-                  <input value={form.projectManagerPhone} onChange={(e) => handleChange('projectManagerPhone', e.target.value)} />
+                  <label>{fieldLabel(APPLICANT_GROUP.contact, { withRequired: true })}</label>
+                  <input required={isFieldRequired(APPLICANT_GROUP.contact)} value={form[APPLICANT_GROUP.contact]} onChange={(e) => handleChange(APPLICANT_GROUP.contact, e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label>Email 電郵</label>
-                  <input type="email" value={form.projectManagerEmail} onChange={(e) => handleChange('projectManagerEmail', e.target.value)} />
+                  <label>{fieldLabel(APPLICANT_GROUP.email, { withRequired: true })}</label>
+                  <input required={isFieldRequired(APPLICANT_GROUP.email)} type="email" value={form[APPLICANT_GROUP.email]} onChange={(e) => handleChange(APPLICANT_GROUP.email, e.target.value)} />
                 </div>
               </div>
             </div>
 
-            <h4 style={{ marginTop: 16, marginBottom: 8 }}>Project Owner 項目持有者</h4>
-            <div className="contact-group">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Name 姓名 *</label>
-                  <input required value={form.ownerName} onChange={(e) => handleChange('ownerName', e.target.value)} />
+            {CONTACT_GROUPS.map((group) => (
+              <React.Fragment key={group.id}>
+                <h4 style={{ marginTop: 20, marginBottom: 8 }}>{group.title}</h4>
+                <div className="contact-group">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>{fieldLabel(group.name, { withRequired: true })}</label>
+                      <input required={isFieldRequired(group.name)} value={form[group.name]} onChange={(e) => handleChange(group.name, e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label>{fieldLabel(group.dept, { withRequired: true })}</label>
+                      <input required={isFieldRequired(group.dept)} value={form[group.dept]} onChange={(e) => handleChange(group.dept, e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>{fieldLabel(group.contact, { withRequired: true })}</label>
+                      <input required={isFieldRequired(group.contact)} value={form[group.contact]} onChange={(e) => handleChange(group.contact, e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                      <label>{fieldLabel(group.email, { withRequired: true })}</label>
+                      <input required={isFieldRequired(group.email)} type="email" value={form[group.email]} onChange={(e) => handleChange(group.email, e.target.value)} />
+                    </div>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Department / Company 所屬部門或公司 *</label>
-                  <input required value={form.ownerDept} onChange={(e) => handleChange('ownerDept', e.target.value)} />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Contact Number 聯絡電話 *</label>
-                  <input required value={form.ownerContact} onChange={(e) => handleChange('ownerContact', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>E-Mail 電郵 *</label>
-                  <input required type="email" value={form.ownerEmail} onChange={(e) => handleChange('ownerEmail', e.target.value)} />
-                </div>
-              </div>
-            </div>
-
-            <h4 style={{ marginTop: 16, marginBottom: 8 }}>Technical Support</h4>
-            <div className="contact-group">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Name 姓名 *</label>
-                  <input required value={form.techSupportName} onChange={(e) => handleChange('techSupportName', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>Department / Company 所屬部門或公司 *</label>
-                  <input required value={form.techSupportDept} onChange={(e) => handleChange('techSupportDept', e.target.value)} />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Contact Number 聯絡電話 *</label>
-                  <input required value={form.techSupportContact} onChange={(e) => handleChange('techSupportContact', e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>E-Mail 電郵 *</label>
-                  <input required type="email" value={form.techSupportEmail} onChange={(e) => handleChange('techSupportEmail', e.target.value)} />
-                </div>
-              </div>
-            </div>
+              </React.Fragment>
+            ))}
 
             <div className="form-group">
-              <label>Project Type 項目類型 *</label>
+              <label>{fieldLabel('projectType', { withRequired: true })}</label>
               <select value={form.projectType} onChange={(e) => handleChange('projectType', e.target.value)}>
                 {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -279,47 +204,47 @@ export default function IdeaSubmission({ onBack }) {
       case 1:
         return (
           <div className="form-section">
-            <h3>Project Details</h3>
-            <p className="form-section-desc">項目 / 意念詳情</p>
+            <h3>{STAGE_STEPS[1].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[1].desc}</p>
             <div className="form-group">
-              <label>Project Title 項目名稱 *</label>
+              <label>{fieldLabel('title', { withRequired: true })}</label>
               <input required value={form.title} onChange={(e) => handleChange('title', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Project Background & Objective 項目背景信息及目標 *</label>
+              <label>{fieldLabel('background', { withRequired: true })}</label>
               <textarea rows="3" value={form.background} onChange={(e) => handleChange('background', e.target.value)} />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Pain Points 痛點描述 *</label>
+                <label>{fieldLabel('painPoint', { withRequired: true })}</label>
                 <textarea rows="3" value={form.painPoint} onChange={(e) => handleChange('painPoint', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Current Workarounds 現有臨時處理方法</label>
+                <label>{fieldLabel('currentWorkarounds')}</label>
                 <textarea rows="3" value={form.currentWorkarounds} onChange={(e) => handleChange('currentWorkarounds', e.target.value)} />
               </div>
             </div>
             <div className="form-group">
-              <label>Project Scope 項目範圍 *</label>
+              <label>{fieldLabel('projectScope', { withRequired: true })}</label>
               <textarea rows="3" value={form.projectScope} onChange={(e) => handleChange('projectScope', e.target.value)} />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Expected Deliverables 預期交付成果 *</label>
+                <label>{fieldLabel('deliverables', { withRequired: true })}</label>
                 <textarea rows="3" value={form.deliverables} onChange={(e) => handleChange('deliverables', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Expected Benefits 預期效益 *</label>
+                <label>{fieldLabel('benefits', { withRequired: true })}</label>
                 <textarea rows="3" value={form.benefits} onChange={(e) => handleChange('benefits', e.target.value)} />
               </div>
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Project Phases 項目實施階段</label>
+                <label>{fieldLabel('projectPhases')}</label>
                 <textarea rows="3" value={form.projectPhases} onChange={(e) => handleChange('projectPhases', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Risks & Challenges 潛在風險及實施困難</label>
+                <label>{fieldLabel('risks')}</label>
                 <textarea rows="3" value={form.risks} onChange={(e) => handleChange('risks', e.target.value)} />
               </div>
             </div>
@@ -329,29 +254,29 @@ export default function IdeaSubmission({ onBack }) {
       case 2:
         return (
           <div className="form-section">
-            <h3>Timeline & Termination</h3>
-            <p className="form-section-desc">時間表及終止條件</p>
+            <h3>{STAGE_STEPS[2].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[2].desc}</p>
             <div className="form-row">
               <div className="form-group">
-                <label>Expected Start Date 預計開始日期 *</label>
+                <label>{fieldLabel('expectedStartDate', { withRequired: true })}</label>
                 <input type="date" value={form.expectedStartDate} onChange={(e) => handleChange('expectedStartDate', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Target Completion Date 預計完成日期 *</label>
+                <label>{fieldLabel('targetCompletionDate', { withRequired: true })}</label>
                 <input type="date" value={form.targetCompletionDate} onChange={(e) => handleChange('targetCompletionDate', e.target.value)} />
               </div>
             </div>
             <h4 style={{ marginTop: 20, marginBottom: 8 }}>Project Termination Trigger Conditions 項目終止觸發條件</h4>
             <div className="form-group">
-              <label>Condition (1) 終止觸發條件(一)</label>
+              <label>{fieldLabel('terminationCondition1')}</label>
               <textarea rows="2" value={form.terminationCondition1} onChange={(e) => handleChange('terminationCondition1', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Condition (2) 終止觸發條件(二)</label>
+              <label>{fieldLabel('terminationCondition2')}</label>
               <textarea rows="2" value={form.terminationCondition2} onChange={(e) => handleChange('terminationCondition2', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Condition (3) 終止觸發條件(三)</label>
+              <label>{fieldLabel('terminationCondition3')}</label>
               <textarea rows="2" value={form.terminationCondition3} onChange={(e) => handleChange('terminationCondition3', e.target.value)} />
             </div>
           </div>
@@ -360,31 +285,31 @@ export default function IdeaSubmission({ onBack }) {
       case 3:
         return (
           <div className="form-section">
-            <h3>Budget & Funding</h3>
-            <p className="form-section-desc">預算及資金</p>
+            <h3>{STAGE_STEPS[3].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[3].desc}</p>
             <div className="form-row">
               <div className="form-group">
-                <label>Total Estimated Budget 總預算估算（單位：港幣）*</label>
+                <label>{fieldLabel('totalBudget', { withRequired: true })}</label>
                 <input type="number" min="0" value={form.totalBudget} onChange={(e) => handleChange('totalBudget', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Source of Project Fund 項目預算來源 *</label>
+                <label>{fieldLabel('fundSource', { withRequired: true })}</label>
                 <select value={form.fundSource} onChange={(e) => handleChange('fundSource', e.target.value)}>
                   {FUND_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
             </div>
             <div className="form-group">
-              <label>Budget Breakdown 預算細分</label>
+              <label>{fieldLabel('budgetBreakdown')}</label>
               <textarea rows="3" value={form.budgetBreakdown} onChange={(e) => handleChange('budgetBreakdown', e.target.value)} />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Target Gov. Fund 目標政府支助（如有）</label>
+                <label>{fieldLabel('targetGovFund')}</label>
                 <input type="number" min="0" value={form.targetGovFund} onChange={(e) => handleChange('targetGovFund', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>Target Gov. Fund Details 目標資金詳情（如有）</label>
+                <label>{fieldLabel('targetGovFundDetails')}</label>
                 <input value={form.targetGovFundDetails} onChange={(e) => handleChange('targetGovFundDetails', e.target.value)} />
               </div>
             </div>
@@ -394,14 +319,14 @@ export default function IdeaSubmission({ onBack }) {
       case 4:
         return (
           <div className="form-section">
-            <h3>Resources & Support</h3>
-            <p className="form-section-desc">資源及協助</p>
+            <h3>{STAGE_STEPS[4].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[4].desc}</p>
             <div className="form-group">
-              <label>Resource Requirements 其他所需資源（非資金類）</label>
+              <label>{fieldLabel('resourceRequirements')}</label>
               <textarea rows="3" value={form.resourceRequirements} onChange={(e) => handleChange('resourceRequirements', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Cross-departmental Assistance Required 預計需要公司哪些內部部門協助？</label>
+              <label>{fieldLabel('crossDeptAssistance')}</label>
               <textarea rows="3" value={form.crossDeptAssistance} onChange={(e) => handleChange('crossDeptAssistance', e.target.value)} />
             </div>
           </div>
@@ -410,18 +335,18 @@ export default function IdeaSubmission({ onBack }) {
       case 5:
         return (
           <div className="form-section">
-            <h3>Technical & Innovation</h3>
-            <p className="form-section-desc">技術及創新</p>
+            <h3>{STAGE_STEPS[5].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[5].desc}</p>
             <div className="form-group">
-              <label>Proposed Technology Direction 建議技術方向</label>
+              <label>{fieldLabel('techDirection')}</label>
               <textarea rows="3" value={form.techDirection} onChange={(e) => handleChange('techDirection', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Innovation Element 項目創新亮點</label>
+              <label>{fieldLabel('innovationElement')}</label>
               <textarea rows="3" value={form.innovationElement} onChange={(e) => handleChange('innovationElement', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Technical Requirements 具體技術需求</label>
+              <label>{fieldLabel('technicalRequirements')}</label>
               <textarea rows="3" value={form.technicalRequirements} onChange={(e) => handleChange('technicalRequirements', e.target.value)} />
             </div>
           </div>
@@ -430,34 +355,34 @@ export default function IdeaSubmission({ onBack }) {
       case 6:
         return (
           <div className="form-section">
-            <h3>Current Stage</h3>
-            <p className="form-section-desc">現時階段</p>
+            <h3>{STAGE_STEPS[6].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[6].desc}</p>
             <div className="form-group">
-              <label>Current Stage 現時階段 *</label>
+              <label>{fieldLabel('currentStage', { withRequired: true })}</label>
               <select value={form.currentStage} onChange={(e) => handleChange('currentStage', e.target.value)}>
                 <option value="">-- Select --</option>
-                {CURRENT_STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
+                {STAGE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>階段開始日期 *</label>
+                <label>{fieldLabel('stageStartDate', { withRequired: true })}</label>
                 <input type="date" value={form.stageStartDate} onChange={(e) => handleChange('stageStartDate', e.target.value)} />
               </div>
               <div className="form-group">
-                <label>預計完成日期 *</label>
+                <label>{fieldLabel('stageEndDate', { withRequired: true })}</label>
                 <input type="date" value={form.stageEndDate} onChange={(e) => handleChange('stageEndDate', e.target.value)} />
               </div>
             </div>
             <div className="form-group">
-              <label>階段狀態 *</label>
+              <label>{fieldLabel('stageStatus', { withRequired: true })}</label>
               <select value={form.stageStatus} onChange={(e) => handleChange('stageStatus', e.target.value)}>
                 <option value="">-- Select --</option>
                 {STAGE_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label>主要描述</label>
+              <label>{fieldLabel('stageDescription')}</label>
               <textarea rows="4" value={form.stageDescription} onChange={(e) => handleChange('stageDescription', e.target.value)} />
             </div>
           </div>
@@ -466,29 +391,29 @@ export default function IdeaSubmission({ onBack }) {
       case 7:
         return (
           <div className="form-section">
-            <h3>IP & Attachments</h3>
-            <p className="form-section-desc">知識產權及附件</p>
+            <h3>{STAGE_STEPS[7].label}</h3>
+            <p className="form-section-desc">{STAGE_STEPS[7].desc}</p>
             <div className="form-row">
               <div className="form-group">
-                <label>Require IP 是否需要申請專利</label>
+                <label>{fieldLabel('requireIP')}</label>
                 <div className="radio-group">
-                  <label className="radio-label">
-                    <input type="radio" name="requireIP" value="是" checked={form.requireIP === '是'} onChange={(e) => handleChange('requireIP', e.target.value)} />
-                    是
-                  </label>
-                  <label className="radio-label">
-                    <input type="radio" name="requireIP" value="否" checked={form.requireIP === '否'} onChange={(e) => handleChange('requireIP', e.target.value)} />
-                    否
-                  </label>
-                  <label className="radio-label">
-                    <input type="radio" name="requireIP" value="待定" checked={form.requireIP === '待定'} onChange={(e) => handleChange('requireIP', e.target.value)} />
-                    待定
-                  </label>
+                  {REQUIRE_IP_OPTIONS.map((option) => (
+                    <label key={option} className="radio-label">
+                      <input
+                        type="radio"
+                        name="requireIP"
+                        value={option}
+                        checked={form.requireIP === option}
+                        onChange={(e) => handleChange('requireIP', e.target.value)}
+                      />
+                      {option}
+                    </label>
+                  ))}
                 </div>
               </div>
               {form.requireIP === '是' && (
                 <div className="form-group">
-                  <label>IP Region 專利申請國家</label>
+                  <label>{fieldLabel('ipRegion')}</label>
                   <select value={form.ipRegion} onChange={(e) => handleChange('ipRegion', e.target.value)}>
                     {IP_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -496,7 +421,7 @@ export default function IdeaSubmission({ onBack }) {
               )}
             </div>
             <div className="form-group">
-              <label>Any Other Comments 其他補充備註</label>
+              <label>{fieldLabel('remarks')}</label>
               <textarea rows="3" value={form.remarks} onChange={(e) => handleChange('remarks', e.target.value)} />
             </div>
             <div className="form-group">
@@ -527,7 +452,7 @@ export default function IdeaSubmission({ onBack }) {
 
       {/* Step Indicator */}
       <div className="step-indicator step-indicator--compact">
-        {STAGES.map((label, i) => (
+        {STAGE_STEP_LABELS.map((label, i) => (
           <div
             key={i}
             className={`step ${i === step ? 'step--active' : ''} ${i < step ? 'step--completed' : ''}`}
@@ -551,7 +476,7 @@ export default function IdeaSubmission({ onBack }) {
             <button type="button" className="btn btn--outline" onClick={onBack}>Cancel</button>
           )}
           <button type="button" className="btn btn--primary" onClick={nextStep}>
-            {step === STAGES.length - 1 ? 'Submit' : 'Next'}
+            {step === STAGE_STEP_LABELS.length - 1 ? 'Submit' : 'Next'}
           </button>
         </div>
       </form>

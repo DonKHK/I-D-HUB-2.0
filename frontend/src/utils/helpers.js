@@ -1,6 +1,8 @@
 /**
  * Generate Project ID: YYMM + 4 digit serial
  */
+import { readField, readStageField } from './fields';
+
 export function generateProjectId(existingIds = []) {
   const now = new Date();
   const prefix = `${String(now.getFullYear()).slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -53,10 +55,11 @@ export function calculateHealth(project, settings = {}) {
   const yellowReasons = [];
 
   // End date checks
-  if (!project.endDate) {
+  const endDate = readField(project, 'targetCompletionDate');
+  if (!endDate) {
     redReasons.push('No End Date');
   } else {
-    const end = new Date(project.endDate);
+    const end = new Date(endDate);
     const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) {
       redReasons.push('Overdue');
@@ -66,11 +69,12 @@ export function calculateHealth(project, settings = {}) {
   }
 
   // Budget checks
-  if (!project.budget || project.budget <= 0) {
+  const budget = readField(project, 'totalBudget');
+  if (!budget || budget <= 0) {
     redReasons.push('No Budget');
   } else {
     const used = project.budgetUsed || 0;
-    const ratio = used / project.budget;
+    const ratio = used / budget;
     if (ratio >= 1.05) {
       redReasons.push('Budget Overrun');
     } else if (ratio > 0.95) {
@@ -96,10 +100,10 @@ export function calculateHealth(project, settings = {}) {
 export function calculateStageHealth(stage, settings = {}) {
   return calculateHealth(
     {
-      status: stage.status || 'Planning',
-      endDate: stage.endDate,
-      budget: stage.budget,
-      budgetUsed: stage.budgetUsed,
+      status: readStageField(stage, 'stageStatus') || 'Planning',
+      targetCompletionDate: readStageField(stage, 'stageEndDate'),
+      totalBudget: readStageField(stage, 'totalBudget'),
+      budgetUsed: stage?.budgetUsed,
     },
     settings
   );
@@ -191,7 +195,7 @@ export function exportLogsToTxt(project) {
   if (!project || !project.logs || project.logs.length === 0) return;
   
   const lines = [
-    `=== Activity Log: ${project.name} (ID: ${project.id}) ===`,
+    `=== Activity Log: ${readField(project, 'title')} (ID: ${project.id}) ===`,
     `Export Date: ${formatDateTime(new Date().toISOString())}`,
     `Total Entries: ${project.logs.length}`,
     '',

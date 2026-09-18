@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import ProjectDetail from '../components/ProjectDetail';
 import { addProjectLog } from '../utils/helpers';
+import { readField } from '../utils/fields';
 
 export default function MyProject() {
   const navigate = useNavigate();
@@ -25,15 +26,15 @@ export default function MyProject() {
       if (p) {
         setProject(p);
         setEditForm({
-          name: p.name || '',
+          title: readField(p, 'title') || '',
           description: p.description || '',
-          detailContent: p.detailContent || '',
-          startDate: p.startDate || '',
-          endDate: p.endDate || '',
-          budget: p.budget || '',
+          projectScope: readField(p, 'projectScope') || '',
+          expectedStartDate: readField(p, 'expectedStartDate') || '',
+          targetCompletionDate: readField(p, 'targetCompletionDate') || '',
+          totalBudget: readField(p, 'totalBudget') || '',
           budgetUsed: p.budgetUsed || '',
-          manager: p.manager || '',
-          holder: p.holder || '',
+          projectManagerName: readField(p, 'projectManagerName') || '',
+          ownerName: readField(p, 'ownerName') || '',
           background: p.background || '',
           painPoint: p.painPoint || '',
           benefits: p.benefits || '',
@@ -50,15 +51,15 @@ export default function MyProject() {
   const handleEdit = () => {
     if (!project) return;
     setEditForm({
-      name: project.name || '',
+      title: readField(project, 'title') || '',
       description: project.description || '',
-      detailContent: project.detailContent || '',
-      startDate: project.startDate || '',
-      endDate: project.endDate || '',
-      budget: project.budget || '',
+      projectScope: readField(project, 'projectScope') || '',
+      expectedStartDate: readField(project, 'expectedStartDate') || '',
+      targetCompletionDate: readField(project, 'targetCompletionDate') || '',
+      totalBudget: readField(project, 'totalBudget') || '',
       budgetUsed: project.budgetUsed || '',
-      manager: project.manager || '',
-      holder: project.holder || '',
+      projectManagerName: readField(project, 'projectManagerName') || '',
+      ownerName: readField(project, 'ownerName') || '',
       background: project.background || '',
       painPoint: project.painPoint || '',
       benefits: project.benefits || '',
@@ -71,11 +72,12 @@ export default function MyProject() {
   const handleSave = () => {
     if (!project) return;
     const changedFields = [];
-    if (editForm.name !== project.name) changedFields.push(`name: "${project.name}" → "${editForm.name}"`);
+    if (editForm.title !== (readField(project, 'title') || '')) changedFields.push(`title: "${readField(project, 'title')}" → "${editForm.title}"`);
     if (editForm.status !== project.status) changedFields.push(`status: ${project.status} → ${editForm.status}`);
     if (editForm.description !== (project.description || '')) changedFields.push('description updated');
-    if (editForm.startDate !== (project.startDate || '')) changedFields.push(`startDate: ${project.startDate || '-'} → ${editForm.startDate || '-'}`);
-    if (editForm.endDate !== (project.endDate || '')) changedFields.push(`endDate: ${project.endDate || '-'} → ${editForm.endDate || '-'}`);
+    if (editForm.expectedStartDate !== (readField(project, 'expectedStartDate') || '')) changedFields.push(`expectedStartDate: ${readField(project, 'expectedStartDate') || '-'} → ${editForm.expectedStartDate || '-'}`);
+    if (editForm.targetCompletionDate !== (readField(project, 'targetCompletionDate') || '')) changedFields.push(`targetCompletionDate: ${readField(project, 'targetCompletionDate') || '-'} → ${editForm.targetCompletionDate || '-'}`);
+    if (Number(editForm.totalBudget || 0) !== Number(readField(project, 'totalBudget') || 0)) changedFields.push(`totalBudget: ${readField(project, 'totalBudget') || '-'} → ${editForm.totalBudget || '-'}`);
 
     updateProject(project.id, editForm);
     if (changedFields.length > 0) {
@@ -113,7 +115,7 @@ export default function MyProject() {
   return (
     <div className="page">
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-        <h2 style={{ margin: 0 }}>{project.name || 'My Project'}</h2>
+        <h2 style={{ margin: 0 }}>{readField(project, 'title') || 'My Project'}</h2>
         <span
           style={{
             padding: '0.25rem 0.75rem',

@@ -454,7 +454,7 @@ After completing the analysis above, output a STRICT JSON object (no markdown, n
             {type === 'pending' ? 'Pending' : type === 'approved' ? 'Approved' : type === 'rejected' ? 'Rejected' : 'Deleted'}
           </span>
         </div>
-        <h3 className="approval-card-title">{idea.title || idea.projectTitle || 'Untitled'}</h3>
+        <h3 className="approval-card-title">{idea.title || 'Untitled'}</h3>
         <div className="approval-card-meta">
           <span
             className="approval-card-id-link"
@@ -471,11 +471,11 @@ After completing the analysis above, output a STRICT JSON object (no markdown, n
               </span>
             ) : null;
           })()}
-          <span>👤 {idea.applicantName || idea.applicant || idea.ownerName || '-'}</span>
+          <span>👤 {idea.applicantName || '-'}</span>
           <span>📅 {formatDate(idea.createdAt)}</span>
           {type === 'approved' && <span>⭐ Approved: {formatDateTime(idea.approvedAt)}</span>}
         </div>
-        {idea.oneLineDesc && <p className="approval-card-desc">{idea.oneLineDesc}</p>}
+        {(idea.projectScope || idea.background) && <p className="approval-card-desc">{idea.projectScope || idea.background}</p>}
         {idea.rejectReason && <p className="reject-reason">Reason: {idea.rejectReason}</p>}
         <div className="approval-card-actions">
           <button className="btn btn--small" onClick={() => handleViewDetails(idea.id)}>

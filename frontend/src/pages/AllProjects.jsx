@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { fieldLabel, readField } from '../utils/fields';
 import Modal from '../components/Modal';
 
 export default function AllProjects({ onNavigate }) {
@@ -78,13 +79,12 @@ export default function AllProjects({ onNavigate }) {
           const linkedIdea = getLinkedIdea(p);
           const desc =
             p.description ||
-            p.detailContent ||
+            readField(p, 'projectScope') ||
             p.background ||
-            (linkedIdea && (linkedIdea.background || linkedIdea.oneLineDesc || linkedIdea.projectScope)) ||
+            (linkedIdea && (linkedIdea.background || linkedIdea.projectScope)) ||
             'No description';
           const detail =
-            p.detail ||
-            p.detailContent ||
+            readField(p, 'projectScope') ||
             (linkedIdea && (linkedIdea.projectScope || linkedIdea.background)) ||
             'No details';
 
@@ -104,12 +104,12 @@ export default function AllProjects({ onNavigate }) {
                   )}
                 </div>
               </div>
-              <h3 className="proj-card-name">{p.name || 'Untitled Project'}</h3>
+              <h3 className="proj-card-name">{readField(p, 'title') || 'Untitled Project'}</h3>
               <p className="proj-card-desc">{desc}</p>
               <p className="proj-card-detail">{detail}</p>
               <div className="proj-card-owner">
-                <span className="proj-card-owner-label">Owner: </span>
-                {p.owner || p.holder || '—'}
+                <span className="proj-card-owner-label">{fieldLabel('ownerName')}: </span>
+                {readField(p, 'ownerName') || '—'}
               </div>
               <button className="btn btn--small btn--demo" onClick={() => setDemoModal(p)}>
                 🔗 DEMO

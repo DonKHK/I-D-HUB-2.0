@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import { callAi } from '../utils/aiCall';
 import { calculateHealth } from '../utils/helpers';
+import { readField, readStageField } from '../utils/fields';
 
 const CONFIG_STORAGE_KEY = 'idhub_ai_config';
 
@@ -53,31 +54,32 @@ function buildContext(projects, ideas, fundingSchemes) {
 
   const projectLines = (projects || []).map((p) => {
     const health = calculateHealth(p);
-    const budget = Number(p.budget) || 0;
+    const budget = Number(readField(p, 'totalBudget')) || 0;
     const used = Number(p.budgetUsed) || 0;
     const usedPct = budget > 0 ? Math.round((used / budget) * 100) : null;
+    const endDate = readField(p, 'targetCompletionDate');
     let daysLeft = null;
-    if (p.endDate) {
-      daysLeft = Math.ceil((new Date(p.endDate) - now) / (1000 * 60 * 60 * 24));
+    if (endDate) {
+      daysLeft = Math.ceil((new Date(endDate) - now) / (1000 * 60 * 60 * 24));
     }
     const stages = Array.isArray(p.stages) && p.stages.length
       ? p.stages
-          .map((s) => `${s.type || s.name || s.stage || 'Stage'}(${s.status || '?'}${s.endDate ? ` due ${s.endDate}` : ''})`)
+          .map((s) => `${readStageField(s, 'type') || 'Stage'}(${readStageField(s, 'stageStatus') || '?'}${readStageField(s, 'stageEndDate') ? ` due ${readStageField(s, 'stageEndDate')}` : ''})`)
           .join('; ')
       : 'None';
     return (
-      `- [${p.id}] "${p.name || 'Untitled'}" | status: ${p.status || 'Planning'} | health: ${health.label} ` +
-      `| budget: ${budget} (${usedPct === null ? 'N/A' : usedPct + '%'} used) | start: ${p.startDate || '-'} | end: ${p.endDate || '-'} ` +
-      `| daysLeft: ${daysLeft === null ? '-' : daysLeft} | manager: ${p.manager || p.projectManagerName || '-'} ` +
-      `| holder: ${p.holder || p.applicantName || '-'} | type: ${snip(p.projectType || '-', 40)} | stages: ${stages}`
+      `- [${p.id}] "${readField(p, 'title') || 'Untitled'}" | status: ${p.status || 'Planning'} | health: ${health.label} ` +
+      `| budget: ${budget} (${usedPct === null ? 'N/A' : usedPct + '%'} used) | start: ${readField(p, 'expectedStartDate') || '-'} | end: ${endDate || '-'} ` +
+      `| daysLeft: ${daysLeft === null ? '-' : daysLeft} | manager: ${readField(p, 'projectManagerName') || '-'} ` +
+      `| owner: ${readField(p, 'ownerName') || '-'} | type: ${snip(p.projectType || '-', 40)} | stages: ${stages}`
     );
   });
 
   const ideaLines = (ideas || []).map((i) => {
     const budget = Number(i.totalBudget) || 0;
     return (
-      `- [${i.id}] "${i.title || i.projectTitle || 'Untitled'}" | status: ${i.status || '-'} | applicant: ${i.applicantName || '-'} ` +
-      `| budget: ${budget} | type: ${snip(i.projectType || i.ideaType || '-', 40)} | ${snip(i.oneLineDesc || i.background || '', 80)}`
+      `- [${i.id}] "${i.title || 'Untitled'}" | status: ${i.status || '-'} | applicant: ${i.applicantName || '-'} ` +
+      `| budget: ${budget} | type: ${snip(i.projectType || '-', 40)} | ${snip(i.projectScope || i.background || '', 80)}`
     );
   });
 

@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { db, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDocs, query, orderBy, onSnapshot, getDoc, serverTimestamp, writeBatch } from '../firebase';
+import { db, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDocs, query, orderBy, onSnapshot, getDoc, serverTimestamp, writeBatch, deleteField } from '../firebase';
 import { DEFAULT_SETTINGS } from '../utils/constants';
+import {
+  DEFAULT_PROJECT_TYPE,
+  DEFAULT_PROJECT_STATUS,
+  DEFAULT_STAGE_TYPE,
+  DEFAULT_STAGE_STATUS,
+  DEFAULT_REQUIRE_IP,
+  STAGE_STATUS_RENAMES,
+} from '../utils/fields';
+import { normaliseProjectDoc, normaliseIdeaDoc, buildNormalisationPayload } from '../utils/normaliseFields';
 import { sampleIdeas } from '../data/sampleIdeas';
 
 const DataContext = createContext(null);
@@ -501,6 +510,25 @@ const apiDelete = async (id) => {
   }
 };
 
+/**
+ * The idea wizard captures ONE "Current Stage" snapshot. Carry it over as the
+ * project's first stage — previously approveIdea() always wrote `stages: []` and
+ * the stage data was silently lost.
+ */
+const buildInitialStage = (idea) => {
+  if (!idea || (!idea.currentStage && !idea.stageStatus && !idea.stageDescription)) return [];
+  return [{
+    id: 's' + Date.now(),
+    type: idea.currentStage || DEFAULT_STAGE_TYPE,
+    stageStartDate: idea.stageStartDate || '',
+    stageEndDate: idea.stageEndDate || '',
+    totalBudget: 0,
+    budgetUsed: 0,
+    stageStatus: STAGE_STATUS_RENAMES[idea.stageStatus] || idea.stageStatus || DEFAULT_STAGE_STATUS,
+    stageDescription: idea.stageDescription || '',
+  }];
+};
+
 export function DataProvider({ children }) {
   const { user, firebaseUser } = useAuth();
   const [projects, setProjects] = useState([]);
@@ -518,7 +546,8 @@ export function DataProvider({ children }) {
   const offlineModeRef = useRef(false);
   const migrationRunningRef = useRef(false);
   const projectMigrationDoneRef = useRef(false);
-  const holderRepairRunningRef = useRef(false);
+  const normaliseRunningRef = useRef(false);
+  const ideaNormaliseRunningRef = useRef(false);
 
   // Seed ideas directly into state (Firestore fallback mode)
   // Preserves any existing cached data so approved/rejected statuses don't get lost on reload
@@ -692,52 +721,77 @@ export function DataProvider({ children }) {
     return Array.from(byId.values());
   }, []);
 
-  // Repair: older idea-converted projects stored holder = the applicant's name
-  // instead of the real Project Owner. The true owner is kept in the ownerName
-  // field, so backfill holder from ownerName when holder is empty or merely
-  // duplicated the applicant AND the value would actually change.
-  // Idempotent — writes stop as soon as every doc carries the correct holder
-  // (also marks docs with _holderRepaired so they are never touched again).
-  const repairProjectHolders = useCallback(async (list) => {
-    if (!uid || holderRepairRunningRef.current) return;
+  // One-time field-name normalisation. Submit Idea is the master schema
+  // (utils/fields.js), so legacy project keys (name / manager / holder / budget /
+  // startDate / endDate / detailContent / technicalSupport …) are renamed to the
+  // canonical key and removed. Idempotent — documents get a `_fieldsNormalised`
+  // marker and are never touched again. Inside normaliseProjectDoc the order is
+  // copy → merge → drop so a failed run can never lose data.
+  const normaliseFieldNames = useCallback(async (list) => {
+    if (!uid || normaliseRunningRef.current) return;
     if (!Array.isArray(list) || list.length === 0) return;
-    holderRepairRunningRef.current = true;
+    normaliseRunningRef.current = true;
 
-    const toFix = list.filter((p) => {
-      if (!p || !p.originalIdeaId || p._holderRepaired) return false; // only idea-converted, un-repaired projects
-      const owner = (p.ownerName || '').trim();
-      if (!owner) return false; // nothing reliable to backfill with
-      const holder = (p.holder || '').trim();
-      if (holder === owner) return false; // already correct → never rewrite
-      if (!holder) return true; // empty holder → fill in the owner
-      const applicant = (p.applicantName || p.applicant || '').trim();
-      return !!applicant && holder === applicant; // holder wrongly set to applicant
-    });
-    if (toFix.length === 0) {
-      holderRepairRunningRef.current = false;
-      return;
-    }
+    try {
+      const toFix = list.filter((p) => p && !p._fieldsNormalised);
+      if (toFix.length === 0) return;
 
-    console.log(`[PMIS] Repairing Project Owner (holder) on ${toFix.length} idea-converted project(s)…`);
-    for (const p of toFix) {
-      try {
-        const repairedAt = new Date().toISOString();
-        await setDoc(doc(db, COLLECTIONS.PROJECTS, p.id), {
-          holder: p.ownerName,
-          _holderRepaired: true,
-          _holderRepairedAt: repairedAt,
-        }, { merge: true });
+      console.log(`[PMIS] Normalising field names on ${toFix.length} project(s)…`);
+      for (const p of toFix) {
+        const normalised = normaliseProjectDoc(p);
+
+        // Always refresh the in-memory + cached copy so the UI is correct even when
+        // Firestore is unavailable (offline / fallback mode).
         setProjects((prev) => {
-          const newList = prev.map((x) => (x.id === p.id ? { ...x, holder: p.ownerName, _holderRepaired: true, _holderRepairedAt: repairedAt } : x));
+          const newList = prev.map((x) => (x.id === p.id ? normalised : x));
           try { localStorage.setItem('pmis_projects', JSON.stringify(newList)); } catch (e) { /* ignore */ }
           return newList;
         });
-        console.log(`[PMIS] Repaired holder of project ${p.id} → ${p.ownerName}`);
-      } catch (err) {
-        console.error(`[PMIS] Holder repair failed for project ${p.id}:`, err.message || err);
+
+        try {
+          const payload = buildNormalisationPayload(p, normalised, deleteField);
+          await setDoc(doc(db, COLLECTIONS.PROJECTS, p.id), payload, { merge: true });
+          console.log(`[PMIS] Normalised fields of project ${p.id}`);
+        } catch (err) {
+          console.error(`[PMIS] Field normalisation failed for project ${p.id}:`, err.message || err);
+        }
       }
+    } finally {
+      normaliseRunningRef.current = false;
     }
-    holderRepairRunningRef.current = false;
+  }, [uid]);
+
+  /** Same normalisation for the ideas collection. */
+  const normaliseIdeaFieldNames = useCallback(async (list) => {
+    if (!uid || ideaNormaliseRunningRef.current) return;
+    if (!Array.isArray(list) || list.length === 0) return;
+    ideaNormaliseRunningRef.current = true;
+
+    try {
+      const toFix = list.filter((i) => i && !i._fieldsNormalised);
+      if (toFix.length === 0) return;
+
+      console.log(`[PMIS] Normalising field names on ${toFix.length} idea(s)…`);
+      for (const i of toFix) {
+        const normalised = normaliseIdeaDoc(i);
+
+        setIdeas((prev) => {
+          const newList = prev.map((x) => (x.id === i.id ? normalised : x));
+          try { localStorage.setItem('pmis_ideas', JSON.stringify(newList)); } catch (e) { /* ignore */ }
+          return newList;
+        });
+
+        try {
+          const payload = buildNormalisationPayload(i, normalised, deleteField);
+          await setDoc(doc(db, COLLECTIONS.IDEAS, i.id), payload, { merge: true });
+          console.log(`[PMIS] Normalised fields of idea ${i.id}`);
+        } catch (err) {
+          console.error(`[PMIS] Field normalisation failed for idea ${i.id}:`, err.message || err);
+        }
+      }
+    } finally {
+      ideaNormaliseRunningRef.current = false;
+    }
   }, [uid]);
 
   // Fetch data when user is authenticated
@@ -774,9 +828,9 @@ export function DataProvider({ children }) {
           migrateOldProjects(oldProjects);
         }
 
-        // One-time repair: older idea-converted projects may have holder set to
-        // the applicant instead of the real Project Owner (ownerName).
-        repairProjectHolders(list);
+        // One-time normalisation: rename every legacy field to the canonical
+        // master key (Submit Idea) and drop the keys that are no longer used.
+        normaliseFieldNames(list);
       },
       (err) => {
         console.error('Projects snapshot error:', err);
@@ -807,6 +861,10 @@ export function DataProvider({ children }) {
         } else {
           setIdeas(list);
           try { localStorage.setItem('pmis_ideas', JSON.stringify(list)); } catch (e) { /* ignore */ }
+
+          // One-time normalisation: rename legacy idea keys (applicant, ideaType,
+          // projectTitle, holder, budget …) to the canonical master keys.
+          if (!isAnonymousUser) normaliseIdeaFieldNames(list);
         }
       },
       (err) => {
@@ -889,7 +947,7 @@ export function DataProvider({ children }) {
       unsubSchemes();
       unsubSettings();
     };
-  }, [uid, seedIdeasToState, migrateOldProjects, healMisplacedIdeas, dedupeIdeas, repairProjectHolders]);
+  }, [uid, seedIdeasToState, migrateOldProjects, healMisplacedIdeas, dedupeIdeas, normaliseFieldNames, normaliseIdeaFieldNames]);
 
   // Seed default funding schemes if Firestore is empty
   const seedDefaultSchemes = useCallback(async () => {
@@ -1132,17 +1190,17 @@ export function DataProvider({ children }) {
     const projectId = generateProjectId();
     const project = {
       id: projectId,
-      name: idea.title || idea.projectTitle || 'Untitled',
-      description: idea.oneLineDesc || idea.shortDescription || idea.background || idea.projectScope || '',
-      detailContent: idea.projectScope || idea.detailContent || idea.background || '',
+      title: idea.title || 'Untitled',
+      description: idea.oneLineDesc || idea.shortDescription || '',
+      projectScope: idea.projectScope || idea.detail || '',
       applicantName: idea.applicantName || '',
       department: idea.department || '',
       contactNumber: idea.contactNumber || '',
       email: idea.email || '',
       projectManagerName: idea.projectManagerName || '',
       projectManagerDept: idea.projectManagerDept || '',
-      projectManagerEmail: idea.projectManagerEmail || '',
       projectManagerPhone: idea.projectManagerPhone || '',
+      projectManagerEmail: idea.projectManagerEmail || '',
       ownerName: idea.ownerName || '',
       ownerDept: idea.ownerDept || '',
       ownerContact: idea.ownerContact || '',
@@ -1151,7 +1209,7 @@ export function DataProvider({ children }) {
       techSupportDept: idea.techSupportDept || '',
       techSupportContact: idea.techSupportContact || '',
       techSupportEmail: idea.techSupportEmail || '',
-      projectType: idea.projectType || '',
+      projectType: idea.projectType || DEFAULT_PROJECT_TYPE,
       background: idea.background || '',
       painPoint: idea.painPoint || '',
       currentWorkarounds: idea.currentWorkarounds || '',
@@ -1159,37 +1217,35 @@ export function DataProvider({ children }) {
       benefits: idea.benefits || '',
       projectPhases: idea.projectPhases || '',
       risks: idea.risks || '',
+      expectedStartDate: idea.expectedStartDate || '',
+      targetCompletionDate: idea.targetCompletionDate || '',
       terminationCondition1: idea.terminationCondition1 || '',
       terminationCondition2: idea.terminationCondition2 || '',
       terminationCondition3: idea.terminationCondition3 || '',
+      totalBudget: idea.totalBudget || 0,
+      budgetUsed: 0,
       fundSource: idea.fundSource || '',
+      governmentGrant: idea.governmentGrant || null,
       budgetBreakdown: idea.budgetBreakdown || '',
       targetGovFund: idea.targetGovFund || 0,
       targetGovFundDetails: idea.targetGovFundDetails || '',
-      budgetUsed: 0,
       resourceRequirements: idea.resourceRequirements || '',
       crossDeptAssistance: idea.crossDeptAssistance || '',
       techDirection: idea.techDirection || '',
       innovationElement: idea.innovationElement || '',
       technicalRequirements: idea.technicalRequirements || '',
-      requireIP: idea.requireIP || 'No',
+      requireIP: idea.requireIP || DEFAULT_REQUIRE_IP,
       ipRegion: idea.ipRegion || '',
       remarks: idea.remarks || '',
       businessProposalFile: idea.businessProposalFile || '',
       otherDocFile: idea.otherDocFile || '',
-      governmentGrant: idea.governmentGrant || null,
-      technicalSupport: idea.technicalSupport || idea.techSupportDept || '',
-      manager: idea.manager || idea.projectManagerName || '',
-      holder: idea.ownerName || idea.holder || '',
-      startDate: idea.startDate || idea.expectedStartDate || '',
-      endDate: idea.endDate || idea.expectedEndDate || idea.targetCompletionDate || '',
-      budget: idea.totalBudget || idea.budget || 0,
-      status: 'Planning',
-      stages: [],
+      status: DEFAULT_PROJECT_STATUS,
+      stages: buildInitialStage(idea),
       isIdeaConversion: true,
       originalIdeaId: idea.id,
       uid,
       createdAt: new Date().toISOString(),
+      _fieldsNormalised: true,
     };
 
     await addProject(project);
@@ -1205,17 +1261,17 @@ export function DataProvider({ children }) {
   const convertIdeaToProject = useCallback((idea) => {
     const project = {
       id: '',
-      name: idea.title || idea.projectTitle || 'Untitled',
-      description: idea.oneLineDesc || idea.shortDescription || idea.background || idea.projectScope || '',
-      detailContent: idea.projectScope || idea.detailContent || idea.background || '',
+      title: idea.title || 'Untitled',
+      description: idea.oneLineDesc || idea.shortDescription || '',
+      projectScope: idea.projectScope || idea.detail || '',
       applicantName: idea.applicantName || '',
       department: idea.department || '',
       contactNumber: idea.contactNumber || '',
       email: idea.email || '',
       projectManagerName: idea.projectManagerName || '',
       projectManagerDept: idea.projectManagerDept || '',
-      projectManagerEmail: idea.projectManagerEmail || '',
       projectManagerPhone: idea.projectManagerPhone || '',
+      projectManagerEmail: idea.projectManagerEmail || '',
       ownerName: idea.ownerName || '',
       ownerDept: idea.ownerDept || '',
       ownerContact: idea.ownerContact || '',
@@ -1224,7 +1280,7 @@ export function DataProvider({ children }) {
       techSupportDept: idea.techSupportDept || '',
       techSupportContact: idea.techSupportContact || '',
       techSupportEmail: idea.techSupportEmail || '',
-      projectType: idea.projectType || '',
+      projectType: idea.projectType || DEFAULT_PROJECT_TYPE,
       background: idea.background || '',
       painPoint: idea.painPoint || '',
       currentWorkarounds: idea.currentWorkarounds || '',
@@ -1232,37 +1288,34 @@ export function DataProvider({ children }) {
       benefits: idea.benefits || '',
       projectPhases: idea.projectPhases || '',
       risks: idea.risks || '',
+      expectedStartDate: idea.expectedStartDate || '',
+      targetCompletionDate: idea.targetCompletionDate || '',
       terminationCondition1: idea.terminationCondition1 || '',
       terminationCondition2: idea.terminationCondition2 || '',
       terminationCondition3: idea.terminationCondition3 || '',
-      totalBudget: idea.totalBudget || idea.budget || 0,
+      totalBudget: idea.totalBudget || 0,
+      budgetUsed: 0,
       fundSource: idea.fundSource || '',
+      governmentGrant: idea.governmentGrant || null,
       budgetBreakdown: idea.budgetBreakdown || '',
       targetGovFund: idea.targetGovFund || 0,
       targetGovFundDetails: idea.targetGovFundDetails || '',
-      budgetUsed: 0,
       resourceRequirements: idea.resourceRequirements || '',
       crossDeptAssistance: idea.crossDeptAssistance || '',
       techDirection: idea.techDirection || '',
       innovationElement: idea.innovationElement || '',
       technicalRequirements: idea.technicalRequirements || '',
-      requireIP: idea.requireIP || 'No',
+      requireIP: idea.requireIP || DEFAULT_REQUIRE_IP,
       ipRegion: idea.ipRegion || '',
       remarks: idea.remarks || '',
       businessProposalFile: idea.businessProposalFile || '',
       otherDocFile: idea.otherDocFile || '',
-      governmentGrant: idea.governmentGrant || null,
-      technicalSupport: idea.technicalSupport || idea.techSupportDept || '',
-      manager: idea.manager || idea.projectManagerName || '',
-      holder: idea.ownerName || idea.holder || '',
-      startDate: idea.startDate || idea.expectedStartDate || '',
-      endDate: idea.endDate || idea.expectedEndDate || idea.targetCompletionDate || '',
-      budget: idea.totalBudget || idea.budget || 0,
-      status: 'Planning',
-      stages: [],
+      status: DEFAULT_PROJECT_STATUS,
+      stages: buildInitialStage(idea),
       isIdeaConversion: true,
       originalIdeaId: idea.id,
       createdAt: new Date().toISOString(),
+      _fieldsNormalised: true,
     };
     return project;
   }, []);

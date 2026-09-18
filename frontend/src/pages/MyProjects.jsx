@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { calculateHealth, calculateStageHealth, formatDate, formatDateTime, formatCurrency, daysUntil } from '../utils/helpers';
+import { fieldLabel, readField } from '../utils/fields';
 import Modal from '../components/Modal';
 import ProjectDetail from '../components/ProjectDetail';
 
@@ -59,16 +60,18 @@ export default function MyProjects({ onNavigate }) {
         break;
       case 'end-asc':
         list.sort((a, b) => {
-          if (!a.endDate) return 1;
-          if (!b.endDate) return -1;
-          return new Date(a.endDate) - new Date(b.endDate);
+          const aEnd = readField(a, 'targetCompletionDate');
+          const bEnd = readField(b, 'targetCompletionDate');
+          if (!aEnd) return 1;
+          if (!bEnd) return -1;
+          return new Date(aEnd) - new Date(bEnd);
         });
         break;
       case 'amount-desc':
-        list.sort((a, b) => (b.budget || 0) - (a.budget || 0));
+        list.sort((a, b) => (readField(b, 'totalBudget') || 0) - (readField(a, 'totalBudget') || 0));
         break;
       case 'amount-asc':
-        list.sort((a, b) => (a.budget || 0) - (b.budget || 0));
+        list.sort((a, b) => (readField(a, 'totalBudget') || 0) - (readField(b, 'totalBudget') || 0));
         break;
       default:
         break;
@@ -190,35 +193,35 @@ export default function MyProjects({ onNavigate }) {
               </div>
 
               {/* Title */}
-              <h3 className="myprojects-card-title">{project.name}</h3>
+              <h3 className="myprojects-card-title">{readField(project, 'title')}</h3>
 
               {/* Info grid — 2x3 layout */}
               <div className="myprojects-card-info">
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Project Manager</span>
-                  <span>{project.manager || '—'}</span>
+                  <span className="myprojects-info-label">{fieldLabel('projectManagerName')}</span>
+                  <span>{readField(project, 'projectManagerName') || '—'}</span>
                 </div>
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Project Owner</span>
-                  <span>{project.holder || '—'}</span>
+                  <span className="myprojects-info-label">{fieldLabel('ownerName')}</span>
+                  <span>{readField(project, 'ownerName') || '—'}</span>
                 </div>
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Technical Support</span>
-                  <span>{project.technicalSupport || project.governmentGrant || '—'}</span>
+                  <span className="myprojects-info-label">{fieldLabel('techSupportName')}</span>
+                  <span>{readField(project, 'techSupportName') || readField(project, 'techSupportDept') || '—'}</span>
                 </div>
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Amount</span>
+                  <span className="myprojects-info-label">{fieldLabel('totalBudget')}</span>
                   <span className="myprojects-info-amount">
-                    HK$ {Number(project.budget || 0).toLocaleString()}
+                    HK$ {Number(readField(project, 'totalBudget') || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Start Date</span>
-                  <span>{project.startDate || '—'}</span>
+                  <span className="myprojects-info-label">{fieldLabel('expectedStartDate')}</span>
+                  <span>{readField(project, 'expectedStartDate') || '—'}</span>
                 </div>
                 <div className="myprojects-info-item">
-                  <span className="myprojects-info-label">Finish Date</span>
-                  <span>{project.endDate || '—'}</span>
+                  <span className="myprojects-info-label">{fieldLabel('targetCompletionDate')}</span>
+                  <span>{readField(project, 'targetCompletionDate') || '—'}</span>
                 </div>
               </div>
 
