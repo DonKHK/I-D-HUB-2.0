@@ -1,42 +1,84 @@
 import React from 'react';
 import * as XLSX from 'xlsx';
 import { useData } from '../context/DataContext';
-import { fieldLabel, readField, CONTACT_GROUPS } from '../utils/fields';
+import { fieldLabel, readField, readStageField, DEFAULT_PROJECT_STATUS } from '../utils/fields';
 
-// Every contact label already carries its role (e.g. "Project Manager Name 項目經理姓名")
-// so the spreadsheet header can use it directly — no collisions between the three roles.
-const PM = CONTACT_GROUPS[0];
-const OWNER = CONTACT_GROUPS[1];
-const TECH = CONTACT_GROUPS[2];
-const contactHeader = (group, slot) => fieldLabel(group[slot]);
+/* ─────────────── My Project export (mirrors the My Project page) ─────────────── */
+/**
+ * Fixed milestone columns. A cell shows the matching stage's `stageStatus`, or
+ * 'NA' when the project has no stage with that exact type (case-insensitive).
+ */
+const MILESTONE_COLUMNS = [
+  'Feasibility',
+  'POC',
+  'Development',
+  'Pilot/UAT',
+  'Commercialization',
+  'Handover',
+];
 
-/** Projects sheet rows — one canonical label per column (source: utils/fields.js). */
-const buildProjectRows = (projects) =>
-  projects.map((p) => ({
-    'Project ID': p.id,
-    [fieldLabel('title')]: readField(p, 'title'),
-    [fieldLabel('status')]: p.status,
-    [fieldLabel('projectType')]: p.projectType,
-    [contactHeader(PM, 'name')]: readField(p, 'projectManagerName'),
-    [contactHeader(PM, 'dept')]: readField(p, 'projectManagerDept'),
-    [contactHeader(PM, 'contact')]: readField(p, 'projectManagerPhone'),
-    [contactHeader(PM, 'email')]: readField(p, 'projectManagerEmail'),
-    [contactHeader(OWNER, 'name')]: readField(p, 'ownerName'),
-    [contactHeader(OWNER, 'dept')]: readField(p, 'ownerDept'),
-    [contactHeader(OWNER, 'contact')]: readField(p, 'ownerContact'),
-    [contactHeader(OWNER, 'email')]: readField(p, 'ownerEmail'),
-    [contactHeader(TECH, 'name')]: readField(p, 'techSupportName'),
-    [contactHeader(TECH, 'dept')]: readField(p, 'techSupportDept'),
-    [contactHeader(TECH, 'contact')]: readField(p, 'techSupportContact'),
-    [fieldLabel('totalBudget')]: readField(p, 'totalBudget'),
-    [fieldLabel('budgetUsed')]: p.budgetUsed,
-    [fieldLabel('fundSource')]: p.fundSource,
-    [fieldLabel('governmentGrant')]: p.governmentGrant,
-    [fieldLabel('expectedStartDate')]: readField(p, 'expectedStartDate'),
-    [fieldLabel('targetCompletionDate')]: readField(p, 'targetCompletionDate'),
-    [fieldLabel('description')]: p.description,
-    [fieldLabel('projectScope')]: readField(p, 'projectScope'),
-  }));
+/**
+ * Column contract of the "My Project" sheet — one row per project, in exactly the
+ * order the My Project page presents the same data.
+ */
+const MY_PROJECT_HEADERS = [
+  'Project ID',
+  'Idea ID',
+  'Project Name',
+  'Project Status',
+  'Project Owner',
+  'Project management',
+  'Technical Support',
+  'Budget',
+  'Project Start Date',
+  'Project End Date',
+  ...MILESTONE_COLUMNS,
+];
+
+/** Number format used for every real date cell written to Excel. */
+const EXCEL_DATE_FORMAT = 'yyyy-mm-dd';
+
+/** stageStatus of the project's stage whose type matches the milestone, else 'NA'. */
+const stageStatusFor = (project, milestone) => {
+  const key = milestone.trim().toLowerCase();
+  const stage = (project.stages || []).find(
+    (s) => (readStageField(s, 'type') || '').trim().toLowerCase() === key
+  );
+  return stage ? readStageField(stage, 'stageStatus') || 'NA' : 'NA';
+};
+
+/**
+ * 'YYYY-MM-DD' (or an existing Excel serial) → JS Date, so SheetJS writes a real
+ * Excel date cell instead of plain text. Unparseable values pass through as-is.
+ */
+const toExcelDate = (value) => {
+  if (value === undefined || value === null || value === '') return '';
+  if (value instanceof Date) return value;
+  if (typeof value === 'number') return new Date(Date.UTC(1899, 11, 30) + value * 86400000);
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? value : d;
+};
+
+/** My Project sheet rows — the same data the My Project / My Projects page shows. */
+const buildMyProjectRows = (projects) =>
+  projects.map((p) => {
+    const row = {
+      'Project ID': p.id,
+      'Idea ID': p.originalIdeaId || '',
+      'Project Name': readField(p, 'title') || '',
+      'Project Status': p.status || DEFAULT_PROJECT_STATUS,
+      'Project Owner': readField(p, 'ownerName') || '',
+      'Project management': readField(p, 'projectManagerName') || '',
+      'Technical Support': readField(p, 'techSupportName') || readField(p, 'techSupportDept') || '',
+      Budget: readField(p, 'totalBudget') ?? '',
+      'Project Start Date': toExcelDate(readField(p, 'expectedStartDate')),
+      'Project End Date': toExcelDate(readField(p, 'targetCompletionDate')),
+    };
+    MILESTONE_COLUMNS.forEach((m) => {
+      row[m] = stageStatusFor(p, m);
+    });
+    return row;
+  });
 
 /** Ideas sheet rows. */
 const buildIdeaRows = (ideas) =>
@@ -71,21 +113,29 @@ const buildFundingRows = (schemes) =>
     'Description': fs.description,
   }));
 
-const writeSheet = (rows, sheetName, cols, filePrefix) => {
-  const ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{}]);
+/** Derive a header array from a row builder, so headers can never drift from rows. */
+const headersOf = (buildRows) => Object.keys(buildRows([{}])[0] || {});
+
+const IDEA_HEADERS = headersOf(buildIdeaRows);
+const FUNDING_HEADERS = headersOf(buildFundingRows);
+
+/**
+ * Write one sheet to its own workbook. Passing `headers` guarantees the header row
+ * is still written when the collection is empty (previously the file had no columns).
+ */
+const writeSheet = (rows, sheetName, cols, filePrefix, headers) => {
+  const ws = XLSX.utils.json_to_sheet(rows, { header: headers, dateNF: EXCEL_DATE_FORMAT });
   if (cols) ws['!cols'] = cols;
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, `${filePrefix}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
 
-const projectCols = [
-  { wch: 12 }, { wch: 35 }, { wch: 14 }, { wch: 26 },
-  { wch: 26 }, { wch: 26 }, { wch: 18 }, { wch: 26 },
-  { wch: 26 }, { wch: 26 }, { wch: 18 }, { wch: 26 },
-  { wch: 26 }, { wch: 26 }, { wch: 18 },
-  { wch: 22 }, { wch: 16 }, { wch: 22 }, { wch: 28 },
-  { wch: 18 }, { wch: 18 }, { wch: 40 }, { wch: 40 },
+/** Column widths for the "My Project" sheet — one entry per MY_PROJECT_HEADERS. */
+const myProjectCols = [
+  { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 14 }, { wch: 24 },
+  { wch: 26 }, { wch: 24 }, { wch: 14 }, { wch: 18 }, { wch: 18 },
+  ...MILESTONE_COLUMNS.map(() => ({ wch: 16 })),
 ];
 
 const ideaCols = [
@@ -104,27 +154,30 @@ export default function ReportExport() {
   const { projects, ideas, fundingSchemes } = useData();
 
   const exportProjects = () => {
-    writeSheet(buildProjectRows(projects), 'Projects', projectCols, 'Projects_Report');
+    writeSheet(buildMyProjectRows(projects), 'My Project', myProjectCols, 'Projects_Report', MY_PROJECT_HEADERS);
   };
 
   const exportIdeas = () => {
-    writeSheet(buildIdeaRows(ideas), 'Ideas', ideaCols, 'Ideas_Report');
+    writeSheet(buildIdeaRows(ideas), 'Ideas', ideaCols, 'Ideas_Report', IDEA_HEADERS);
   };
 
   const exportFundingSchemes = () => {
-    writeSheet(buildFundingRows(fundingSchemes), 'Funding Schemes', fundingCols, 'FundingSchemes_Report');
+    writeSheet(buildFundingRows(fundingSchemes), 'Funding Schemes', fundingCols, 'FundingSchemes_Report', FUNDING_HEADERS);
   };
 
   const exportAllInOne = () => {
     const wb = XLSX.utils.book_new();
 
-    const ws1 = XLSX.utils.json_to_sheet(buildProjectRows(projects).length ? buildProjectRows(projects) : [{}]);
-    XLSX.utils.book_append_sheet(wb, ws1, 'Projects');
+    const ws1 = XLSX.utils.json_to_sheet(buildMyProjectRows(projects), { header: MY_PROJECT_HEADERS, dateNF: EXCEL_DATE_FORMAT });
+    ws1['!cols'] = myProjectCols;
+    XLSX.utils.book_append_sheet(wb, ws1, 'My Project');
 
-    const ws2 = XLSX.utils.json_to_sheet(buildIdeaRows(ideas).length ? buildIdeaRows(ideas) : [{}]);
+    const ws2 = XLSX.utils.json_to_sheet(buildIdeaRows(ideas), { header: IDEA_HEADERS, dateNF: EXCEL_DATE_FORMAT });
+    ws2['!cols'] = ideaCols;
     XLSX.utils.book_append_sheet(wb, ws2, 'Ideas');
 
-    const ws3 = XLSX.utils.json_to_sheet(buildFundingRows(fundingSchemes).length ? buildFundingRows(fundingSchemes) : [{}]);
+    const ws3 = XLSX.utils.json_to_sheet(buildFundingRows(fundingSchemes), { header: FUNDING_HEADERS, dateNF: EXCEL_DATE_FORMAT });
+    ws3['!cols'] = fundingCols;
     XLSX.utils.book_append_sheet(wb, ws3, 'Funding Schemes');
 
     XLSX.writeFile(wb, `All_Reports_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -139,10 +192,10 @@ export default function ReportExport() {
         <div className="export-card">
           <div className="export-card-icon">📋</div>
           <h3>Projects Report</h3>
-          <p>Export all projects with budget, status, dates, and team information</p>
+          <p>Export every project exactly as shown on the My Project page — owner, team, budget, dates and milestone status</p>
           <div className="export-card-info">
             <span>{projects.length} projects</span>
-            <span>{Object.keys(buildProjectRows(projects)[0] || {}).length} columns</span>
+            <span>{MY_PROJECT_HEADERS.length} columns</span>
           </div>
           <button className="export-btn export-btn--projects" onClick={exportProjects}>
             📥 Export Projects

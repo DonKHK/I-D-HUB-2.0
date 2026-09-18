@@ -324,12 +324,14 @@ System-generated alerts for project health:
 
 ### 4.10 Report Export
 
-Export live data to Excel (.xlsx) — the column names are exactly the Submit Idea field names:
+Export live data to Excel (.xlsx):
 
-- **📥 Export Projects** — 23 columns (Project Title, Project Status, Project Type, Project Manager / Project Owner / Technical Support contact details, Total Estimated Budget, Fund Source, Government Grant, Expected Start Date, Target Completion Date, Description, Project Scope).
-- **📥 Export Ideas** — 15 columns (title, applicant, contact details, type, status, budget, fund source, dates, scope, AI score, created date).
+- **📥 Export Projects** — 16 columns, one row per project, matching the **My Project** page (Project ID, Idea ID, Project Name, Project Status, Project Owner, Project management, Technical Support, Budget, Project Start Date, Project End Date, then the milestone columns Feasibility / POC / Development / Pilot/UAT / Commercialization / Handover).
+- **📥 Export Ideas** — 15 columns (title, applicant, contact details, type, status, budget, fund source, dates, scope, AI score, created date) — the column names are exactly the Submit Idea field names.
 - **📥 Export Funding Schemes** — 8 columns.
-- **📦 Export All** — one workbook with 3 sheets (Projects / Ideas / Funding Schemes).
+- **📦 Export All** — one workbook with 3 sheets (My Project / Ideas / Funding Schemes).
+
+A milestone column shows that stage's status (e.g. `Planning`, `In Progress`) and `NA` when the project has no stage of that type. Dates are written as real Excel dates (`yyyy-mm-dd`).
 
 See [Section 10](#10-field-reference-canonical-schema) for the full field reference.
 

@@ -163,8 +163,14 @@ I&D Hub 係**創新及發展項目管理系統**，提供一站式平台：提�
 - 資訊（藍）：一般更新。撳卡片跳轉項目。
 
 ### 4.10 Report Export（報表匯出）
-- 匯出 [目前真實資料]（項目 23 欄 / 意念 15 欄 / 資助計劃 8 欄）/ 全部（3 sheets）。
-- 欄名同 Submit Idea 一致（例如 `Project Title 項目名稱`、`Total Estimated Budget 總預算估算（單位：港幣）`、`Project Manager — Name 姓名`）。
+- 匯出 [目前真實資料]。
+- **📥 Export Projects** — 16 欄，每個項目一行，內容同 **My Project** 頁面一致。
+- **📥 Export Ideas** — 15 欄（欄名同 Submit Idea 一致）。
+- **📥 Export Funding Schemes** — 8 欄。
+- **📦 Export All** — 一個檔案 3 個 sheet（My Project / Ideas / Funding Schemes）。
+- **My Project 欄位：** `Project ID`、`Idea ID`、`Project Name`、`Project Status`、`Project Owner`、`Project management`（項目經理）、`Technical Support`、`Budget`、`Project Start Date`、`Project End Date`，之後 6 個里程碑欄：`Feasibility` / `POC` / `Development` / `Pilot/UAT` / `Commercialization` / `Handover`。
+- 里程碑欄顯示該階段狀態（例如 `Planning`、`In Progress`）；項目冇該階段就顯示 `NA`。
+- 日期係真 Excel 日期格式（`yyyy-mm-dd`）。
 
 ---
 
