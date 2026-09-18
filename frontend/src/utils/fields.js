@@ -75,13 +75,14 @@ export const DEFAULT_PROJECT_STATUS = 'Planning';
 /* ───────────────────────────── The 4 contact blocks ───────────────────────────── */
 /**
  * Rendered identically by the idea wizard, both detail pages and every edit form.
- * Order of the 4 sub-fields is always: Name, Department, Contact Number, Email.
+ * Order of the 4 sub-fields is always: Name, Dept, Contact, Email — and every label
+ * carries its role (e.g. "Project Manager Name 項目經理姓名") so a field is never
+ * ambiguous, even when the section heading is not visible.
  */
 export const CONTACT_GROUPS = [
   {
     id: 'projectManager',
     title: 'Project Manager 項目經理',
-    shortLabel: 'Project Manager',
     name: 'projectManagerName',
     dept: 'projectManagerDept',
     contact: 'projectManagerPhone',
@@ -90,7 +91,6 @@ export const CONTACT_GROUPS = [
   {
     id: 'owner',
     title: 'Project Owner 項目持有者',
-    shortLabel: 'Project Owner',
     name: 'ownerName',
     dept: 'ownerDept',
     contact: 'ownerContact',
@@ -99,7 +99,6 @@ export const CONTACT_GROUPS = [
   {
     id: 'techSupport',
     title: 'Technical Support 技術支援',
-    shortLabel: 'Technical Support',
     name: 'techSupportName',
     dept: 'techSupportDept',
     contact: 'techSupportContact',
@@ -134,27 +133,27 @@ export function contactGroup(id) {
 export const FIELDS = {
   /* — Applicant — */
   applicantName: { label: 'Applicant Name 申請人姓名', type: 'text', required: true, group: 'applicant' },
-  department: { label: 'Department / Company 所屬部門或公司', type: 'text', required: true, group: 'applicant' },
-  contactNumber: { label: 'Contact Number 聯絡電話', type: 'text', required: true, group: 'applicant' },
-  email: { label: 'Email 電郵', type: 'email', required: true, group: 'applicant' },
+  department: { label: 'Applicant Dept 申請人部門', type: 'text', required: true, group: 'applicant' },
+  contactNumber: { label: 'Applicant Contact 申請人聯絡電話', type: 'text', required: true, group: 'applicant' },
+  email: { label: 'Applicant Email 申請人電郵', type: 'email', required: true, group: 'applicant' },
 
   /* — Project Manager — */
-  projectManagerName: { label: 'Name 姓名', type: 'text', required: true, group: 'projectManager' },
-  projectManagerDept: { label: 'Department / Company 所屬部門或公司', type: 'text', required: false, group: 'projectManager' },
-  projectManagerPhone: { label: 'Contact Number 聯絡電話', type: 'text', required: true, group: 'projectManager' },
-  projectManagerEmail: { label: 'Email 電郵', type: 'email', required: false, group: 'projectManager' },
+  projectManagerName: { label: 'Project Manager Name 項目經理姓名', type: 'text', required: true, group: 'projectManager' },
+  projectManagerDept: { label: 'Project Manager Dept 項目經理部門', type: 'text', required: false, group: 'projectManager' },
+  projectManagerPhone: { label: 'Project Manager Contact 項目經理聯絡電話', type: 'text', required: true, group: 'projectManager' },
+  projectManagerEmail: { label: 'Project Manager Email 項目經理電郵', type: 'email', required: false, group: 'projectManager' },
 
   /* — Project Owner — */
-  ownerName: { label: 'Name 姓名', type: 'text', required: true, group: 'owner' },
-  ownerDept: { label: 'Department / Company 所屬部門或公司', type: 'text', required: true, group: 'owner' },
-  ownerContact: { label: 'Contact Number 聯絡電話', type: 'text', required: true, group: 'owner' },
-  ownerEmail: { label: 'Email 電郵', type: 'email', required: true, group: 'owner' },
+  ownerName: { label: 'Project Owner Name 項目持有者姓名', type: 'text', required: true, group: 'owner' },
+  ownerDept: { label: 'Project Owner Dept 項目持有者部門', type: 'text', required: true, group: 'owner' },
+  ownerContact: { label: 'Project Owner Contact 項目持有者聯絡電話', type: 'text', required: true, group: 'owner' },
+  ownerEmail: { label: 'Project Owner Email 項目持有者電郵', type: 'email', required: true, group: 'owner' },
 
   /* — Technical Support — */
-  techSupportName: { label: 'Name 姓名', type: 'text', required: true, group: 'techSupport' },
-  techSupportDept: { label: 'Department / Company 所屬部門或公司', type: 'text', required: true, group: 'techSupport' },
-  techSupportContact: { label: 'Contact Number 聯絡電話', type: 'text', required: true, group: 'techSupport' },
-  techSupportEmail: { label: 'Email 電郵', type: 'email', required: true, group: 'techSupport' },
+  techSupportName: { label: 'Technical Support Name 技術支援姓名', type: 'text', required: true, group: 'techSupport' },
+  techSupportDept: { label: 'Technical Support Dept 技術支援部門', type: 'text', required: true, group: 'techSupport' },
+  techSupportContact: { label: 'Technical Support Contact 技術支援聯絡電話', type: 'text', required: true, group: 'techSupport' },
+  techSupportEmail: { label: 'Technical Support Email 技術支援電郵', type: 'email', required: true, group: 'techSupport' },
 
   /* — Project type — */
   projectType: { label: 'Project Type 項目類型', type: 'select', required: true, options: PROJECT_TYPES, group: 'type' },

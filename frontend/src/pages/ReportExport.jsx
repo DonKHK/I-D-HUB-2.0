@@ -3,12 +3,12 @@ import * as XLSX from 'xlsx';
 import { useData } from '../context/DataContext';
 import { fieldLabel, readField, CONTACT_GROUPS } from '../utils/fields';
 
-// Contact columns are prefixed with the role so a spreadsheet header is unambiguous
-// (e.g. "Project Manager — Name 姓名").
+// Every contact label already carries its role (e.g. "Project Manager Name 項目經理姓名")
+// so the spreadsheet header can use it directly — no collisions between the three roles.
 const PM = CONTACT_GROUPS[0];
 const OWNER = CONTACT_GROUPS[1];
 const TECH = CONTACT_GROUPS[2];
-const contactHeader = (group, slot) => `${group.shortLabel} — ${fieldLabel(group[slot])}`;
+const contactHeader = (group, slot) => fieldLabel(group[slot]);
 
 /** Projects sheet rows — one canonical label per column (source: utils/fields.js). */
 const buildProjectRows = (projects) =>

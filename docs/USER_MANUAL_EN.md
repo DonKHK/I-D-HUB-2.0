@@ -515,6 +515,8 @@ If you encounter any issues, have questions, or need a Project ID / password, pl
 
 > Every shared field name, label and value domain is defined in ONE place: `frontend/src/utils/fields.js`. **Submit Idea is the master** — the same field always has the same name and the same data across Submit Idea → IDEA Detail → My Projects → Detail Project → Edit Project.
 >
+> Every contact label carries its role (e.g. `Project Manager Name 項目經理姓名`), so a field is never ambiguous even when its section heading is not visible.
+>
 > Add or change a field in `fields.js` only; every form, detail page and export follows automatically.
 
 ### 10.1 Canonical schema (master = Submit Idea)
@@ -522,21 +524,21 @@ If you encounter any issues, have questions, or need a Project ID / password, pl
 | # | Canonical key | Label | Type | Required | Value domain |
 |---|---|---|---|---|---|
 | 1 | `applicantName` | Applicant Name 申請人姓名 | text | ✔ | — |
-| 2 | `department` | Department / Company 所屬部門或公司 | text | ✔ | — |
-| 3 | `contactNumber` | Contact Number 聯絡電話 | text | ✔ | — |
-| 4 | `email` | Email 電郵 | email | ✔ | — |
-| 5 | `projectManagerName` | Name 姓名 | text | ✔ | — |
-| 6 | `projectManagerDept` | Department / Company 所屬部門或公司 | text |  | — |
-| 7 | `projectManagerPhone` | Contact Number 聯絡電話 | text | ✔ | — |
-| 8 | `projectManagerEmail` | Email 電郵 | email |  | — |
-| 9 | `ownerName` | Name 姓名 | text | ✔ | — |
-| 10 | `ownerDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
-| 11 | `ownerContact` | Contact Number 聯絡電話 | text | ✔ | — |
-| 12 | `ownerEmail` | Email 電郵 | email | ✔ | — |
-| 13 | `techSupportName` | Name 姓名 | text | ✔ | — |
-| 14 | `techSupportDept` | Department / Company 所屬部門或公司 | text | ✔ | — |
-| 15 | `techSupportContact` | Contact Number 聯絡電話 | text | ✔ | — |
-| 16 | `techSupportEmail` | Email 電郵 | email | ✔ | — |
+| 2 | `department` | Applicant Dept 申請人部門 | text | ✔ | — |
+| 3 | `contactNumber` | Applicant Contact 申請人聯絡電話 | text | ✔ | — |
+| 4 | `email` | Applicant Email 申請人電郵 | email | ✔ | — |
+| 5 | `projectManagerName` | Project Manager Name 項目經理姓名 | text | ✔ | — |
+| 6 | `projectManagerDept` | Project Manager Dept 項目經理部門 | text |  | — |
+| 7 | `projectManagerPhone` | Project Manager Contact 項目經理聯絡電話 | text | ✔ | — |
+| 8 | `projectManagerEmail` | Project Manager Email 項目經理電郵 | email |  | — |
+| 9 | `ownerName` | Project Owner Name 項目持有者姓名 | text | ✔ | — |
+| 10 | `ownerDept` | Project Owner Dept 項目持有者部門 | text | ✔ | — |
+| 11 | `ownerContact` | Project Owner Contact 項目持有者聯絡電話 | text | ✔ | — |
+| 12 | `ownerEmail` | Project Owner Email 項目持有者電郵 | email | ✔ | — |
+| 13 | `techSupportName` | Technical Support Name 技術支援姓名 | text | ✔ | — |
+| 14 | `techSupportDept` | Technical Support Dept 技術支援部門 | text | ✔ | — |
+| 15 | `techSupportContact` | Technical Support Contact 技術支援聯絡電話 | text | ✔ | — |
+| 16 | `techSupportEmail` | Technical Support Email 技術支援電郵 | email | ✔ | — |
 | 17 | `projectType` | Project Type 項目類型 | select | ✔ | Business Transformation / Development / Process Improvement / Cost Saving / Customer Experience / Technology Development / Others |
 | 18 | `title` | Project Title 項目名稱 | text | ✔ | — |
 | 19 | `background` | Project Background & Objective 項目背景信息及目標 | textarea | ✔ | — |
@@ -579,16 +581,16 @@ If you encounter any issues, have questions, or need a Project ID / password, pl
 
 **Total fields:** 55
 
-### 10.2 Contact blocks (4 roles, identical field order)
+### 10.2 Contact blocks (4 roles — identical field order & role-prefixed labels)
 
-Order: Name 姓名 → Department / Company 所屬部門或公司 → Contact Number 聯絡電話 → Email 電郵
+Order: Project Manager Name 項目經理姓名 → Project Manager Dept 項目經理部門 → Project Manager Contact 項目經理聯絡電話 → Project Manager Email 項目經理電郵
 
-| Block | Title | Name | Department | Contact | Email |
+| Block | Title | Name | Dept | Contact | Email |
 |---|---|---|---|---|---|
-| applicant | Applicant Information 申請人資料 | `applicantName` | `department` | `contactNumber` | `email` |
-| projectManager | Project Manager 項目經理 | `projectManagerName` | `projectManagerDept` | `projectManagerPhone` | `projectManagerEmail` |
-| owner | Project Owner 項目持有者 | `ownerName` | `ownerDept` | `ownerContact` | `ownerEmail` |
-| techSupport | Technical Support 技術支援 | `techSupportName` | `techSupportDept` | `techSupportContact` | `techSupportEmail` |
+| applicant | Applicant Information 申請人資料 | Applicant Name 申請人姓名 | Applicant Dept 申請人部門 | Applicant Contact 申請人聯絡電話 | Applicant Email 申請人電郵 |
+| projectManager | Project Manager 項目經理 | Project Manager Name 項目經理姓名 | Project Manager Dept 項目經理部門 | Project Manager Contact 項目經理聯絡電話 | Project Manager Email 項目經理電郵 |
+| owner | Project Owner 項目持有者 | Project Owner Name 項目持有者姓名 | Project Owner Dept 項目持有者部門 | Project Owner Contact 項目持有者聯絡電話 | Project Owner Email 項目持有者電郵 |
+| techSupport | Technical Support 技術支援 | Technical Support Name 技術支援姓名 | Technical Support Dept 技術支援部門 | Technical Support Contact 技術支援聯絡電話 | Technical Support Email 技術支援電郵 |
 
 ### 10.3 The 8 wizard steps (step name = section title, one single string)
 
@@ -618,7 +620,7 @@ Order: Name 姓名 → Department / Company 所屬部門或公司 → Contact Nu
 | `stages[].endDate` | `stages[].stageEndDate` |
 | `stages[].status` | `stages[].stageStatus` |
 | `stages[].description` | `stages[].stageDescription` |
-| stage status `Not Started` → | `Planning` |
+| stage status `Not Started` | `Planning` |
 | idea `applicant` | `applicantName` |
 | idea `projectTitle` | `title` |
 | idea `manager` | `projectManagerName` |
@@ -629,3 +631,4 @@ Order: Name 姓名 → Department / Company 所屬部門或公司 → Contact Nu
 | idea `ideaType` | `projectType` |
 
 **Legacy keys that are always deleted (project + idea):** `owner`, `detail`, `firstContactName`, `firstContactDept`, `firstContactEmail`, `firstContactPhone`, `secondContactName`, `secondContactDept`, `secondContactEmail`, `secondContactPhone`
+

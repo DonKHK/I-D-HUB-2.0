@@ -416,7 +416,7 @@ export default function ProjectDetail({ project, onBack, onNavigate, isProjectUs
               if (!value) return null;
               return (
                 <div className="detail-field" key={key}>
-                  <label>{`${group.shortLabel} — ${fieldLabel(key)}`}</label>
+                  <label>{fieldLabel(key)}</label>
                   <p>{value}</p>
                 </div>
               );
