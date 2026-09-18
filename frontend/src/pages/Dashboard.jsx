@@ -156,7 +156,6 @@ export default function Dashboard() {
                 const dataset = chart.data?.datasets?.[0] || {};
                 const values = dataset.data || [];
                 const fill = dataset.backgroundColor;
-                const meta = chart.getDatasetMeta(0);
                 return labels.map((label, i) => {
                   const color = Array.isArray(fill) ? fill[i] : fill;
                   return {
@@ -165,7 +164,11 @@ export default function Dashboard() {
                     strokeStyle: color,
                     lineWidth: 0,
                     pointStyle: 'circle',
-                    hidden: meta?.data?.[i] ? !meta.data[i].visible : false,
+                    // Chart.js's own API (see chart.js legend plugin): a legend item is
+                    // only marked hidden — and therefore struck through — when the user
+                    // really hid that slice. Do NOT test element.visible, which does not
+                    // exist on ArcElement and made every label look deleted.
+                    hidden: !chart.getDataVisibility(i),
                     index: i,
                   };
                 });
